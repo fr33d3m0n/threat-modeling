@@ -321,7 +321,7 @@ The security knowledge system consists of three complementary sets:
 │                       ┌───────────────────────────────────────────┐                           │
 │                       │         Security Principles               │                           │
 │                       │    (Foundation - Guides All Phases)       │                           │
-│                       │  DID │ LP │ ZT │ FS │ SOD │ SBD │ CM │ EOM │ OD │ IV                 │
+│                       │  DID │ LP │ ZT │ FS │ SOD │ SBD │ CM │ EOM │ OD │ IV │ LA            │
 │                       └───────────────────────────────────────────┘                           │
 │                                           │                                                    │
 │                 ┌─────────────────────────┴─────────────────────────┐                         │
@@ -331,13 +331,13 @@ The security knowledge system consists of three complementary sets:
 │  │      Security Control Set          │      │      Threat Pattern Set             │        │
 │  │      (What to do & How to do)      │      │      (What to know & Validate)      │        │
 │  ├─────────────────────────────────────┤      ├─────────────────────────────────────┤        │
-│  │  Security Domains (15)              │      │  CWE Weakness Types (974)           │        │
+│  │  Security Domains (16)              │      │  CWE Weakness Types (974)           │        │
 │  │      │                              │      │      │                              │        │
 │  │      ▼                              │      │      ▼                              │        │
-│  │  Control Sets (17 files, 97)        │      │  CAPEC Attack Patterns (615)        │        │
+│  │  Control Sets (18 files, 107)       │      │  CAPEC Attack Patterns (615)        │        │
 │  │      │                              │      │      │                              │        │
 │  │      ▼                              │      │      ▼                              │        │
-│  │  OWASP References (73)              │      │  ATT&CK Techniques (835)            │        │
+│  │  OWASP References (77)              │      │  ATT&CK Techniques (835)            │        │
 │  │      │                              │      │      │                              │        │
 │  │      ▼                              │      │      ▼                              │        │
 │  │  Compliance Frameworks (14)         │      │  CVE/KEV Vulnerabilities (323K+)    │        │
