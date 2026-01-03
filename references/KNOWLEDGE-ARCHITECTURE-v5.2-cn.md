@@ -578,6 +578,6 @@ unified_kb_query.py --wstg-category ATHN
 
 ---
 
-**文档生成**: 代码优先深度风险分析 Skill - Ultrathink Critical Thinking v5.2
+**文档生成**: Code-First Deep Risk Analysis Skill - Ultrathink Critical Thinking v5.2
 
 [English Version](KNOWLEDGE-ARCHITECTURE-v5.2.md)
