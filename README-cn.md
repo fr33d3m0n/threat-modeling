@@ -196,7 +196,7 @@ python scripts/unified_kb_query.py --all-llm
 | **5** | 威胁清单 (STRIDE+CWE+ATT&CK+LLM) |
 | **6** | **验证方式** (攻击路径 + POC) |
 | **7** | **缓解措施** (每条风险的缓解建议) |
-| **8** | `THREAT-MODEL-REPORT.md` 综合报告 |
+| **8** | `{PROJECT}-RISK-ASSESSMENT-REPORT.md` 综合报告 |
 
 ### 能力矩阵
 

@@ -637,7 +637,7 @@ Data Flow │   │ ✓ │   │ ✓ │ ✓ │   │
 | **脚本支持** | 无 |
 | **知识库** | 体系 B: L4 合规框架 (按需) |
 | **输入** | Phase 1-7 全部输出 |
-| **输出** | `THREAT-MODEL-REPORT.md` |
+| **输出** | `{PROJECT}-RISK-ASSESSMENT-REPORT.md` |
 
 **报告结构**:
 1. 执行摘要

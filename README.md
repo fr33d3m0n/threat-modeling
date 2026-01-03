@@ -216,7 +216,7 @@ python scripts/unified_kb_query.py --all-llm
 | **5** | Threat list (STRIDE+CWE+ATT&CK+LLM) |
 | **6** | **Validation methods** (attack paths + POC) |
 | **7** | **Mitigations** (remediation suggestions per threat) |
-| **8** | `THREAT-MODEL-REPORT.md` comprehensive report |
+| **8** | `{PROJECT}-RISK-ASSESSMENT-REPORT.md` comprehensive report |
 
 ### Capability Matrix
 
