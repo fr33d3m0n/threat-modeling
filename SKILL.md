@@ -358,7 +358,7 @@ The security knowledge system consists of three complementary sets:
 └───────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Security Principles (10)
+### Security Principles (11)
 
 Core security principles that guide all security design decisions across all 8 phases.
 
@@ -374,12 +374,13 @@ Core security principles that guide all security design decisions across all 8 p
 | **EOM** | Economy of Mechanism | Security mechanisms should be simple and auditable; complexity is security's enemy |
 | **OD** | Open Design | Security doesn't depend on algorithm or design secrecy |
 | **IV** | Input Validation | All input must be validated before processing; default deny |
+| **LA** | Least Agency | Limit AI agent autonomy, tool access, and decision scope to minimum required |
 
 **Phase References**:
-- Phase 1: DID, LP, ZT (architecture assessment)
+- Phase 1: DID, LP, ZT, LA (architecture assessment, agent scope)
 - Phase 2: CM, IV, ZT (data flow security)
-- Phase 3: ZT, SOD, LP (trust boundaries)
-- Phase 4: All 10 principles (security function completeness)
+- Phase 3: ZT, SOD, LP, LA (trust boundaries, agent boundaries)
+- Phase 4: All 11 principles (security function completeness)
 
 > Detailed definitions in `assets/knowledge/security-principles.yaml`
 

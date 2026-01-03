@@ -55,9 +55,14 @@ principles:
     name: Input Validation
     definition: "Never trust external input; validate type, length, format, range at trust boundary."
 
+  least_agency:
+    code: LA
+    name: Least Agency
+    definition: "Limit AI agent autonomy, tool access, and decision scope to minimum required for task completion."
+
 # Phase mapping
 phase_reference:
-  phase_1: [DID, LP, ZT]           # Project understanding - identify design gaps
+  phase_1: [DID, LP, ZT, LA]       # Project understanding - identify design gaps, agent scope
   phase_2: [CM, IV, ZT]            # DFD analysis - identify trust boundaries
-  phase_3: [ZT, SOD, LP]           # Trust boundaries - evaluate access controls
-  phase_4: [ALL]                   # Security design - full principle assessment
+  phase_3: [ZT, SOD, LP, LA]       # Trust boundaries - evaluate access controls, agent boundaries
+  phase_4: [ALL]                   # Security design - full principle assessment (11 principles)

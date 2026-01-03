@@ -7,10 +7,10 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # FOUR-LEVEL KNOWLEDGE HIERARCHY
 # ═══════════════════════════════════════════════════════════════════════════════
-# L1: Security Principles - SKILL.md (10 principles: DID, LP, ZT, FS, SOD, SBD, CM, EOM, OD, IV)
-# L2: Security Design    - This file (10 core + 5 extended domains)
-# L3: Security Controls  - security-controls/control-set-*.md (17 files)
-# L4: Scenario Practices - security-controls/references/reference-set-*.md (73 files)
+# L1: Security Principles - SKILL.md (11 principles: DID, LP, ZT, FS, SOD, SBD, CM, EOM, OD, IV, LA)
+# L2: Security Design    - This file (10 core + 6 extended domains)
+# L3: Security Controls  - security-controls/control-set-*.md (18 files)
+# L4: Scenario Practices - security-controls/references/reference-set-*.md (77 files)
 #
 # ═══════════════════════════════════════════════════════════════════════════════
 # NAMING CONVENTIONS
