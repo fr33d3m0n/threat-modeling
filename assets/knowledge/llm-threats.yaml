@@ -1,0 +1,835 @@
+# Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations
+
+# LLM Threats Knowledge Base
+# OWASP Top 10 for LLM Applications + AI/ML Security Patterns
+# Version: 1.0
+# Reference: https://owasp.org/www-project-top-10-for-large-language-model-applications/
+
+metadata:
+  version: "1.0"
+  description: "LLM and AI/ML specific threat patterns for STRIDE threat modeling"
+  sources:
+    - "OWASP Top 10 for LLM Applications 2025"
+    - "MITRE ATLAS (Adversarial Threat Landscape for AI Systems)"
+    - "NIST AI Risk Management Framework"
+  last_updated: "2024-12"
+
+# =============================================================================
+# OWASP TOP 10 FOR LLM APPLICATIONS
+# =============================================================================
+
+owasp_llm_top10:
+  LLM01:
+    id: "LLM01"
+    name: "Prompt Injection"
+    description: |
+      Manipulating LLMs through crafted inputs that cause the model to execute
+      unintended actions. Direct injection overwrites system prompts, while
+      indirect injection manipulates inputs from external sources.
+    stride_categories: ["tampering", "elevation_of_privilege"]
+    attack_vectors:
+      - "Direct prompt injection via user input"
+      - "Indirect injection via external data sources"
+      - "Jailbreaking through role-playing scenarios"
+      - "Instruction override via special characters"
+    impacts:
+      - "Unauthorized data access"
+      - "Social engineering through LLM"
+      - "Remote code execution in agent systems"
+      - "Bypassing content filters"
+    mitigations:
+      - id: "LLM01-M01"
+        name: "Privilege control"
+        description: "Apply least privilege to LLM backend access"
+        implementation: |
+          - Separate LLM execution context from privileged operations
+          - Use read-only access for data retrieval
+          - Implement approval workflow for sensitive actions
+      - id: "LLM01-M02"
+        name: "Human-in-the-loop"
+        description: "Require user confirmation for privileged operations"
+        implementation: |
+          - Add approval steps before executing actions
+          - Log all LLM-initiated operations
+          - Implement undo/rollback capabilities
+      - id: "LLM01-M03"
+        name: "Input/output validation"
+        description: "Sanitize and validate all LLM inputs and outputs"
+        implementation: |
+          - Filter special tokens and control characters
+          - Validate output format before execution
+          - Implement content safety classifiers
+      - id: "LLM01-M04"
+        name: "Context isolation"
+        description: "Segregate external content from user prompts"
+        implementation: |
+          - Use clear delimiters for system vs user content
+          - Implement content type tagging
+          - Sanitize retrieved documents before injection
+    cwes: ["CWE-77", "CWE-94", "CWE-1336"]
+    capecs: ["CAPEC-248", "CAPEC-549"]
+    atlas_techniques: ["AML.T0051", "AML.T0043"]
+    severity: "critical"
+
+  LLM02:
+    id: "LLM02"
+    name: "Insecure Output Handling"
+    description: |
+      Failure to properly validate, sanitize, or handle LLM outputs before
+      passing them to downstream components, leading to XSS, SSRF, privilege
+      escalation, or remote code execution.
+    stride_categories: ["tampering", "information_disclosure", "elevation_of_privilege"]
+    attack_vectors:
+      - "XSS through unescaped LLM output in web UI"
+      - "SQL injection via LLM-generated queries"
+      - "Command injection through code generation"
+      - "SSRF via LLM-generated URLs"
+    impacts:
+      - "Cross-site scripting attacks"
+      - "Backend system compromise"
+      - "Data exfiltration"
+      - "Privilege escalation"
+    mitigations:
+      - id: "LLM02-M01"
+        name: "Output encoding"
+        description: "Encode LLM outputs for target context"
+        implementation: |
+          - HTML-encode for web display
+          - Parameterize database queries
+          - Use safe APIs for command execution
+      - id: "LLM02-M02"
+        name: "Output validation"
+        description: "Validate output format and content"
+        implementation: |
+          - Schema validation for structured outputs
+          - Allowlist validation for URLs and commands
+          - Content safety scanning
+      - id: "LLM02-M03"
+        name: "Sandboxed execution"
+        description: "Execute LLM-generated code in isolated environments"
+        implementation: |
+          - Use container sandboxes for code execution
+          - Implement resource limits and timeouts
+          - Network isolation for generated code
+    cwes: ["CWE-79", "CWE-89", "CWE-78", "CWE-918"]
+    capecs: ["CAPEC-86", "CAPEC-664"]
+    severity: "high"
+
+  LLM03:
+    id: "LLM03"
+    name: "Training Data Poisoning"
+    description: |
+      Manipulation of training data or fine-tuning processes to embed
+      vulnerabilities, backdoors, or biases into the model.
+    stride_categories: ["tampering", "repudiation"]
+    attack_vectors:
+      - "Poisoned pre-training datasets"
+      - "Malicious fine-tuning data"
+      - "Backdoor trigger injection"
+      - "Bias amplification attacks"
+    impacts:
+      - "Model behavior manipulation"
+      - "Backdoor activation"
+      - "Biased or harmful outputs"
+      - "Reduced model performance"
+    mitigations:
+      - id: "LLM03-M01"
+        name: "Data provenance"
+        description: "Track and verify training data sources"
+        implementation: |
+          - Implement data lineage tracking
+          - Verify data source authenticity
+          - Maintain audit logs of training data
+      - id: "LLM03-M02"
+        name: "Data sanitization"
+        description: "Clean and validate training data"
+        implementation: |
+          - Automated quality checks
+          - Anomaly detection in training data
+          - Human review for sensitive domains
+      - id: "LLM03-M03"
+        name: "Model validation"
+        description: "Test models for backdoors and biases"
+        implementation: |
+          - Red team testing before deployment
+          - Bias detection evaluations
+          - Behavioral testing with adversarial inputs
+    cwes: ["CWE-502", "CWE-1035"]
+    capecs: ["CAPEC-538"]
+    atlas_techniques: ["AML.T0020", "AML.T0019"]
+    severity: "high"
+
+  LLM04:
+    id: "LLM04"
+    name: "Model Denial of Service"
+    description: |
+      Attacks that consume excessive resources through crafted inputs,
+      causing service degradation or unavailability.
+    stride_categories: ["denial_of_service"]
+    attack_vectors:
+      - "Resource-exhausting prompts"
+      - "Repeated high-cost requests"
+      - "Context window flooding"
+      - "Recursive or infinite loop prompts"
+    impacts:
+      - "Service unavailability"
+      - "Increased operational costs"
+      - "Degraded performance for other users"
+      - "Resource starvation"
+    mitigations:
+      - id: "LLM04-M01"
+        name: "Rate limiting"
+        description: "Limit request frequency and volume"
+        implementation: |
+          - Per-user rate limits
+          - Token-based quotas
+          - Sliding window rate limiting
+      - id: "LLM04-M02"
+        name: "Input validation"
+        description: "Validate and limit input size"
+        implementation: |
+          - Maximum input length limits
+          - Context window management
+          - Prompt complexity analysis
+      - id: "LLM04-M03"
+        name: "Resource controls"
+        description: "Implement resource quotas and timeouts"
+        implementation: |
+          - Execution timeouts
+          - Memory and CPU limits
+          - Cost-based throttling
+    cwes: ["CWE-400", "CWE-770", "CWE-799"]
+    capecs: ["CAPEC-125", "CAPEC-130"]
+    severity: "medium"
+
+  LLM05:
+    id: "LLM05"
+    name: "Supply Chain Vulnerabilities"
+    description: |
+      Risks from third-party components including pre-trained models,
+      training data, plugins, and dependencies.
+    stride_categories: ["tampering", "elevation_of_privilege"]
+    attack_vectors:
+      - "Compromised model weights"
+      - "Malicious plugins or extensions"
+      - "Poisoned model hubs"
+      - "Vulnerable dependencies"
+    impacts:
+      - "Backdoor activation"
+      - "Data exfiltration"
+      - "System compromise"
+      - "Supply chain attacks"
+    mitigations:
+      - id: "LLM05-M01"
+        name: "Vendor vetting"
+        description: "Evaluate and monitor third-party providers"
+        implementation: |
+          - Security assessments for model providers
+          - Contractual security requirements
+          - Regular vendor reviews
+      - id: "LLM05-M02"
+        name: "Model verification"
+        description: "Verify model integrity and provenance"
+        implementation: |
+          - Cryptographic model signing
+          - Hash verification for downloads
+          - Behavioral testing before deployment
+      - id: "LLM05-M03"
+        name: "Plugin sandboxing"
+        description: "Isolate third-party plugins"
+        implementation: |
+          - Sandboxed plugin execution
+          - Capability-based permissions
+          - Plugin review and approval process
+    cwes: ["CWE-829", "CWE-494", "CWE-506"]
+    capecs: ["CAPEC-437", "CAPEC-438"]
+    atlas_techniques: ["AML.T0010", "AML.T0011"]
+    severity: "high"
+
+  LLM06:
+    id: "LLM06"
+    name: "Sensitive Information Disclosure"
+    description: |
+      LLM may reveal sensitive information through its outputs, including
+      training data, PII, proprietary information, or system details.
+    stride_categories: ["information_disclosure"]
+    attack_vectors:
+      - "Training data extraction"
+      - "Membership inference attacks"
+      - "System prompt extraction"
+      - "PII leakage through context"
+    impacts:
+      - "Privacy violations"
+      - "Intellectual property theft"
+      - "Compliance violations (GDPR, HIPAA)"
+      - "Competitive intelligence leakage"
+    mitigations:
+      - id: "LLM06-M01"
+        name: "Data sanitization"
+        description: "Remove sensitive data from training sets"
+        implementation: |
+          - PII detection and removal
+          - Differential privacy techniques
+          - Data anonymization
+      - id: "LLM06-M02"
+        name: "Output filtering"
+        description: "Detect and filter sensitive output"
+        implementation: |
+          - PII detection in outputs
+          - Content classification
+          - Redaction before display
+      - id: "LLM06-M03"
+        name: "Access controls"
+        description: "Limit data access based on user context"
+        implementation: |
+          - Role-based access to LLM features
+          - Data classification enforcement
+          - Audit logging for sensitive queries
+    cwes: ["CWE-200", "CWE-359", "CWE-532"]
+    capecs: ["CAPEC-118", "CAPEC-169"]
+    atlas_techniques: ["AML.T0024", "AML.T0025"]
+    severity: "high"
+
+  LLM07:
+    id: "LLM07"
+    name: "Insecure Plugin Design"
+    description: |
+      LLM plugins with inadequate access controls, input validation,
+      or isolation, enabling attacks through the plugin interface.
+    stride_categories: ["tampering", "elevation_of_privilege", "spoofing"]
+    attack_vectors:
+      - "Plugin parameter injection"
+      - "Excessive plugin permissions"
+      - "Cross-plugin attacks"
+      - "OAuth token theft via plugins"
+    impacts:
+      - "Unauthorized data access"
+      - "Privilege escalation"
+      - "Remote code execution"
+      - "Account compromise"
+    mitigations:
+      - id: "LLM07-M01"
+        name: "Plugin authentication"
+        description: "Authenticate and authorize plugin calls"
+        implementation: |
+          - Signed plugin requests
+          - OAuth 2.0 for plugin auth
+          - Mutual TLS for plugin communication
+      - id: "LLM07-M02"
+        name: "Input validation"
+        description: "Validate all plugin inputs"
+        implementation: |
+          - Schema validation for parameters
+          - Type checking and bounds validation
+          - Sanitization of string inputs
+      - id: "LLM07-M03"
+        name: "Least privilege"
+        description: "Minimize plugin permissions"
+        implementation: |
+          - Capability-based permissions
+          - Scoped OAuth tokens
+          - Just-in-time privilege escalation
+    cwes: ["CWE-284", "CWE-862", "CWE-863"]
+    capecs: ["CAPEC-122", "CAPEC-233"]
+    severity: "high"
+
+  LLM08:
+    id: "LLM08"
+    name: "Excessive Agency"
+    description: |
+      Granting LLM too much autonomy to take impactful actions without
+      adequate human oversight or guardrails.
+    stride_categories: ["elevation_of_privilege", "repudiation"]
+    attack_vectors:
+      - "Autonomous harmful actions"
+      - "Cascading failures from automated decisions"
+      - "Unintended scope expansion"
+      - "Exploitation of broad permissions"
+    impacts:
+      - "Unintended system modifications"
+      - "Data loss or corruption"
+      - "Financial losses"
+      - "Reputation damage"
+    mitigations:
+      - id: "LLM08-M01"
+        name: "Scope limitation"
+        description: "Limit LLM's scope of actions"
+        implementation: |
+          - Define explicit action allowlists
+          - Implement action rate limits
+          - Restrict to specific domains/resources
+      - id: "LLM08-M02"
+        name: "Human oversight"
+        description: "Require human approval for high-impact actions"
+        implementation: |
+          - Approval workflows for sensitive operations
+          - Real-time monitoring and alerting
+          - Kill switch capabilities
+      - id: "LLM08-M03"
+        name: "Reversibility"
+        description: "Ensure actions can be undone"
+        implementation: |
+          - Implement undo/rollback mechanisms
+          - Soft deletes instead of hard deletes
+          - Backup before modification
+    cwes: ["CWE-250", "CWE-269"]
+    capecs: ["CAPEC-122"]
+    severity: "high"
+
+  LLM09:
+    id: "LLM09"
+    name: "Overreliance"
+    description: |
+      Excessive dependence on LLM outputs without adequate verification,
+      leading to misinformation, security issues, or poor decisions.
+    stride_categories: ["repudiation", "tampering"]
+    attack_vectors:
+      - "Hallucinated security advice"
+      - "Incorrect code with vulnerabilities"
+      - "Fabricated facts and citations"
+      - "Biased recommendations"
+    impacts:
+      - "Security vulnerabilities in generated code"
+      - "Misinformed business decisions"
+      - "Compliance failures"
+      - "Reputation damage"
+    mitigations:
+      - id: "LLM09-M01"
+        name: "Output verification"
+        description: "Validate LLM outputs before use"
+        implementation: |
+          - Automated fact-checking where possible
+          - Code review for generated code
+          - Citation verification
+      - id: "LLM09-M02"
+        name: "User education"
+        description: "Train users on LLM limitations"
+        implementation: |
+          - Clear disclaimers on LLM outputs
+          - Training on critical evaluation
+          - Guidelines for appropriate use
+      - id: "LLM09-M03"
+        name: "Confidence indicators"
+        description: "Display confidence levels for outputs"
+        implementation: |
+          - Uncertainty quantification
+          - Source attribution where available
+          - Highlight areas of low confidence
+    cwes: ["CWE-754", "CWE-1024"]
+    severity: "medium"
+
+  LLM10:
+    id: "LLM10"
+    name: "Model Theft"
+    description: |
+      Unauthorized access, copying, or extraction of proprietary LLM models,
+      including model weights, architecture, or training data.
+    stride_categories: ["information_disclosure", "spoofing"]
+    attack_vectors:
+      - "API-based model extraction"
+      - "Side-channel attacks on model inference"
+      - "Insider threats"
+      - "Model inversion attacks"
+    impacts:
+      - "Intellectual property theft"
+      - "Competitive advantage loss"
+      - "Revenue loss"
+      - "Model replication by adversaries"
+    mitigations:
+      - id: "LLM10-M01"
+        name: "Access controls"
+        description: "Restrict model access"
+        implementation: |
+          - API authentication and authorization
+          - Rate limiting to prevent extraction
+          - Watermarking model outputs
+      - id: "LLM10-M02"
+        name: "Monitoring"
+        description: "Detect extraction attempts"
+        implementation: |
+          - Anomaly detection on API usage
+          - Query pattern analysis
+          - Alert on suspicious access patterns
+      - id: "LLM10-M03"
+        name: "Technical protections"
+        description: "Make extraction harder"
+        implementation: |
+          - Output perturbation
+          - Encrypted model weights
+          - Secure enclaves for inference
+    cwes: ["CWE-284", "CWE-522"]
+    capecs: ["CAPEC-545"]
+    atlas_techniques: ["AML.T0044", "AML.T0035"]
+    severity: "high"
+
+# =============================================================================
+# AI/ML COMPONENT STRIDE MAPPINGS
+# =============================================================================
+
+ai_components:
+  llm_inference_service:
+    type: "process"
+    description: "LLM inference endpoint handling user queries"
+    stride_threats:
+      spoofing:
+        - id: "AI-S-INF-001"
+          name: "Model impersonation"
+          description: "Attacker deploys fake model endpoint"
+          mitigations: ["API authentication", "Model fingerprinting", "Certificate pinning"]
+          cwes: ["CWE-290"]
+      tampering:
+        - id: "AI-T-INF-001"
+          name: "Prompt injection"
+          description: "Malicious prompts alter model behavior"
+          mitigations: ["Input sanitization", "Prompt isolation", "Output validation"]
+          cwes: ["CWE-77", "CWE-94"]
+        - id: "AI-T-INF-002"
+          name: "Response manipulation"
+          description: "Man-in-the-middle modifies model outputs"
+          mitigations: ["TLS encryption", "Response signing", "Integrity checks"]
+          cwes: ["CWE-319"]
+      repudiation:
+        - id: "AI-R-INF-001"
+          name: "Unattributable AI actions"
+          description: "Cannot trace AI decisions to inputs"
+          mitigations: ["Comprehensive logging", "Input/output correlation", "Audit trails"]
+          cwes: ["CWE-778"]
+      information_disclosure:
+        - id: "AI-I-INF-001"
+          name: "Training data leakage"
+          description: "Model reveals training data through outputs"
+          mitigations: ["Differential privacy", "Output filtering", "Data sanitization"]
+          cwes: ["CWE-200"]
+        - id: "AI-I-INF-002"
+          name: "System prompt extraction"
+          description: "Attacker extracts system configuration"
+          mitigations: ["Prompt protection", "Output monitoring", "Configuration isolation"]
+          cwes: ["CWE-497"]
+      denial_of_service:
+        - id: "AI-D-INF-001"
+          name: "Resource exhaustion"
+          description: "Complex prompts consume excessive resources"
+          mitigations: ["Rate limiting", "Token limits", "Timeout controls"]
+          cwes: ["CWE-400"]
+      elevation_of_privilege:
+        - id: "AI-E-INF-001"
+          name: "Prompt-based privilege escalation"
+          description: "Prompts trick model into elevated actions"
+          mitigations: ["Action allowlists", "Human approval", "Capability limits"]
+          cwes: ["CWE-269"]
+
+  rag_retrieval:
+    type: "process"
+    description: "Retrieval-Augmented Generation document retrieval"
+    stride_threats:
+      spoofing:
+        - id: "AI-S-RAG-001"
+          name: "Poisoned document source"
+          description: "Attacker injects malicious documents"
+          mitigations: ["Source verification", "Content signing", "Document provenance"]
+          cwes: ["CWE-494"]
+      tampering:
+        - id: "AI-T-RAG-001"
+          name: "Index poisoning"
+          description: "Attacker modifies vector embeddings"
+          mitigations: ["Index integrity checks", "Access controls", "Versioning"]
+          cwes: ["CWE-1321"]
+        - id: "AI-T-RAG-002"
+          name: "Indirect prompt injection"
+          description: "Malicious content in retrieved documents"
+          mitigations: ["Document sanitization", "Content classification", "Prompt isolation"]
+          cwes: ["CWE-94"]
+      information_disclosure:
+        - id: "AI-I-RAG-001"
+          name: "Unauthorized document access"
+          description: "RAG returns documents user shouldn't see"
+          mitigations: ["Document-level ACLs", "User context filtering", "Access logging"]
+          cwes: ["CWE-200"]
+      denial_of_service:
+        - id: "AI-D-RAG-001"
+          name: "Retrieval flooding"
+          description: "Excessive retrieval requests"
+          mitigations: ["Query rate limiting", "Cache management", "Resource quotas"]
+          cwes: ["CWE-400"]
+
+  vector_database:
+    type: "data_store"
+    description: "Vector embedding storage for semantic search"
+    stride_threats:
+      tampering:
+        - id: "AI-T-VDB-001"
+          name: "Embedding manipulation"
+          description: "Attacker modifies stored embeddings"
+          mitigations: ["Write access controls", "Integrity monitoring", "Backup verification"]
+          cwes: ["CWE-1321"]
+      information_disclosure:
+        - id: "AI-I-VDB-001"
+          name: "Embedding inversion"
+          description: "Reconstruct original data from embeddings"
+          mitigations: ["Dimensionality reduction", "Noise addition", "Access controls"]
+          cwes: ["CWE-200"]
+      denial_of_service:
+        - id: "AI-D-VDB-001"
+          name: "Storage exhaustion"
+          description: "Excessive embedding storage"
+          mitigations: ["Storage quotas", "Retention policies", "Index optimization"]
+          cwes: ["CWE-400"]
+
+  model_training_pipeline:
+    type: "process"
+    description: "ML model training and fine-tuning workflow"
+    stride_threats:
+      tampering:
+        - id: "AI-T-TRAIN-001"
+          name: "Training data poisoning"
+          description: "Malicious samples in training data"
+          mitigations: ["Data validation", "Anomaly detection", "Provenance tracking"]
+          cwes: ["CWE-502"]
+        - id: "AI-T-TRAIN-002"
+          name: "Backdoor injection"
+          description: "Hidden triggers in trained model"
+          mitigations: ["Model auditing", "Behavioral testing", "Trigger detection"]
+          cwes: ["CWE-506"]
+      repudiation:
+        - id: "AI-R-TRAIN-001"
+          name: "Untraceable model changes"
+          description: "Cannot attribute model modifications"
+          mitigations: ["Training logs", "Model versioning", "Change tracking"]
+          cwes: ["CWE-778"]
+      information_disclosure:
+        - id: "AI-I-TRAIN-001"
+          name: "Training data exposure"
+          description: "Leakage of sensitive training data"
+          mitigations: ["Data encryption", "Access controls", "Data anonymization"]
+          cwes: ["CWE-200"]
+      denial_of_service:
+        - id: "AI-D-TRAIN-001"
+          name: "Training resource exhaustion"
+          description: "Excessive compute during training"
+          mitigations: ["Resource quotas", "Job scheduling", "Cost monitoring"]
+          cwes: ["CWE-400"]
+
+  agent_tool_executor:
+    type: "process"
+    description: "LLM agent tool/function execution environment"
+    stride_threats:
+      spoofing:
+        - id: "AI-S-AGENT-001"
+          name: "Tool impersonation"
+          description: "Malicious tool pretending to be legitimate"
+          mitigations: ["Tool authentication", "Code signing", "Tool registry"]
+          cwes: ["CWE-290"]
+      tampering:
+        - id: "AI-T-AGENT-001"
+          name: "Tool parameter injection"
+          description: "Malicious parameters passed to tools"
+          mitigations: ["Parameter validation", "Type checking", "Allowlist validation"]
+          cwes: ["CWE-77"]
+        - id: "AI-T-AGENT-002"
+          name: "Tool chain manipulation"
+          description: "Attacker alters tool execution sequence"
+          mitigations: ["Execution plan validation", "Step-by-step approval", "Rollback capability"]
+          cwes: ["CWE-94"]
+      repudiation:
+        - id: "AI-R-AGENT-001"
+          name: "Unaudited tool actions"
+          description: "Tool actions without accountability"
+          mitigations: ["Action logging", "User attribution", "Immutable audit trail"]
+          cwes: ["CWE-778"]
+      elevation_of_privilege:
+        - id: "AI-E-AGENT-001"
+          name: "Tool privilege abuse"
+          description: "Agent uses tools beyond intended scope"
+          mitigations: ["Capability-based access", "Scope restrictions", "Permission boundaries"]
+          cwes: ["CWE-269"]
+
+# =============================================================================
+# MITRE ATLAS TECHNIQUE MAPPINGS
+# =============================================================================
+
+atlas_mappings:
+  reconnaissance:
+    - technique_id: "AML.T0000"
+      name: "ML Model Discovery"
+      description: "Identify ML models in target environment"
+      related_owasp: ["LLM10"]
+      mitigations: ["Minimize model exposure", "API obfuscation"]
+
+  resource_development:
+    - technique_id: "AML.T0010"
+      name: "ML Supply Chain Compromise"
+      description: "Compromise ML development supply chain"
+      related_owasp: ["LLM05"]
+      mitigations: ["Vendor vetting", "Dependency scanning"]
+
+  initial_access:
+    - technique_id: "AML.T0019"
+      name: "Craft Poisoned Training Data"
+      description: "Create malicious training samples"
+      related_owasp: ["LLM03"]
+      mitigations: ["Data validation", "Anomaly detection"]
+
+  ml_attack_staging:
+    - technique_id: "AML.T0043"
+      name: "Craft Adversarial Data"
+      description: "Create inputs to manipulate model behavior"
+      related_owasp: ["LLM01"]
+      mitigations: ["Input validation", "Adversarial training"]
+
+  ml_model_access:
+    - technique_id: "AML.T0044"
+      name: "API-Based Model Extraction"
+      description: "Extract model via API queries"
+      related_owasp: ["LLM10"]
+      mitigations: ["Rate limiting", "Query monitoring"]
+
+  impact:
+    - technique_id: "AML.T0024"
+      name: "Exfiltrate Training Data"
+      description: "Extract training data from model"
+      related_owasp: ["LLM06"]
+      mitigations: ["Differential privacy", "Output filtering"]
+
+# =============================================================================
+# LLM ARCHITECTURE PATTERNS
+# =============================================================================
+
+architecture_patterns:
+  basic_llm_api:
+    name: "Basic LLM API"
+    description: "Simple API wrapper around LLM"
+    components:
+      - "API Gateway"
+      - "LLM Inference Service"
+      - "Prompt Template Store"
+    trust_boundaries:
+      - name: "User to API"
+        type: "network"
+        threats: ["Prompt injection", "DoS", "Data exfiltration"]
+      - name: "API to LLM"
+        type: "process"
+        threats: ["Insecure output handling", "Excessive agency"]
+    recommended_controls:
+      - "Input validation and sanitization"
+      - "Rate limiting and quotas"
+      - "Output filtering"
+      - "Audit logging"
+
+  rag_application:
+    name: "RAG Application"
+    description: "LLM with retrieval-augmented generation"
+    components:
+      - "API Gateway"
+      - "LLM Inference Service"
+      - "Retrieval Service"
+      - "Vector Database"
+      - "Document Store"
+    trust_boundaries:
+      - name: "User to API"
+        type: "network"
+        threats: ["Prompt injection", "DoS"]
+      - name: "Retrieval to Documents"
+        type: "data"
+        threats: ["Indirect injection", "Data poisoning"]
+      - name: "API to Vector DB"
+        type: "process"
+        threats: ["Index poisoning", "Unauthorized access"]
+    recommended_controls:
+      - "Document-level access controls"
+      - "Content sanitization for retrieved docs"
+      - "Embedding integrity verification"
+      - "Query result filtering"
+
+  agent_system:
+    name: "LLM Agent System"
+    description: "LLM with tool/function calling capabilities"
+    components:
+      - "API Gateway"
+      - "LLM Inference Service"
+      - "Tool Registry"
+      - "Tool Executor"
+      - "Action Logger"
+    trust_boundaries:
+      - name: "User to Agent"
+        type: "network"
+        threats: ["Prompt injection", "Excessive agency"]
+      - name: "Agent to Tools"
+        type: "process"
+        threats: ["Tool abuse", "Privilege escalation"]
+      - name: "Tools to External Systems"
+        type: "network"
+        threats: ["Data exfiltration", "Unauthorized actions"]
+    recommended_controls:
+      - "Tool capability restrictions"
+      - "Human-in-the-loop for sensitive actions"
+      - "Action rate limiting"
+      - "Comprehensive action logging"
+      - "Rollback mechanisms"
+
+  multi_model_pipeline:
+    name: "Multi-Model Pipeline"
+    description: "Multiple LLMs in processing pipeline"
+    components:
+      - "Orchestrator"
+      - "Primary LLM"
+      - "Specialist LLMs"
+      - "Output Aggregator"
+    trust_boundaries:
+      - name: "Between Models"
+        type: "process"
+        threats: ["Cascade injection", "Error propagation"]
+      - name: "Orchestrator Control"
+        type: "process"
+        threats: ["Routing manipulation", "Model poisoning"]
+    recommended_controls:
+      - "Inter-model output validation"
+      - "Cascade attack detection"
+      - "Independent model verification"
+      - "Pipeline integrity monitoring"
+
+# =============================================================================
+# COMPLIANCE MAPPINGS
+# =============================================================================
+
+compliance_mappings:
+  nist_ai_rmf:
+    framework: "NIST AI Risk Management Framework"
+    version: "1.0"
+    mappings:
+      - function: "GOVERN"
+        categories: ["Risk culture", "AI governance", "Accountability"]
+        relevant_threats: ["LLM08", "LLM09"]
+      - function: "MAP"
+        categories: ["Context understanding", "Risk identification"]
+        relevant_threats: ["LLM01", "LLM03", "LLM05"]
+      - function: "MEASURE"
+        categories: ["Risk assessment", "Monitoring"]
+        relevant_threats: ["LLM04", "LLM06", "LLM10"]
+      - function: "MANAGE"
+        categories: ["Risk treatment", "Response planning"]
+        relevant_threats: ["LLM02", "LLM07"]
+
+  eu_ai_act:
+    framework: "EU Artificial Intelligence Act"
+    version: "2024"
+    mappings:
+      - risk_level: "High-Risk"
+        requirements: ["Risk management", "Data governance", "Human oversight"]
+        relevant_threats: ["LLM01", "LLM03", "LLM08", "LLM09"]
+      - risk_level: "General Purpose AI"
+        requirements: ["Transparency", "Documentation", "Technical standards"]
+        relevant_threats: ["LLM05", "LLM06", "LLM10"]
+
+  iso_42001:
+    framework: "ISO/IEC 42001 AI Management System"
+    version: "2023"
+    mappings:
+      - clause: "6.1"
+        title: "Actions to address risks and opportunities"
+        relevant_threats: ["LLM01", "LLM02", "LLM03"]
+      - clause: "7.2"
+        title: "Competence"
+        relevant_threats: ["LLM09"]
+      - clause: "8.4"
+        title: "AI system development"
+        relevant_threats: ["LLM03", "LLM05", "LLM07"]

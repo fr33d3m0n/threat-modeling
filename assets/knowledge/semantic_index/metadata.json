@@ -1,0 +1,16 @@
+{
+  "created_at": "2025-12-29T15:11:32.759498",
+  "embedding_count": 2354,
+  "embedding_dim": 384,
+  "model_name": "all-MiniLM-L6-v2",
+  "source_db_checksum": "7e127dbfefab6a8a3cb9a081808601cf",
+  "type_counts": {
+    "cwe": 944,
+    "capec": 559,
+    "attack": 835,
+    "stride": 6,
+    "owasp": 10
+  },
+  "build_time_seconds": 65.99,
+  "version": "1.0"
+}
