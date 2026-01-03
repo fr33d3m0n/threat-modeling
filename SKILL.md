@@ -24,7 +24,7 @@ description: |
   Use when: threat model, STRIDE, DFD, security assessment, 威胁建模, 安全评估.
 ---
 
-# STRIDE Deep Threat Modeling v2.0
+# Code-First Deep Risk Analysis v2.0
 
 Code-first automated deep threat modeling with comprehensive security chain analysis.
 

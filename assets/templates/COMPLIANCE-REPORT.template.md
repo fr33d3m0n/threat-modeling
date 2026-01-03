@@ -3,7 +3,7 @@
 # 合规性报告: {PROJECT_NAME}
 
 > **评估时间**: {ASSESSMENT_DATETIME}
-> **分析师**: Claude (STRIDE Deep Threat Modeling)
+> **分析师**: Claude (Deep Risk Analysis)
 > **框架版本**: STRIDE-TM v1.0.2
 > **报告版本**: {REPORT_VERSION}
 

@@ -590,7 +590,7 @@ session:
   started_at: "2025-12-30T10:00:00+08:00"       # ISO 8601 时间戳
   last_updated: "2025-12-30T14:32:15+08:00"     # 最后更新时间
   framework_version: "v2.1.0"                   # 框架版本
-  analyst: "Claude (STRIDE Deep Threat Modeling)"
+  analyst: "Claude (Deep Risk Analysis)"
   status: "in_progress"                         # in_progress | completed | failed
 
 phases:
@@ -734,7 +734,7 @@ report_metadata:
   report_type: string
   version: string
   assessment_datetime: "YYYY-MM-DD HH:MM:SS"
-  analyst: "Claude (STRIDE Deep Threat Modeling)"
+  analyst: "Claude (Deep Risk Analysis)"
   framework_version: "STRIDE-TM v1.0.2"
 
   # 统计摘要 (根据报告类型)
@@ -752,7 +752,7 @@ report_metadata:
 # {报告类型}: {PROJECT}
 
 > **评估时间**: YYYY-MM-DD HH:MM:SS
-> **分析师**: Claude (STRIDE Deep Threat Modeling)
+> **分析师**: Claude (Deep Risk Analysis)
 > **框架版本**: STRIDE-TM v1.0.2
 > **报告版本**: 1.0
 

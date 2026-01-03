@@ -1,6 +1,6 @@
 <!-- Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | 欢迎引用但请保留所有来源及声明 -->
 
-# STRIDE 深度威胁建模 Skill
+# 代码优先深度风险分析 Skill
 
 **代码优先的自动化威胁建模工具集** | 版本 2.1.0
 

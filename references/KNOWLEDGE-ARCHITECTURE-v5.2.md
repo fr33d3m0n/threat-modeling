@@ -994,4 +994,4 @@ final_report:
 
 ---
 
-**Document Generated**: STRIDE Deep Threat Modeling Skill Set - Ultrathink Critical Thinking v5.1
+**Document Generated**: Code-First Deep Risk Analysis Skill - Ultrathink Critical Thinking v5.1

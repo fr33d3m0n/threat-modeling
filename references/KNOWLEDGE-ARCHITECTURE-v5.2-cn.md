@@ -578,6 +578,6 @@ unified_kb_query.py --wstg-category ATHN
 
 ---
 
-**文档生成**: STRIDE 深度威胁建模 Skill Set - Ultrathink Critical Thinking v5.2
+**文档生成**: 代码优先深度风险分析 Skill - Ultrathink Critical Thinking v5.2
 
 [English Version](KNOWLEDGE-ARCHITECTURE-v5.2.md)

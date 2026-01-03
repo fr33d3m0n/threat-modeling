@@ -1097,4 +1097,4 @@ Reference: reference-set-03-sql-injection-prevention.md
 
 ---
 
-*本文档由 STRIDE Deep Threat Modeling Skill Set 生成*
+*本文档由 Code-First Deep Risk Analysis Skill 生成*
