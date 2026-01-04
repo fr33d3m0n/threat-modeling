@@ -243,7 +243,7 @@ $ python scripts/list_files.py ./express-api --categorize --detect-type --pretty
 
 ```bash
 $ python scripts/stride_matrix.py --element process --pretty
-$ python scripts/query_kb.py --stride spoofing --pretty
+$ python scripts/unified_kb_query.py --stride spoofing --pretty
 ```
 
 **Identified Threats**:
@@ -393,7 +393,7 @@ graph TB
 
 ```bash
 $ python scripts/stride_matrix.py --interaction external_interactor process --pretty
-$ python scripts/query_kb.py --stride information_disclosure --pretty
+$ python scripts/unified_kb_query.py --stride information_disclosure --pretty
 ```
 
 **Threat Inventory**:
@@ -694,10 +694,10 @@ python scripts/list_files.py ./my-project --categorize --detect-type --pretty
 python scripts/stride_matrix.py --show-matrix --pretty
 
 # Query specific STRIDE category
-python scripts/query_kb.py --stride spoofing --pretty
+python scripts/unified_kb_query.py --stride spoofing --pretty
 
 # Query specific CWE
-python scripts/query_kb.py --cwe 89 --pretty
+python scripts/unified_kb_query.py --cwe 89 --pretty
 
 # Generate threat ID
 python scripts/stride_matrix.py --generate-id T P1 001
@@ -715,9 +715,9 @@ for elem in process data_store data_flow; do
 done
 
 # Phase 5: Get CWE mappings for identified threats
-python scripts/query_kb.py --stride tampering --pretty
-python scripts/query_kb.py --cwe 89 --pretty  # SQL Injection
-python scripts/query_kb.py --cwe 79 --pretty  # XSS
+python scripts/unified_kb_query.py --stride tampering --pretty
+python scripts/unified_kb_query.py --cwe 89 --pretty  # SQL Injection
+python scripts/unified_kb_query.py --cwe 79 --pretty  # XSS
 ```
 
 ---
@@ -994,8 +994,8 @@ graph TB
 
 ```bash
 # Query cloud service threats
-$ python scripts/query_kb.py --cloud aws --category compute --pretty
-$ python scripts/query_kb.py --cloud azure --category identity --pretty
+$ python scripts/unified_kb_query.py --cloud aws --category compute --pretty
+$ python scripts/unified_kb_query.py --cloud azure --category identity --pretty
 $ python scripts/stride_matrix.py --element process --cloud-context --pretty
 ```
 

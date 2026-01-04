@@ -1238,8 +1238,24 @@ class UnifiedKnowledgeBase:
         kev_candidates.extend([
             Path.home() / "STRIDE" / "Library" / "NVD" / "kev" / "known_exploited_vulnerabilities.json",
             Path.home() / "security-data" / "kev" / "known_exploited_vulnerabilities.json",
-            Path("/usr/share/security-kb/kev/known_exploited_vulnerabilities.json"),
         ])
+
+        # 5. System-wide locations (platform-specific)
+        import platform
+        if platform.system() != "Windows":
+            # Unix/Linux/macOS system paths
+            kev_candidates.extend([
+                Path("/usr/share/security-kb/kev/known_exploited_vulnerabilities.json"),
+                Path("/usr/local/share/security-kb/kev/known_exploited_vulnerabilities.json"),
+                Path("/opt/security-kb/kev/known_exploited_vulnerabilities.json"),
+            ])
+        else:
+            # Windows system paths
+            program_data = os.environ.get("ProgramData", "C:\\ProgramData")
+            kev_candidates.extend([
+                Path(program_data) / "security-kb" / "kev" / "known_exploited_vulnerabilities.json",
+                Path(os.environ.get("LOCALAPPDATA", "")) / "security-kb" / "kev" / "known_exploited_vulnerabilities.json",
+            ])
 
         # Find first existing path
         kev_path = None

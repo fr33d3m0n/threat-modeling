@@ -135,7 +135,7 @@ python "$SKILL_PATH/scripts/unified_kb_query.py" --stride spoofing
 ### 验证安装
 
 ```bash
-python scripts/query_kb.py --all-stride --pretty
+python scripts/unified_kb_query.py --all-stride --pretty
 ```
 
 ### 目录结构
