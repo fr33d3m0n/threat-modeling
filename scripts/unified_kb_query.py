@@ -1218,13 +1218,38 @@ class UnifiedKnowledgeBase:
         if self._kev_loaded:
             return
 
-        kev_path = self.knowledge_dir.parent / "Library" / "NVD" / "kev" / "known_exploited_vulnerabilities.json"
-        if not kev_path.exists():
-            # Try alternative path
-            kev_path = Path.home() / "STRIDE" / "Library" / "NVD" / "kev" / "known_exploited_vulnerabilities.json"
+        # KEV data path detection - supports multiple locations
+        # Priority: ENV > Relative to knowledge_dir > Common locations
+        kev_candidates = []
 
-        if not kev_path.exists():
-            logger.warning(f"KEV file not found: {kev_path}")
+        # 1. Environment variable override
+        env_kev = os.environ.get("KEV_DATA_PATH")
+        if env_kev:
+            kev_candidates.append(Path(env_kev))
+
+        # 2. Relative to knowledge directory (skill installation)
+        kev_candidates.append(self.knowledge_dir.parent / "Library" / "NVD" / "kev" / "known_exploited_vulnerabilities.json")
+
+        # 3. XDG data directory (cross-platform)
+        xdg_data = os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")
+        kev_candidates.append(Path(xdg_data) / "security-kb" / "kev" / "known_exploited_vulnerabilities.json")
+
+        # 4. Common development locations
+        kev_candidates.extend([
+            Path.home() / "STRIDE" / "Library" / "NVD" / "kev" / "known_exploited_vulnerabilities.json",
+            Path.home() / "security-data" / "kev" / "known_exploited_vulnerabilities.json",
+            Path("/usr/share/security-kb/kev/known_exploited_vulnerabilities.json"),
+        ])
+
+        # Find first existing path
+        kev_path = None
+        for candidate in kev_candidates:
+            if candidate.exists():
+                kev_path = candidate
+                break
+
+        if kev_path is None:
+            logger.warning("KEV file not found in any of the expected locations")
             self._kev_loaded = True
             return
 

@@ -38,6 +38,25 @@ Phase 1 ──► Phase 2 ──► Phase 3 ──► Phase 4 ──► Phase 5 
 
 ## 安装
 
+### 多平台支持
+
+本 Skill 支持多种 AI Agent 平台：
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          支持的 Agent 平台                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  平台             │  全局路径                        │  项目本地路径         │
+├──────────────────┼─────────────────────────────────┼────────────────────────┤
+│  Claude Code     │  ~/.claude/skills/              │  .claude/skills/       │
+│  OpenAI Codex    │  ~/.codex/skills/               │  .codex/skills/        │
+│  GitHub Copilot  │  (使用 .github/skills/)          │  .github/skills/       │
+│  Qwen Code       │  ~/.qwen/agents/                │  .qwen/agents/         │
+│  Goose           │  ~/.config/goose/skills/        │  .goose/skills/        │
+│  跨平台 (XDG)     │  ~/.config/agents/skills/       │  .agents/skills/       │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
 ### 安装方式选择
 
 ```
@@ -51,6 +70,9 @@ Phase 1 ──► Phase 2 ──► Phase 3 ──► Phase 4 ──► Phase 5 
 │  团队协作，需要版本控制 ──────►  项目本地安装               │
 │                                 项目/.claude/skills/        │
 │                                                              │
+│  跨平台 / 可移植        ──────►  XDG 标准                   │
+│                                 ~/.config/agents/skills/    │
+│                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -63,8 +85,14 @@ Python 3.8+  |  PyYAML >= 6.0
 ### 方式一：全局安装（所有项目可用）
 
 ```bash
-# 复制到 Claude Code 全局 skills 目录
-cp -r threat-modeling ~/.claude/skills/threat-modeling
+# 从 GitHub 克隆（目录名为 "skill-threat-modeling"）
+git clone https://github.com/fr33d3m0n/skill-threat-modeling.git
+
+# 复制到 Claude Code 全局 skills 目录（重命名为 "threat-modeling"）
+cp -r skill-threat-modeling ~/.claude/skills/threat-modeling
+
+# 或保持原名（两种都支持！）
+cp -r skill-threat-modeling ~/.claude/skills/skill-threat-modeling
 
 # 安装依赖
 pip install pyyaml
@@ -77,18 +105,30 @@ pip install pyyaml
 mkdir -p /path/to/your-project/.claude/skills
 
 # 复制 skill 到项目本地
-cp -r threat-modeling /path/to/your-project/.claude/skills/threat-modeling
+cp -r skill-threat-modeling /path/to/your-project/.claude/skills/threat-modeling
 
 # 安装依赖
 pip install pyyaml
 ```
 
+### 方式三：环境变量（显式路径）
+
+```bash
+# 设置 SKILL_PATH 环境变量（支持任意目录名）
+export SKILL_PATH=/path/to/skill-threat-modeling
+
+# 脚本将通过环境变量自动检测
+python "$SKILL_PATH/scripts/unified_kb_query.py" --stride spoofing
+```
+
 **安装位置对比**：
 
-| 安装方式 | 路径 | 作用范围 |
-|----------|------|----------|
-| 全局 | `~/.claude/skills/` | 所有项目 |
-| 项目本地 | `项目/.claude/skills/` | 仅当前项目 |
+| 安装方式 | 路径 | 作用范围 | 目录名 |
+|----------|------|----------|--------|
+| 全局 | `~/.claude/skills/` | 所有项目 | `threat-modeling` 或 `skill-threat-modeling` |
+| 项目本地 | `项目/.claude/skills/` | 仅当前项目 | `threat-modeling` 或 `skill-threat-modeling` |
+| XDG 跨平台 | `~/.config/agents/skills/` | 跨平台 | 任意 |
+| 环境变量 | `$SKILL_PATH` | 显式覆盖 | 任意 |
 
 > **推荐**：对于团队共享的安全评估项目，使用项目本地安装，skill 可随项目代码一起版本控制。
 

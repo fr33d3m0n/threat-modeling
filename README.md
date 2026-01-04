@@ -39,6 +39,25 @@ Understanding  DFD      Boundaries   Design     Analysis   Validation
 
 ## Installation
 
+### Multi-Platform Support
+
+This skill supports multiple AI agent platforms:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        Supported Agent Platforms                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Platform        │  Global Path                    │  Project-Local Path    │
+├──────────────────┼─────────────────────────────────┼────────────────────────┤
+│  Claude Code     │  ~/.claude/skills/              │  .claude/skills/       │
+│  OpenAI Codex    │  ~/.codex/skills/               │  .codex/skills/        │
+│  GitHub Copilot  │  (uses .github/skills/)         │  .github/skills/       │
+│  Qwen Code       │  ~/.qwen/agents/                │  .qwen/agents/         │
+│  Goose           │  ~/.config/goose/skills/        │  .goose/skills/        │
+│  Portable (XDG)  │  ~/.config/agents/skills/       │  .agents/skills/       │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
 ### Installation Options
 
 ```
@@ -52,6 +71,9 @@ Understanding  DFD      Boundaries   Design     Analysis   Validation
 │  Team collaboration, version control  ──────►  Project-local│
 │                                        project/.claude/skills│
 │                                                              │
+│  Cross-platform / portable            ──────►  XDG Standard │
+│                                        ~/.config/agents/skills│
+│                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -64,8 +86,14 @@ Python 3.8+  |  PyYAML >= 6.0
 ### Option 1: Global Installation (Available to All Projects)
 
 ```bash
-# Copy to Claude Code global skills directory
-cp -r threat-modeling ~/.claude/skills/threat-modeling
+# Clone from GitHub (directory will be named "skill-threat-modeling")
+git clone https://github.com/fr33d3m0n/skill-threat-modeling.git
+
+# Copy to Claude Code global skills directory (rename to "threat-modeling")
+cp -r skill-threat-modeling ~/.claude/skills/threat-modeling
+
+# Or keep the original name (both work!)
+cp -r skill-threat-modeling ~/.claude/skills/skill-threat-modeling
 
 # Install dependencies
 pip install pyyaml
@@ -78,18 +106,30 @@ pip install pyyaml
 mkdir -p /path/to/your-project/.claude/skills
 
 # Copy skill to project local
-cp -r threat-modeling /path/to/your-project/.claude/skills/threat-modeling
+cp -r skill-threat-modeling /path/to/your-project/.claude/skills/threat-modeling
 
 # Install dependencies
 pip install pyyaml
 ```
 
+### Option 3: Environment Variable (Explicit Path)
+
+```bash
+# Set SKILL_PATH to skill location (works with any directory name)
+export SKILL_PATH=/path/to/skill-threat-modeling
+
+# Scripts will auto-detect via environment variable
+python "$SKILL_PATH/scripts/unified_kb_query.py" --stride spoofing
+```
+
 **Installation Comparison**:
 
-| Method | Path | Scope |
-|--------|------|-------|
-| Global | `~/.claude/skills/` | All projects |
-| Project-local | `project/.claude/skills/` | Current project only |
+| Method | Path | Scope | Directory Name |
+|--------|------|-------|----------------|
+| Global | `~/.claude/skills/` | All projects | `threat-modeling` or `skill-threat-modeling` |
+| Project-local | `project/.claude/skills/` | Current project only | `threat-modeling` or `skill-threat-modeling` |
+| XDG Portable | `~/.config/agents/skills/` | Cross-platform | Any |
+| Environment | `$SKILL_PATH` | Explicit override | Any |
 
 > **Recommendation**: For team-shared security assessment projects, use project-local installation so the skill can be version controlled with project code.
 

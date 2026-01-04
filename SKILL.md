@@ -232,26 +232,35 @@ skill_version: "2.1.0"
 ### Path Detection Algorithm
 
 ```
-Priority: Project-level > Global
-1. Check $PROJECT_ROOT/.claude/skills/threat-modeling/
-2. Check ~/.claude/skills/threat-modeling/
-3. Use SKILL_PATH environment variable (if set)
+Priority Order:
+1. $SKILL_PATH environment variable (explicit override)
+2. Script self-location (when running from skill directory)
+3. Project-local paths (multi-platform):
+   - .claude/skills/{threat-modeling|skill-threat-modeling}/
+   - .agents/skills/{name}/     (Portable/XDG standard)
+   - .qwen/agents/{name}/       (Qwen Code)
+   - .codex/skills/{name}/      (OpenAI Codex)
+   - .github/skills/{name}/     (GitHub Copilot)
+   - .goose/skills/{name}/      (Goose)
+4. Global paths (multi-platform):
+   - ~/.claude/skills/{name}/
+   - ~/.config/agents/skills/{name}/   (XDG Portable)
+   - ~/.qwen/agents/{name}/
+   - ~/.codex/skills/{name}/
+   - ~/.config/goose/skills/{name}/
 ```
+
+**Supported Directory Names**: `threat-modeling`, `skill-threat-modeling` (both work)
 
 ### Claude Invocation Pattern
 
 **Step 1**: Detect and cache SKILL_PATH at session start:
 ```bash
-# Detect skill path (execute once, cache result)
-SKILL_PATH=$(
-  if [ -d ".claude/skills/threat-modeling" ]; then
-    echo "$(pwd)/.claude/skills/threat-modeling"
-  elif [ -d "$HOME/.claude/skills/threat-modeling" ]; then
-    echo "$HOME/.claude/skills/threat-modeling"
-  else
-    echo ""
-  fi
-)
+# Use the skill_path.sh helper (recommended - supports all platforms)
+SKILL_PATH=$(bash skill_path.sh)
+
+# Or set environment variable explicitly
+export SKILL_PATH=/path/to/skill-threat-modeling
 ```
 
 **Step 2**: Execute scripts using detected path:
