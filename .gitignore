@@ -33,3 +33,6 @@ tmp_notebook/
 # Keep tmp_check and tmp_script for utility scripts
 !tmp_check/
 !tmp_script/
+
+# Claude session data
+.claude/
