@@ -1,5 +1,3 @@
-<!-- Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations -->
-
 # Report Naming Schema
 
 > **版本**: 1.5.0
@@ -589,8 +587,8 @@ session:
   session_id: "20251230-100000"                 # 会话ID (YYYYMMDD-HHMMSS)
   started_at: "2025-12-30T10:00:00+08:00"       # ISO 8601 时间戳
   last_updated: "2025-12-30T14:32:15+08:00"     # 最后更新时间
-  framework_version: "v2.1.0"                   # 框架版本
-  analyst: "Claude (Deep Risk Analysis)"
+  framework_version: "v2.0.0"                   # 框架版本
+  analyst: "Claude (STRIDE Deep Threat Modeling)"
   status: "in_progress"                         # in_progress | completed | failed
 
 phases:
@@ -612,7 +610,7 @@ name: "PROJECT-UNDERSTANDING"
 project: "N8N"
 session_id: "20251230-100000"
 completed_at: "2025-12-30T10:15:32+08:00"
-framework_version: "v2.1.0"
+framework_version: "v2.0.0"
 ---
 ```
 
@@ -734,7 +732,7 @@ report_metadata:
   report_type: string
   version: string
   assessment_datetime: "YYYY-MM-DD HH:MM:SS"
-  analyst: "Claude (Deep Risk Analysis)"
+  analyst: "Claude (STRIDE Deep Threat Modeling)"
   framework_version: "STRIDE-TM v1.0.2"
 
   # 统计摘要 (根据报告类型)
@@ -752,7 +750,7 @@ report_metadata:
 # {报告类型}: {PROJECT}
 
 > **评估时间**: YYYY-MM-DD HH:MM:SS
-> **分析师**: Claude (Deep Risk Analysis)
+> **分析师**: Claude (STRIDE Deep Threat Modeling)
 > **框架版本**: STRIDE-TM v1.0.2
 > **报告版本**: 1.0
 

@@ -1,5 +1,3 @@
-# Code-First Deep Threat Modeling Workflow | Version 2.1.1 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations
-
 # Security Principles - Core security principles for threat modeling
 # Each principle: one-line definition
 # Referenced in: Phase 1, 2, 3, 4
@@ -55,14 +53,9 @@ principles:
     name: Input Validation
     definition: "Never trust external input; validate type, length, format, range at trust boundary."
 
-  least_agency:
-    code: LA
-    name: Least Agency
-    definition: "Limit AI agent autonomy, tool access, and decision scope to minimum required for task completion."
-
 # Phase mapping
 phase_reference:
-  phase_1: [DID, LP, ZT, LA]       # Project understanding - identify design gaps, agent scope
+  phase_1: [DID, LP, ZT]           # Project understanding - identify design gaps
   phase_2: [CM, IV, ZT]            # DFD analysis - identify trust boundaries
-  phase_3: [ZT, SOD, LP, LA]       # Trust boundaries - evaluate access controls, agent boundaries
-  phase_4: [ALL]                   # Security design - full principle assessment (11 principles)
+  phase_3: [ZT, SOD, LP]           # Trust boundaries - evaluate access controls
+  phase_4: [ALL]                   # Security design - full principle assessment

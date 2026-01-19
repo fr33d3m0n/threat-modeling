@@ -4,26 +4,8 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
 .env
 .venv
-env/
 venv/
 ENV/
 
@@ -38,18 +20,16 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Logs
+# Project specific
+old/
+tmp_data/
+tmp_notebook/
 *.log
 
-# Temporary files
-tmp/
-temp/
-*.tmp
+# Large database files (users download separately)
+# Uncomment if you want to exclude:
+# assets/knowledge/*.sqlite
 
-# Test artifacts
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Skill-specific
-# (Add any skill-specific ignores here)
+# Keep tmp_check and tmp_script for utility scripts
+!tmp_check/
+!tmp_script/

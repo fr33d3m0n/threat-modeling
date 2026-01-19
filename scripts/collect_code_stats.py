@@ -1,11 +1,9 @@
-# Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations
-
 #!/usr/bin/env python3
 """
 Code Statistics Collection Script
 ==================================
-Version: 2.1.0
-Date: 2026-01-03
+Version: 1.0.0
+Date: 2026-01-02
 
 Collects quantitative code metrics for threat modeling reports.
 Outputs data in formats compatible with Phase 1 and Phase 8 report templates.

@@ -1,4 +1,4 @@
-<!-- Code-First Deep Threat Modeling Workflow | Version 2.1.1 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | 欢迎引用但请保留所有来源及声明 -->
+<!-- Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | 欢迎引用但请保留所有来源及声明 -->
 
 # STRIDE Skill Set - 知识架构 v5.2.1
 
@@ -37,7 +37,7 @@
 │                       ┌───────────────────────────────────────────┐                           │
 │                       │           安全原则 (Security Principles)    │                           │
 │                       │       (基础层 - 指导所有阶段)                │                           │
-│                       │  DID │ LP │ ZT │ FS │ SOD │ SBD │ CM │ EOM │ OD │ IV │ LA              │
+│                       │  DID │ LP │ ZT │ FS │ SOD │ SBD │ CM │ EOM │ OD │ IV                 │
 │                       └───────────────────────────────────────────┘                           │
 │                                           │                                                    │
 │                 ┌─────────────────────────┴─────────────────────────┐                         │
@@ -106,7 +106,6 @@
 | **EOM** | 机制简化 | Economy of Mechanism | 简单可验证 | 识别复杂性风险 |
 | **OD** | 开放设计 | Open Design | 不依赖设计保密 | 识别隐蔽依赖 |
 | **IV** | 输入验证 | Input Validation | 边界验证 | 识别注入攻击面 |
-| **LA** | 最小代理 | Least Agency | 限制AI代理自主权和工具访问 | 识别过度代理权限 |
 
 ### 2.3 安全控制集
 

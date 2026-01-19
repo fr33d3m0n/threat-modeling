@@ -1,8 +1,6 @@
-<!-- Code-First Deep Threat Modeling Workflow | Version 2.1.1 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations -->
-
 # REPORT.md - Phase 7-8: Mitigation & Report Generation
 
-> **Version**: 2.1.0
+> **Version**: 2.0.4
 > **Scope**: 缓解措施生成 + 综合报告生成
 > **Input**: P6 `validated_risks` (完整风险清单)
 > **Output**: 4份必需报告 + 4份可选报告 + 阶段过程文档

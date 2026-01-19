@@ -1,4 +1,4 @@
-# Code-First Deep Threat Modeling Workflow | Version 2.1.1 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations
+# Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations
 
 # Security Design - Unified Security Domain Structure
 # Version: 4.0 (Strict Domain Sequence + Extension Naming)
@@ -360,45 +360,6 @@ extended_domains:
     owasp_refs:
       - reference-set-ext-15-cloud-architecture.md
 
-  agent:
-    code: AGENT
-    seq: "ext-16"
-    name: "Agent安全"
-    trigger_conditions:
-      - "langchain import"
-      - "langgraph import"
-      - "crewai import"
-      - "autogen import"
-      - "mcp.json detected"
-      - ".claude/skills detected"
-      - "tool_definitions detected"
-      - "function_calling usage"
-    core_requirements:
-      - "最小代理权限 (Least Agency)"
-      - "工具调用白名单"
-      - "目标劫持防护"
-      - "对话记忆安全"
-      - "失控预防机制"
-      - "资源限制"
-      - "沙箱强制执行"
-      - "信任边界执行"
-    core_principles: [LA, LP, ZT, CM]
-    controls_ref: control-set-ext-16-agentic.md
-    owasp_refs:
-      - reference-set-ext-17-agentic-security.md
-    internal_ref: agentic-threats.yaml
-    asi_mapping:
-      ASI01: "AGENT-01 过度权限控制"
-      ASI02: "AGENT-02 目标劫持防护"
-      ASI03: "AGENT-03 工具滥用防护"
-      ASI04: "AGENT-04 对话记忆安全"
-      ASI05: "AGENT-05 失控预防"
-      ASI06: "AGENT-06 资源限制"
-      ASI07: "AGENT-07 输入验证"
-      ASI08: "AGENT-08 身份冒充防护"
-      ASI09: "AGENT-09 沙箱强制"
-      ASI10: "AGENT-10 信任边界执行"
-
 # ═══════════════════════════════════════════════════════════════════════════════
 # STRIDE TO DOMAIN MAPPING
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -430,13 +391,12 @@ control_set_index:
   # Domain Extensions
   "ext-01_02": { domain: AUTHN_AUTHZ, file: control-set-ext-01_02-auth-patterns.md }
   "ext-10": { domain: DATA_EXT, file: control-set-ext-10-hardcoded-credentials.md }
-  # Extended Domains (ext-11 to ext-16)
+  # Extended Domains (ext-11 to ext-15)
   "ext-11": { domain: INFRA, file: control-set-ext-11-infrastructure.md }
   "ext-12": { domain: SUPPLY, file: control-set-ext-12-supply-chain.md }
   "ext-13": { domain: AI, file: control-set-ext-13-ai-llm.md }
   "ext-14": { domain: MOBILE, file: control-set-ext-14-mobile.md }
   "ext-15": { domain: CLOUD, file: control-set-ext-15-cloud.md }
-  "ext-16": { domain: AGENT, file: control-set-ext-16-agentic.md }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PHASE REFERENCE

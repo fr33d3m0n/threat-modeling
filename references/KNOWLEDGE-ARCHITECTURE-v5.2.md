@@ -1,4 +1,4 @@
-<!-- Code-First Deep Threat Modeling Workflow | Version 2.1.1 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations -->
+<!-- Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations -->
 
 # STRIDE Skill Set - Knowledge Architecture v5.2
 
@@ -37,7 +37,7 @@ The knowledge system consists of two parallel sets that work together:
 │                       ┌───────────────────────────────────────────┐                           │
 │                       │         Security Principles               │                           │
 │                       │    (Foundation - Guides All Phases)       │                           │
-│                       │  DID │ LP │ ZT │ FS │ SOD │ SBD │ CM │ EOM │ OD │ IV │ LA              │
+│                       │  DID │ LP │ ZT │ FS │ SOD │ SBD │ CM │ EOM │ OD │ IV                 │
 │                       └───────────────────────────────────────────┘                           │
 │                                           │                                                    │
 │                 ┌─────────────────────────┴─────────────────────────┐                         │
@@ -106,7 +106,6 @@ Security Principles serve as the foundation that guides all phases of the threat
 | **EOM** | Economy of Mechanism | 机制简化 | Simple and verifiable | Identify complexity risks |
 | **OD** | Open Design | 开放设计 | No security by obscurity | Identify obscurity dependencies |
 | **IV** | Input Validation | 输入验证 | Boundary validation | Identify injection surfaces |
-| **LA** | Least Agency | 最小代理 | Limit AI agent autonomy and tool access | Identify excessive agent permissions |
 
 ### 2.3 Security Control Set
 

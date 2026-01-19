@@ -1,9 +1,7 @@
-<!-- Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations -->
-
 # 攻击路径验证报告: {PROJECT_NAME}
 
 > **评估时间**: {ASSESSMENT_DATETIME}
-> **分析师**: Claude (Deep Risk Analysis)
+> **分析师**: Claude (STRIDE Deep Threat Modeling)
 > **框架版本**: STRIDE-TM v1.0.2
 > **报告版本**: {REPORT_VERSION}
 > **分类**: 机密 - 安全评估

@@ -1,5 +1,3 @@
-# Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations
-
 #!/usr/bin/env python3
 """
 Unified Security Knowledge Base Query Tool for STRIDE Threat Modeling.
@@ -699,7 +697,7 @@ class UnifiedKnowledgeBase:
                             "description": row[2],
                             "match_type": "fts5"
                         })
-                except sqlite3.OperationalError:
+                except (sqlite3.OperationalError, sqlite3.DatabaseError):
                     pass
 
             # Search CAPEC
@@ -717,7 +715,7 @@ class UnifiedKnowledgeBase:
                             "description": row[2],
                             "match_type": "fts5"
                         })
-                except sqlite3.OperationalError:
+                except (sqlite3.OperationalError, sqlite3.DatabaseError):
                     pass
 
             # Search ATT&CK
@@ -735,7 +733,7 @@ class UnifiedKnowledgeBase:
                             "description": row[2],
                             "match_type": "fts5"
                         })
-                except sqlite3.OperationalError:
+                except (sqlite3.OperationalError, sqlite3.DatabaseError):
                     pass
 
             return results[:limit]
@@ -940,7 +938,7 @@ class UnifiedKnowledgeBase:
                 {
                     "technique_id": r[0],
                     "technique_name": r[1],
-                    "tactics": json.loads(r[2]) if r[2] else []
+                    "tactics": [t.strip() for t in r[2].split(',')] if r[2] else []
                 }
                 for r in cursor.fetchall()
             ]
@@ -970,7 +968,7 @@ class UnifiedKnowledgeBase:
                 {
                     "technique_id": r[0],
                     "technique_name": r[1],
-                    "tactics": json.loads(r[2]) if r[2] else [],
+                    "tactics": [t.strip() for t in r[2].split(',')] if r[2] else [],
                     "description": (r[3][:200] + "...") if r[3] and len(r[3]) > 200 else r[3]
                 }
                 for r in cursor.fetchall()
@@ -979,7 +977,27 @@ class UnifiedKnowledgeBase:
             conn.close()
 
     def get_cwes_for_stride_sqlite(self, category: str) -> List[str]:
-        """Get all CWEs for a STRIDE category from SQLite."""
+        """Get all CWEs for a STRIDE category from SQLite.
+
+        Args:
+            category: STRIDE category - accepts either:
+                - Single letter code: 'S', 'T', 'R', 'I', 'D', 'E'
+                - Full name: 'spoofing', 'tampering', etc.
+        """
+        # Map full names to single-letter codes
+        stride_name_to_code = {
+            "spoofing": "S",
+            "tampering": "T",
+            "repudiation": "R",
+            "information_disclosure": "I",
+            "denial_of_service": "D",
+            "elevation_of_privilege": "E",
+        }
+
+        # Normalize input
+        normalized = category.lower().replace(" ", "_")
+        stride_code = stride_name_to_code.get(normalized, category.upper())
+
         conn = self._get_sqlite_connection()
         if not conn:
             return []
@@ -988,7 +1006,7 @@ class UnifiedKnowledgeBase:
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT cwe_id FROM stride_cwe WHERE stride_category = ?",
-                (category,)
+                (stride_code,)
             )
             return [r[0] for r in cursor.fetchall()]
         finally:
@@ -1122,13 +1140,13 @@ class UnifiedKnowledgeBase:
                     {
                         "technique_id": r[0],
                         "name": r[1],
-                        "tactics": json.loads(r[2]) if r[2] else [],
+                        "tactics": [t.strip() for t in r[2].split(',')] if r[2] else [],
                         "match_snippet": r[3]
                     }
                     for r in cursor.fetchall()
                 ]
-            except sqlite3.OperationalError:
-                # Fallback to LIKE search
+            except (sqlite3.OperationalError, sqlite3.DatabaseError):
+                # Fallback to LIKE search (handles FTS errors and corrupted indexes)
                 cursor.execute("""
                     SELECT id, name, tactics, description
                     FROM attack_technique
@@ -1139,7 +1157,7 @@ class UnifiedKnowledgeBase:
                     {
                         "technique_id": r[0],
                         "name": r[1],
-                        "tactics": json.loads(r[2]) if r[2] else [],
+                        "tactics": [t.strip() for t in r[2].split(',')] if r[2] else [],
                         "description": (r[3][:150] + "...") if r[3] and len(r[3]) > 150 else r[3]
                     }
                     for r in cursor.fetchall()
@@ -1218,29 +1236,13 @@ class UnifiedKnowledgeBase:
         if self._kev_loaded:
             return
 
-        # KEV data path detection - simplified XDG-compliant paths
-        # Priority: ENV > XDG standard
-        kev_candidates = []
+        kev_path = self.knowledge_dir.parent / "Library" / "NVD" / "kev" / "known_exploited_vulnerabilities.json"
+        if not kev_path.exists():
+            # Try alternative path
+            kev_path = Path.home() / "STRIDE" / "Library" / "NVD" / "kev" / "known_exploited_vulnerabilities.json"
 
-        # 1. Environment variable override (explicit path)
-        env_kev = os.environ.get("KEV_DATA_PATH")
-        if env_kev:
-            kev_candidates.append(Path(env_kev))
-
-        # 2. XDG data directory (cross-platform standard)
-        # Uses $XDG_DATA_HOME or defaults to ~/.local/share
-        xdg_data = os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")
-        kev_candidates.append(Path(xdg_data) / "security-kb" / "kev" / "known_exploited_vulnerabilities.json")
-
-        # Find first existing path
-        kev_path = None
-        for candidate in kev_candidates:
-            if candidate.exists():
-                kev_path = candidate
-                break
-
-        if kev_path is None:
-            logger.warning("KEV file not found in any of the expected locations")
+        if not kev_path.exists():
+            logger.warning(f"KEV file not found: {kev_path}")
             self._kev_loaded = True
             return
 
@@ -1767,7 +1769,7 @@ class UnifiedKnowledgeBase:
         """Get comprehensive knowledge base statistics (V2 schema)."""
         stats = {
             "version": "OWASP 2025 / CWE 4.19 / CAPEC 3.9 / ATT&CK 18.1",
-            "last_updated": "2026-01-03",
+            "last_updated": "2025-12-24",
             "schema_version": "V2",
             "database_architecture": {
                 "core": str(self.sqlite_core_path),

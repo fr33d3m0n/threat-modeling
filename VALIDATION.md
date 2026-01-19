@@ -1,8 +1,6 @@
-<!-- Code-First Deep Threat Modeling Workflow | Version 2.1.1 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations -->
-
 # VALIDATION.md - Phase 6: Risk Validation (风险验证)
 
-> **Version**: 2.1.0
+> **Version**: 2.0.4
 > **Scope**: 风险验证、攻击路径分析、POC设计
 > **Input**: P1-P5 所有阶段产物
 > **Output**: `validated_risks` 完整风险清单 + POC验证
@@ -914,7 +912,7 @@ name: "RISK-VALIDATION"
 project: "{PROJECT}"
 session_id: "{SESSION_ID}"
 completed_at: "{ISO_TIMESTAMP}"
-framework_version: "v2.1.0"
+framework_version: "v2.0.3"
 ---
 
 # Phase 6: 风险验证

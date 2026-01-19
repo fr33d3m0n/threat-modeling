@@ -1,11 +1,9 @@
-# Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations
-
 #!/usr/bin/env python3
 """
 Count Conservation Validation Script
 =====================================
-Version: 2.1.0
-Date: 2026-01-03
+Version: 2.0.0
+Date: 2026-01-02
 
 Validates data integrity in STRIDE threat modeling workflow:
 1. P5 → P6 threat count conservation

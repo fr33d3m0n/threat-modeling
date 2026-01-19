@@ -1,10 +1,8 @@
-<!-- Code-First Deep Threat Modeling Workflow | Version 2.1.1 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | 欢迎引用但请保留所有来源及声明 -->
+# STRIDE 深度威胁建模 Skill
 
-# Code-First Deep Risk Analysis Skill
+**代码优先的自动化威胁建模工具集** | 版本 2.1.3
 
-**代码优先的自动化威胁建模工具集** | 版本 2.1.0
-
-8阶段串行工作流 · 双知识库架构 · STRIDE+CWE+CAPEC+ATT&CK 全链映射
+8阶段串行工作流 · 双知识库架构 · STRIDE+CWE+CAPEC+ATT&CK 全链映射 · LLM原生设计
 
 [安装](#安装) · [快速开始](#快速开始) · [文档](#文档) · [English](README.md)
 
@@ -21,11 +19,11 @@
 | **8阶段串行工作流** | 严格顺序执行，确保最大深度和完整覆盖 |
 | **双知识库** | 核心库 (969 CWE, 615 CAPEC) + CVE扩展 (323K+ CVE) |
 | **全链映射** | STRIDE → CWE → CAPEC → ATT&CK → CVE/KEV 威胁情报链 |
-| **安全设计与控制** | 11项安全原则 + 16个安全域评估与控制映射 |
 | **攻击路径验证** | CAPEC + ATT&CK 攻击链映射 + POC 设计 |
 | **KB增强缓解** | 基于知识库的上下文感知缓解建议 |
 | **AI/LLM 扩展** | OWASP LLM Top 10 + AI 组件威胁覆盖 |
-| **Agent Skill Prompt 评估** | OWASP Agentic Top 10 (ASI01-ASI10) + 最小代理原则评估 |
+| **并行子代理支持** | 大型项目多风险并行分析 |
+| **语义搜索** | 3,278 个向量用于智能威胁查找 |
 
 ### 工作流概览
 
@@ -37,25 +35,6 @@ Phase 1 ──► Phase 2 ──► Phase 3 ──► Phase 4 ──► Phase 5 
 ---
 
 ## 安装
-
-### 多平台支持
-
-本 Skill 支持多种 AI Agent 平台：
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          支持的 Agent 平台                                   │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  平台             │  全局路径                        │  项目本地路径         │
-├──────────────────┼─────────────────────────────────┼────────────────────────┤
-│  Claude Code     │  ~/.claude/skills/              │  .claude/skills/       │
-│  OpenAI Codex    │  ~/.codex/skills/               │  .codex/skills/        │
-│  GitHub Copilot  │  (使用 .github/skills/)          │  .github/skills/       │
-│  Qwen Code       │  ~/.qwen/agents/                │  .qwen/agents/         │
-│  Goose           │  ~/.config/goose/skills/        │  .goose/skills/        │
-│  跨平台 (XDG)     │  ~/.config/agents/skills/       │  .agents/skills/       │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
 
 ### 安装方式选择
 
@@ -70,9 +49,6 @@ Phase 1 ──► Phase 2 ──► Phase 3 ──► Phase 4 ──► Phase 5 
 │  团队协作，需要版本控制 ──────►  项目本地安装               │
 │                                 项目/.claude/skills/        │
 │                                                              │
-│  跨平台 / 可移植        ──────►  XDG 标准                   │
-│                                 ~/.config/agents/skills/    │
-│                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -85,14 +61,8 @@ Python 3.8+  |  PyYAML >= 6.0
 ### 方式一：全局安装（所有项目可用）
 
 ```bash
-# 从 GitHub 克隆（目录名为 "skill-threat-modeling"）
-git clone https://github.com/fr33d3m0n/skill-threat-modeling.git
-
-# 复制到 Claude Code 全局 skills 目录（重命名为 "threat-modeling"）
-cp -r skill-threat-modeling ~/.claude/skills/threat-modeling
-
-# 或保持原名（两种都支持！）
-cp -r skill-threat-modeling ~/.claude/skills/skill-threat-modeling
+# 复制到 Claude Code 全局 skills 目录
+cp -r threat-modeling ~/.claude/skills/threat-modeling
 
 # 安装依赖
 pip install pyyaml
@@ -105,37 +75,25 @@ pip install pyyaml
 mkdir -p /path/to/your-project/.claude/skills
 
 # 复制 skill 到项目本地
-cp -r skill-threat-modeling /path/to/your-project/.claude/skills/threat-modeling
+cp -r threat-modeling /path/to/your-project/.claude/skills/threat-modeling
 
 # 安装依赖
 pip install pyyaml
 ```
 
-### 方式三：环境变量（显式路径）
-
-```bash
-# 设置 SKILL_PATH 环境变量（支持任意目录名）
-export SKILL_PATH=/path/to/skill-threat-modeling
-
-# 脚本将通过环境变量自动检测
-python "$SKILL_PATH/scripts/unified_kb_query.py" --stride spoofing
-```
-
 **安装位置对比**：
 
-| 安装方式 | 路径 | 作用范围 | 目录名 |
-|----------|------|----------|--------|
-| 全局 | `~/.claude/skills/` | 所有项目 | `threat-modeling` 或 `skill-threat-modeling` |
-| 项目本地 | `项目/.claude/skills/` | 仅当前项目 | `threat-modeling` 或 `skill-threat-modeling` |
-| XDG 跨平台 | `~/.config/agents/skills/` | 跨平台 | 任意 |
-| 环境变量 | `$SKILL_PATH` | 显式覆盖 | 任意 |
+| 安装方式 | 路径 | 作用范围 |
+|----------|------|----------|
+| 全局 | `~/.claude/skills/` | 所有项目 |
+| 项目本地 | `项目/.claude/skills/` | 仅当前项目 |
 
 > **推荐**：对于团队共享的安全评估项目，使用项目本地安装，skill 可随项目代码一起版本控制。
 
 ### 验证安装
 
 ```bash
-python scripts/unified_kb_query.py --all-stride --pretty
+python scripts/query_kb.py --all-stride --pretty
 ```
 
 ### 目录结构
@@ -167,7 +125,6 @@ threat-modeling/
 |------|---------|
 | 威胁建模 | threat model |
 | 安全评估 | security assessment |
-| 安全检查 | security check |
 | 数据流图 | DFD / data flow diagram |
 | 信任边界 | trust boundary |
 | 攻击面 | attack surface |
@@ -236,7 +193,7 @@ python scripts/unified_kb_query.py --all-llm
 | **5** | 威胁清单 (STRIDE+CWE+ATT&CK+LLM) |
 | **6** | **验证方式** (攻击路径 + POC) |
 | **7** | **缓解措施** (每条风险的缓解建议) |
-| **8** | `{PROJECT}-RISK-ASSESSMENT-REPORT.md` 综合报告 |
+| **8** | `THREAT-MODEL-REPORT.md` 综合报告 |
 
 ### 能力矩阵
 
@@ -257,20 +214,6 @@ python scripts/unified_kb_query.py --all-llm
 | **云服务** | AWS / Azure / GCP / 阿里云 / 腾讯云 |
 | **AI/LLM** | OWASP LLM Top 10 + AI 组件威胁 |
 | **CVE验证** | 323K+ CVE + KEV (已知被利用漏洞) 检查 |
-| **Agent/Skill Prompt** | OWASP Agentic Security Top 10 + 最小代理原则 |
-
-### Agent & Skill Prompt 安全评估
-
-针对 AI Agent 系统和 Claude Code Skills 的专项安全评估：
-
-| 评估领域 | 覆盖内容 |
-|----------|----------|
-| **OWASP Agentic Top 10** | ASI01-ASI10 自主 AI Agent 漏洞类别 |
-| **最小代理原则** | 最小权限与能力范围评估 |
-| **工具调用安全** | MCP 服务器集成、命令注入、路径遍历 |
-| **Prompt 注入防御** | 直接/间接注入、越狱抵抗分析 |
-| **数据边界控制** | 敏感数据暴露、上下文泄漏防护 |
-| **自主性风险评估** | 决策边界、人工监督、操作可逆性 |
 
 ---
 
@@ -280,16 +223,15 @@ python scripts/unified_kb_query.py --all-llm
 |------|------|
 | **[SKILL.md](SKILL.md)** | Claude Code skill 入口点 (8阶段工作流概览) |
 | **[WORKFLOW.md](WORKFLOW.md)** | 详细 8 阶段深度工作流模板 |
-| **[README-cn.md](README-cn.md)** | 快速入门指南、安装说明、使用示例 |
+| **[GUIDE-cn.md](GUIDE-cn.md)** | 设计理念、脚本参考、知识库架构、故障排除 |
 | **[EXAMPLES-cn.md](EXAMPLES-cn.md)** | 5 个真实案例（REST API、微服务、AI/LLM、云原生） |
 
 ### 架构文档
 
 | 文档 | 内容 |
 |------|------|
-| **[references/SKILL-ARCHITECTURE-DESIGN-cn.md](references/SKILL-ARCHITECTURE-DESIGN-cn.md)** | 系统架构与设计原则 |
-| **[references/ARCHITECTURE-WORKFLOW-GUIDE-cn.md](references/ARCHITECTURE-WORKFLOW-GUIDE-cn.md)** | 完整架构与工作流指南 |
 | **[references/KNOWLEDGE-ARCHITECTURE-v5.2-cn.md](references/KNOWLEDGE-ARCHITECTURE-v5.2-cn.md)** | 知识库架构 (双体系 A+B) |
+| **[references/COMPREHENSIVE-ARCHITECTURE-WORKFLOW-GUIDE-cn.md](references/COMPREHENSIVE-ARCHITECTURE-WORKFLOW-GUIDE-cn.md)** | 完整架构与工作流指南 |
 
 ---
 
@@ -304,10 +246,10 @@ python scripts/unified_kb_query.py --all-llm
 │                                                                              │
 │  体系 A: 安全控制层级                         体系 B: 威胁情报层级          │
 │  ─────────────────────                       ─────────────────────          │
-│  L1: 安全原则 (11) +                         L1: STRIDE 威胁分类            │
-│      安全域 (16)                             L2: CWE+CAPEC+ATT&CK 映射      │
-│  L2: 控制集 + OWASP 参考                     L3: CVE 漏洞数据库             │
-│  L3: 合规框架                                L4: KEV 实时情报               │
+│  L1: ASVS 控制要求                           L1: STRIDE 威胁分类            │
+│  L2: 安全实现模式                            L2: CWE+CAPEC+ATT&CK 映射      │
+│  L3: 验证测试用例                            L3: CVE 漏洞数据库             │
+│                                              L4: KEV 实时情报               │
 │                                                                              │
 │  验证集: WSTG(121) + MASTG(206) + ASVS(345) = 672 测试                     │
 │  → 映射到 1,269 个 STRIDE+测试 组合                                         │
@@ -333,16 +275,74 @@ E(权限提升)   → CWE-269/284/862 → CAPEC-122/233/17  → T1068/T1548 → 
 
 ---
 
-## 版本历史
+## LLM 兼容性
 
-### v2.1.0 (当前版本)
+### 设计原则
 
-- **STRIDE→测试映射扩展**: 162 → 1,269 测试映射
-- **验证集集成**: WSTG(121) + MASTG(206) + ASVS(345)
-- **L1 STRIDE 层**: 完整威胁情报链文档
-- **双知识架构**: 体系 A (控制) + 体系 B (威胁)
-- **双语文档**: 完整英文 + 中文文档
+本 skill 遵循 **LLM 原生设计** 原则，确保广泛兼容：
+
+| 原则 | 描述 |
+|------|------|
+| **上下文而非控制** | 知识库赋能 LLM 智能，而非限制它 |
+| **LLM 自主性** | KB 提供上下文；LLM 执行语义推理 |
+| **脚本黑盒化** | 脚本处理确定性操作；LLM 处理分析 |
+| **双轨知识** | 安全控制（防御）+ 威胁模式（攻击）|
+
+### Agent 架构
+
+支持 Phase 5/6/7 的并行子代理模式：
+
+```
+主代理 ──► 风险 1 ──► 子代理 1 ──► KB 查询 ──► 结果 1
+       ──► 风险 2 ──► 子代理 2 ──► KB 查询 ──► 结果 2
+       ──► 风险 N ──► 子代理 N ──► KB 查询 ──► 结果 N
+                                       │
+       ◄─────────── 聚合结果 ──────────┘
+```
+
+**规模阈值**：
+| 项目规模 | 文件数 | 策略 |
+|---------|-------|------|
+| 小型 | <50 | 标准 8 阶段 |
+| 中型 | 50-200 | 模块优先分析 |
+| 大型 | 200-500 | 子系统拆分+合并 |
+| 超大型 | >500 | 并行子代理 |
 
 ---
 
-**版本 2.1.0** | [English](README.md)
+## 版本历史
+
+### v2.1.3 (当前版本)
+
+- **STRIDE 名称到代码映射修复**: `get_cwes_for_stride_sqlite()` 现在同时支持全名（"spoofing"）和代码（"S"）
+- **FTS5 索引重建**: 所有 12 个全文搜索索引已重建并验证
+- **E2E 接口测试**: 为 UnifiedKnowledgeBase 添加了 25 项综合测试套件
+- **LLM 兼容性文档**: 添加了设计原则和代理架构章节
+- **语义向量**: 3,278 个条目用于智能威胁查找
+
+### v2.1.2
+
+- **ATT&CK 战术解析修复**: 将 `json.loads()` 改为 `str.split(',')` 处理逗号分隔字段
+- **FTS 异常处理**: 为损坏的 FTS 索引添加 `sqlite3.DatabaseError` 捕获
+
+### v2.1.1
+
+- **ATT&CK JSON 解析修复**: 修正战术和平台字段解析
+- **删除过时测试脚本**: 删除了引用不存在数据库的脚本
+
+### v2.1.0
+
+- **目录结构重构**: 重组为 `references/`、`assets/knowledge/`、`assets/schemas/`、`assets/templates/`
+
+### v2.0.0
+
+- **STRIDE→测试映射扩展**: 162 → 1,269 测试映射
+- **验证集集成**: WSTG(121) + MASTG(206) + ASVS(345)
+- **双知识架构**: 体系 A (控制) + 体系 B (威胁)
+- **双语文档**: 完整英文 + 中文文档
+
+完整版本历史请参阅 [CHANGELOG.md](CHANGELOG.md)。
+
+---
+
+**版本 2.1.3** | [完整文档](GUIDE-cn.md) | [更新日志](CHANGELOG.md) | [English](README.md)

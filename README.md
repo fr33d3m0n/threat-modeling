@@ -1,10 +1,8 @@
-<!-- Code-First Deep Threat Modeling Workflow | Version 2.1.1 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations -->
+# STRIDE Deep Threat Modeling Skill
 
-# Code-First Deep Risk Analysis Skill
+**Code-First Automated Threat Modeling Toolkit** | Version 2.1.3
 
-**Code-First Automated Threat Modeling Toolkit** | Version 2.1.1
-
-8-Phase Serial Workflow · Dual Knowledge Base Architecture · STRIDE+CWE+CAPEC+ATT&CK Full Chain Mapping
+8-Phase Serial Workflow · Dual Knowledge Base Architecture · STRIDE+CWE+CAPEC+ATT&CK Full Chain Mapping · LLM-Native Design
 
 [Installation](#installation) · [Quick Start](#quick-start) · [Documentation](#documentation) · [中文版](README-cn.md)
 
@@ -21,11 +19,11 @@ A comprehensive **Code-First** threat modeling toolkit for Claude Code that tran
 | **8-Phase Serial Workflow** | Strict sequential execution ensuring maximum depth and complete coverage |
 | **Dual Knowledge Base** | Core DB (969 CWE, 615 CAPEC) + CVE Extension (323K+ CVE) |
 | **Full Chain Mapping** | STRIDE → CWE → CAPEC → ATT&CK → CVE/KEV intelligence chain |
-| **Security Design & Control** | 11 security principles + 16 security domains assessment with control mapping |
 | **Attack Path Validation** | CAPEC + ATT&CK attack chain mapping with POC design |
 | **KB-Enhanced Mitigations** | Context-aware mitigation suggestions per threat |
 | **AI/LLM Extensions** | OWASP LLM Top 10 + AI component threat coverage |
-| **Agent Skill Prompt Assessment** | OWASP Agentic Top 10 (ASI01-ASI10) + Least Agency principle evaluation |
+| **Parallel Sub-Agent Support** | Multi-risk parallel analysis for large projects |
+| **Semantic Search** | 3,278 embeddings for intelligent threat lookup |
 
 ### Workflow Overview
 
@@ -38,25 +36,6 @@ Understanding  DFD      Boundaries   Design     Analysis   Validation
 ---
 
 ## Installation
-
-### Multi-Platform Support
-
-This skill supports multiple AI agent platforms:
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        Supported Agent Platforms                             │
-├─────────────────────────────────────────────────────────────────────────────┤
-│  Platform        │  Global Path                    │  Project-Local Path    │
-├──────────────────┼─────────────────────────────────┼────────────────────────┤
-│  Claude Code     │  ~/.claude/skills/              │  .claude/skills/       │
-│  OpenAI Codex    │  ~/.codex/skills/               │  .codex/skills/        │
-│  GitHub Copilot  │  (uses .github/skills/)         │  .github/skills/       │
-│  Qwen Code       │  ~/.qwen/agents/                │  .qwen/agents/         │
-│  Goose           │  ~/.config/goose/skills/        │  .goose/skills/        │
-│  Portable (XDG)  │  ~/.config/agents/skills/       │  .agents/skills/       │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
 
 ### Installation Options
 
@@ -71,9 +50,6 @@ This skill supports multiple AI agent platforms:
 │  Team collaboration, version control  ──────►  Project-local│
 │                                        project/.claude/skills│
 │                                                              │
-│  Cross-platform / portable            ──────►  XDG Standard │
-│                                        ~/.config/agents/skills│
-│                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -86,14 +62,8 @@ Python 3.8+  |  PyYAML >= 6.0
 ### Option 1: Global Installation (Available to All Projects)
 
 ```bash
-# Clone from GitHub (directory will be named "skill-threat-modeling")
-git clone https://github.com/fr33d3m0n/skill-threat-modeling.git
-
-# Copy to Claude Code global skills directory (rename to "threat-modeling")
-cp -r skill-threat-modeling ~/.claude/skills/threat-modeling
-
-# Or keep the original name (both work!)
-cp -r skill-threat-modeling ~/.claude/skills/skill-threat-modeling
+# Copy to Claude Code global skills directory
+cp -r threat-modeling ~/.claude/skills/threat-modeling
 
 # Install dependencies
 pip install pyyaml
@@ -106,71 +76,40 @@ pip install pyyaml
 mkdir -p /path/to/your-project/.claude/skills
 
 # Copy skill to project local
-cp -r skill-threat-modeling /path/to/your-project/.claude/skills/threat-modeling
+cp -r threat-modeling /path/to/your-project/.claude/skills/threat-modeling
 
 # Install dependencies
 pip install pyyaml
 ```
 
-### Option 3: Environment Variable (Explicit Path)
-
-```bash
-# Set SKILL_PATH to skill location (works with any directory name)
-export SKILL_PATH=/path/to/skill-threat-modeling
-
-# Scripts will auto-detect via environment variable
-python "$SKILL_PATH/scripts/unified_kb_query.py" --stride spoofing
-```
-
 **Installation Comparison**:
 
-| Method | Path | Scope | Directory Name |
-|--------|------|-------|----------------|
-| Global | `~/.claude/skills/` | All projects | `threat-modeling` or `skill-threat-modeling` |
-| Project-local | `project/.claude/skills/` | Current project only | `threat-modeling` or `skill-threat-modeling` |
-| XDG Portable | `~/.config/agents/skills/` | Cross-platform | Any |
-| Environment | `$SKILL_PATH` | Explicit override | Any |
+| Method | Path | Scope |
+|--------|------|-------|
+| Global | `~/.claude/skills/` | All projects |
+| Project-local | `project/.claude/skills/` | Current project only |
 
 > **Recommendation**: For team-shared security assessment projects, use project-local installation so the skill can be version controlled with project code.
 
 ### Verify Installation
 
 ```bash
-python scripts/unified_kb_query.py --all-stride --pretty
+python scripts/query_kb.py --all-stride --pretty
 ```
 
 ### Directory Structure
 
 ```
 threat-modeling/
-├── SKILL.md                  # ← Claude Code entry point (8-phase workflow)
-├── WORKFLOW.md               # Detailed workflow templates
-├── VALIDATION.md             # Validation rules and quality gates
-├── REPORT.md                 # Report generation templates
-├── README.md / README-cn.md  # Documentation (EN/CN)
-├── EXAMPLES.md / EXAMPLES-cn.md  # Usage examples
-├── VERSION                   # Version number
-├── LICENSE                   # BSD-3-Clause license
-├── scripts/                  # Tool scripts
-│   ├── list_files.py             # Phase 1: Project structure analysis
-│   ├── stride_matrix.py          # Phase 5: STRIDE matrix
-│   ├── unified_kb_query.py       # Phase 5/6/7: Unified KB query
-│   ├── collect_code_stats.py     # Code statistics collection
-│   └── validate_count_conservation.py  # Validation utility
-├── assets/
-│   ├── knowledge/            # Dual database knowledge system
-│   │   ├── security_kb.sqlite    # Core DB (18MB)
-│   │   ├── security-*.yaml       # Security rules and mappings
-│   │   ├── security-controls/    # 16 security domain controls
-│   │   └── semantic_index/       # Semantic search index
-│   ├── schemas/              # Output schema definitions
-│   └── templates/            # Report templates
-├── references/               # Architecture documentation
-│   ├── SKILL-ARCHITECTURE-DESIGN.md      # System architecture
-│   ├── ARCHITECTURE-WORKFLOW-GUIDE.md    # Workflow guide
-│   └── KNOWLEDGE-ARCHITECTURE-v5.2.md    # Knowledge base architecture
-├── kb                        # Knowledge base symlink
-└── skill_path.sh             # Path detection helper
+├── SKILL.md              # ← Claude Code entry point (8-phase workflow)
+├── WORKFLOW.md           # Detailed workflow templates
+├── scripts/              # Tool scripts
+│   ├── list_files.py         # Phase 1: Project structure analysis
+│   ├── stride_matrix.py      # Phase 5: STRIDE matrix
+│   └── unified_kb_query.py   # Phase 5/6/7: Unified KB query
+└── assets/knowledge/            # Dual database knowledge system (317MB)
+    ├── security_kb.sqlite        # Core DB (13MB)
+    └── security_kb_extension.sqlite  # CVE extension (304MB)
 ```
 
 ---
@@ -187,7 +126,6 @@ The skill automatically activates when you mention these keywords:
 |---------|---------|
 | threat model | 威胁建模 |
 | security assessment | 安全评估 |
-| security check | 安全检查 |
 | DFD / data flow diagram | 数据流图 |
 | trust boundary | 信任边界 |
 | attack surface | 攻击面 |
@@ -256,7 +194,7 @@ python scripts/unified_kb_query.py --all-llm
 | **5** | Threat list (STRIDE+CWE+ATT&CK+LLM) |
 | **6** | **Validation methods** (attack paths + POC) |
 | **7** | **Mitigations** (remediation suggestions per threat) |
-| **8** | `{PROJECT}-RISK-ASSESSMENT-REPORT.md` comprehensive report |
+| **8** | `THREAT-MODEL-REPORT.md` comprehensive report |
 
 ### Capability Matrix
 
@@ -277,20 +215,6 @@ python scripts/unified_kb_query.py --all-llm
 | **Cloud Services** | AWS / Azure / GCP / Alibaba Cloud / Tencent Cloud |
 | **AI/LLM** | OWASP LLM Top 10 + AI component threats |
 | **CVE Validation** | 323K+ CVE + KEV (Known Exploited Vulnerabilities) checks |
-| **Agent/Skill Prompt** | OWASP Agentic Security Top 10 + Least Agency principle |
-
-### Agent & Skill Prompt Security Assessment
-
-Specialized security assessment for AI Agent systems and Claude Code Skills:
-
-| Assessment Area | Coverage |
-|-----------------|----------|
-| **OWASP Agentic Top 10** | ASI01-ASI10 vulnerability categories for autonomous AI agents |
-| **Least Agency Principle** | Minimal permission & capability scoping evaluation |
-| **Tool Call Security** | MCP server integration, command injection, path traversal |
-| **Prompt Injection Defense** | Direct/indirect injection, jailbreak resistance analysis |
-| **Data Boundary Control** | Sensitive data exposure, context leakage prevention |
-| **Autonomy Risk Assessment** | Decision boundary, human oversight, action reversibility |
 
 ---
 
@@ -300,16 +224,15 @@ Specialized security assessment for AI Agent systems and Claude Code Skills:
 |----------|---------|
 | **[SKILL.md](SKILL.md)** | Claude Code skill entry point (8-phase workflow overview) |
 | **[WORKFLOW.md](WORKFLOW.md)** | Detailed 8-phase deep workflow templates |
-| **[README.md](README.md)** | Quick start guide, installation, usage examples |
+| **[GUIDE.md](GUIDE.md)** | Design philosophy, script reference, KB architecture, troubleshooting |
 | **[EXAMPLES.md](EXAMPLES.md)** | 5 real-world cases (REST API, microservices, AI/LLM, cloud-native) |
 
 ### Architecture Documentation
 
 | Document | Content |
 |----------|---------|
-| **[references/SKILL-ARCHITECTURE-DESIGN.md](references/SKILL-ARCHITECTURE-DESIGN.md)** | System architecture and design principles |
-| **[references/ARCHITECTURE-WORKFLOW-GUIDE.md](references/ARCHITECTURE-WORKFLOW-GUIDE.md)** | Complete architecture and workflow guide |
 | **[references/KNOWLEDGE-ARCHITECTURE-v5.2.md](references/KNOWLEDGE-ARCHITECTURE-v5.2.md)** | Knowledge base architecture (Dual System A+B) |
+| **[references/COMPREHENSIVE-ARCHITECTURE-WORKFLOW-GUIDE.md](references/COMPREHENSIVE-ARCHITECTURE-WORKFLOW-GUIDE.md)** | Complete architecture and workflow guide |
 
 ---
 
@@ -324,10 +247,10 @@ Specialized security assessment for AI Agent systems and Claude Code Skills:
 │                                                                              │
 │  System A: Security Control Hierarchy        System B: Threat Intelligence  │
 │  ─────────────────────────────────           ─────────────────────────────  │
-│  L1: Security Principles (11) +              L1: STRIDE Classification      │
-│      Security Domains (16)                   L2: CWE+CAPEC+ATT&CK Mapping   │
-│  L2: Control Sets + OWASP References         L3: CVE Vulnerability Database │
-│  L3: Compliance Frameworks                   L4: KEV Real-time Intelligence │
+│  L1: ASVS Control Requirements               L1: STRIDE Classification      │
+│  L2: Security Implementation Patterns        L2: CWE+CAPEC+ATT&CK Mapping   │
+│  L3: Verification Test Cases                 L3: CVE Vulnerability Database │
+│                                              L4: KEV Real-time Intelligence │
 │                                                                              │
 │  Verification Set: WSTG(121) + MASTG(206) + ASVS(345) = 672 Tests          │
 │  → Mapped to 1,269 STRIDE+Test combinations                                 │
@@ -353,16 +276,74 @@ E(Elev. of Priv) → CWE-269/284/862 → CAPEC-122/233/17  → T1068/T1548 → C
 
 ---
 
-## Version History
+## LLM Compatibility
 
-### v2.1.0 (Current)
+### Design Principles
 
-- **STRIDE→Test Mapping Expansion**: 162 → 1,269 test mappings
-- **Verification Set Integration**: WSTG(121) + MASTG(206) + ASVS(345)
-- **L1 STRIDE Layer**: Complete threat intelligence chain documentation
-- **Dual Knowledge Architecture**: System A (Controls) + System B (Threats)
-- **Bilingual Documentation**: Full English + Chinese documentation
+This skill follows **LLM-Native Design** principles for broad compatibility:
+
+| Principle | Description |
+|-----------|-------------|
+| **Context Not Control** | Knowledge base empowers LLM intelligence rather than constraining it |
+| **LLM Autonomous** | KB provides context; LLM performs semantic reasoning |
+| **Script as Blackbox** | Scripts handle deterministic operations; LLM handles analysis |
+| **Dual-Track Knowledge** | Security Controls (defensive) + Threat Patterns (offensive) |
+
+### Agent Architecture
+
+Supports parallel sub-agent patterns for Phases 5/6/7:
+
+```
+Main Agent ──► Risk 1 ──► Sub-Agent 1 ──► KB Query ──► Result 1
+           ──► Risk 2 ──► Sub-Agent 2 ──► KB Query ──► Result 2
+           ──► Risk N ──► Sub-Agent N ──► KB Query ──► Result N
+                                            │
+           ◄─────────── Aggregate Results ──┘
+```
+
+**Scale Thresholds**:
+| Project Scale | Files | Strategy |
+|--------------|-------|----------|
+| Small | <50 | Standard 8-phase |
+| Medium | 50-200 | Module-priority analysis |
+| Large | 200-500 | Subsystem split + merge |
+| Very Large | >500 | Parallel sub-agents |
 
 ---
 
-**Version 2.1.1** | [中文版](README-cn.md)
+## Version History
+
+### v2.1.3 (Current)
+
+- **STRIDE Name-to-Code Mapping Fix**: `get_cwes_for_stride_sqlite()` now accepts both full names ("spoofing") and codes ("S")
+- **FTS5 Index Rebuild**: All 12 full-text search indexes rebuilt and verified
+- **E2E Interface Tests**: Comprehensive 25-test suite for UnifiedKnowledgeBase
+- **LLM Compatibility Documentation**: Added design principles and agent architecture sections
+- **Semantic Embeddings**: 3,278 entries for intelligent threat lookup
+
+### v2.1.2
+
+- **ATT&CK Tactics Parsing Fix**: Changed `json.loads()` to `str.split(',')` for comma-separated fields
+- **FTS Exception Handling**: Added `sqlite3.DatabaseError` catch for corrupted FTS indexes
+
+### v2.1.1
+
+- **ATT&CK JSON Parsing Fix**: Corrected tactics and platforms field parsing
+- **Obsolete Test Script Removed**: Deleted reference to non-existent database
+
+### v2.1.0
+
+- **Directory Structure Refactoring**: Reorganized to `references/`, `assets/knowledge/`, `assets/schemas/`, `assets/templates/`
+
+### v2.0.0
+
+- **STRIDE→Test Mapping Expansion**: 162 → 1,269 test mappings
+- **Verification Set Integration**: WSTG(121) + MASTG(206) + ASVS(345)
+- **Dual Knowledge Architecture**: System A (Controls) + System B (Threats)
+- **Bilingual Documentation**: Full English + Chinese documentation
+
+See [CHANGELOG.md](CHANGELOG.md) for complete version history.
+
+---
+
+**Version 2.1.3** | [Full Documentation](GUIDE.md) | [Changelog](CHANGELOG.md) | [中文版](README-cn.md)
