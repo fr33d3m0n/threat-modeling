@@ -36,4 +36,3 @@ tmp_notebook/
 
 # Claude session data
 .claude/
-assets/knowledge/schema-extension-design.sql
