@@ -1,6 +1,6 @@
 # STRIDE Deep Threat Modeling Skill
 
-**Code-First Automated Threat Modeling Toolkit** | Version 2.1.3
+**Code-First Automated Threat Modeling Toolkit** | Version 2.2.1
 
 8-Phase Serial Workflow · Dual Knowledge Base Architecture · STRIDE+CWE+CAPEC+ATT&CK Full Chain Mapping · LLM-Native Design
 
@@ -313,7 +313,19 @@ Main Agent ──► Risk 1 ──► Sub-Agent 1 ──► KB Query ──► R
 
 ## Version History
 
-### v2.1.3 (Current)
+### v2.2.1 (Current)
+
+- **Phase 2 DFD/CFD Knowledge Enhancement**: Added 4 YAML pattern files for improved DFD/CFD analysis
+  - `framework-routing-patterns.yaml`: Framework routing detection (Express, FastAPI, Spring, AI/LLM frameworks)
+  - `data-store-patterns.yaml`: Data store identification patterns
+  - `security-checkpoint-patterns.yaml`: Security checkpoint detection patterns
+  - `completeness-rules.yaml`: Phase 2 output completeness validation rules
+- **MCP Architecture & LLM Security Detection**: Enhanced detection for MCP Server patterns and Agent architecture threats
+- **Claude Code Ecosystem Integration**: Improved support for hooks, MCP servers, and slash commands
+- **Session Version Control**: Workflow phase traceability and version management improvements
+- **Test Coverage Improvement**: `unified_kb_query.py` coverage increased to 53% (target ≥80%)
+
+### v2.1.3
 
 - **STRIDE Name-to-Code Mapping Fix**: `get_cwes_for_stride_sqlite()` now accepts both full names ("spoofing") and codes ("S")
 - **FTS5 Index Rebuild**: All 12 full-text search indexes rebuilt and verified
@@ -346,4 +358,4 @@ See [CHANGELOG.md](CHANGELOG.md) for complete version history.
 
 ---
 
-**Version 2.1.3** | [Full Documentation](GUIDE.md) | [Changelog](CHANGELOG.md) | [中文版](README-cn.md)
+**Version 2.2.1** | [Full Documentation](GUIDE.md) | [Changelog](CHANGELOG.md) | [中文版](README-cn.md)

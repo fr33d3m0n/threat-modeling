@@ -38,7 +38,6 @@ tmp_notebook/
 .claude/
 *.sql
 
-# v2.2.1 新增但不发布的文件
-assets/knowledge/phase2/
+# Large database files (users download separately if needed)
 assets/knowledge/security_kb_extension.sqlite
 assets/knowledge/security_kb_v2.sqlite

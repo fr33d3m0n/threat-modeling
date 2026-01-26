@@ -1,6 +1,6 @@
 # STRIDE 深度威胁建模 Skill
 
-**代码优先的自动化威胁建模工具集** | 版本 2.1.3
+**代码优先的自动化威胁建模工具集** | 版本 2.2.1
 
 8阶段串行工作流 · 双知识库架构 · STRIDE+CWE+CAPEC+ATT&CK 全链映射 · LLM原生设计
 
@@ -312,7 +312,19 @@ E(权限提升)   → CWE-269/284/862 → CAPEC-122/233/17  → T1068/T1548 → 
 
 ## 版本历史
 
-### v2.1.3 (当前版本)
+### v2.2.1 (当前版本)
+
+- **Phase 2 DFD/CFD 知识库增强**: 添加 4 个 YAML 模式文件用于改进 DFD/CFD 分析
+  - `framework-routing-patterns.yaml`: 框架路由检测（Express、FastAPI、Spring、AI/LLM 框架）
+  - `data-store-patterns.yaml`: 数据存储识别模式
+  - `security-checkpoint-patterns.yaml`: 安全检查点检测模式
+  - `completeness-rules.yaml`: Phase 2 输出完整性验证规则
+- **MCP 架构与 LLM 安全检测**: 增强 MCP Server 模式和 Agent 架构威胁检测
+- **Claude Code 生态集成**: 改进对 hooks、MCP servers、slash commands 的支持
+- **Session 版本控制**: 工作流阶段可追溯性和版本管理改进
+- **测试覆盖率提升**: `unified_kb_query.py` 覆盖率提升至 53%（目标 ≥80%）
+
+### v2.1.3
 
 - **STRIDE 名称到代码映射修复**: `get_cwes_for_stride_sqlite()` 现在同时支持全名（"spoofing"）和代码（"S"）
 - **FTS5 索引重建**: 所有 12 个全文搜索索引已重建并验证
@@ -345,4 +357,4 @@ E(权限提升)   → CWE-269/284/862 → CAPEC-122/233/17  → T1068/T1548 → 
 
 ---
 
-**版本 2.1.3** | [完整文档](GUIDE-cn.md) | [更新日志](CHANGELOG.md) | [English](README.md)
+**版本 2.2.1** | [完整文档](GUIDE-cn.md) | [更新日志](CHANGELOG.md) | [English](README.md)
