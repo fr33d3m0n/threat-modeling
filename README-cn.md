@@ -93,7 +93,7 @@ pip install pyyaml
 ### 验证安装
 
 ```bash
-python scripts/query_kb.py --all-stride --pretty
+python scripts/unified_kb_query.py --all-stride --pretty
 ```
 
 ### 目录结构
@@ -320,7 +320,7 @@ E(权限提升)   → CWE-269/284/862 → CAPEC-122/233/17  → T1068/T1548 → 
   - `security-checkpoint-patterns.yaml`: 安全检查点检测模式
   - `completeness-rules.yaml`: Phase 2 输出完整性验证规则
 - **MCP 架构与 LLM 安全检测**: 增强 MCP Server 模式和 Agent 架构威胁检测
-- **Claude Code 生态集成**: 改进对 hooks、MCP servers、slash commands 的支持
+- **Claude Code 生态安全分析**: Skills 和 plugin（MCP Server、hooks）安全分析集成
 - **Session 版本控制**: 工作流阶段可追溯性和版本管理改进
 - **测试覆盖率提升**: `unified_kb_query.py` 覆盖率提升至 53%（目标 ≥80%）
 

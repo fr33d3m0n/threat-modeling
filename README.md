@@ -94,7 +94,7 @@ pip install pyyaml
 ### Verify Installation
 
 ```bash
-python scripts/query_kb.py --all-stride --pretty
+python scripts/unified_kb_query.py --all-stride --pretty
 ```
 
 ### Directory Structure
@@ -321,7 +321,7 @@ Main Agent ──► Risk 1 ──► Sub-Agent 1 ──► KB Query ──► R
   - `security-checkpoint-patterns.yaml`: Security checkpoint detection patterns
   - `completeness-rules.yaml`: Phase 2 output completeness validation rules
 - **MCP Architecture & LLM Security Detection**: Enhanced detection for MCP Server patterns and Agent architecture threats
-- **Claude Code Ecosystem Integration**: Improved support for hooks, MCP servers, and slash commands
+- **Claude Code Ecosystem Security Analysis**: Skills and plugin (MCP Server, hooks) security analysis integration
 - **Session Version Control**: Workflow phase traceability and version management improvements
 - **Test Coverage Improvement**: `unified_kb_query.py` coverage increased to 53% (target ≥80%)
 
