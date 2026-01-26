@@ -205,5 +205,5 @@ Pattern: `T-{STRIDE}-{ElementID}-{Sequence}`
 
 Examples:
 - `T-S-GW-001`: Spoofing threat on Gateway #1
-- `T-T-DF1-002`: Tampering threat on DataFlow #2
-- `T-I-DS1-001`: Information Disclosure on DataStore #1
+- `T-T-DF001-002`: Tampering threat on DataFlow #002
+- `T-I-DS001-001`: Information Disclosure on DataStore #001

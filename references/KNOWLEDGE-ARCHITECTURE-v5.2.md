@@ -437,8 +437,8 @@ findings_4:
 ```yaml
 findings_5:
   threat_inventory:
-    - id: "T-S-P1-001"
-      element: {type: process, id: P1, name: "AuthService"}
+    - id: "T-S-P001-001"
+      element: {type: process, id: P001, name: "AuthService"}
       stride_category: S
       description: "..."
       cwe_ids: [CWE-287, CWE-290]
@@ -486,7 +486,7 @@ validated_risks:
   # Part 2: Detailed Risk Analysis per Item
   risk_details:
     - risk_id: "VR-001"
-      original_refs: ["T-S-P1-001", "SD-001", "DFD-002"]  # Consolidated from multiple phases
+      original_refs: ["T-S-P001-001", "SD-001", "DFD-002"]  # Consolidated from multiple phases
 
       # 2.1 Issue Location
       location:

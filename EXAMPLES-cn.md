@@ -246,10 +246,10 @@ $ python scripts/query_kb.py --stride spoofing --pretty
 
 | ID | Category | Element | Threat | Priority |
 |----|----------|---------|--------|----------|
-| T-S-P1-001 | Spoofing | Auth Controller | JWT secret in environment variable | Medium |
-| T-T-DF1-001 | Tampering | User Input | No input validation on /users endpoint | High |
-| T-I-DS1-001 | Info Disclosure | Error Handler | Stack traces exposed in production | Medium |
-| T-E-P2-001 | Elevation | Users Controller | Missing authorization check on DELETE | Critical |
+| T-S-P001-001 | Spoofing | Auth Controller | JWT secret in environment variable | Medium |
+| T-T-DF001-001 | Tampering | User Input | No input validation on /users endpoint | High |
+| T-I-DS001-001 | Info Disclosure | Error Handler | Stack traces exposed in production | Medium |
+| T-E-P002-001 | Elevation | Users Controller | Missing authorization check on DELETE | Critical |
 
 ### Quick Report Output
 
@@ -259,13 +259,13 @@ $ python scripts/query_kb.py --stride spoofing --pretty
 **Threats Found**: 4 (1 Critical, 1 High, 2 Medium)
 
 ### Critical Finding
-**T-E-P2-001**: DELETE /users/:id lacks authorization check.
+**T-E-P002-001**: DELETE /users/:id lacks authorization check.
 Any authenticated user can delete other users.
 
 **Immediate Action**: Add ownership verification before delete operation.
 
 ### High Priority
-**T-T-DF1-001**: User input not validated.
+**T-T-DF001-001**: User input not validated.
 Missing schema validation on POST /users endpoint.
 
 **Fix**: Implement Joi or Zod validation middleware.
@@ -396,17 +396,17 @@ $ python scripts/query_kb.py --stride information_disclosure --pretty
 
 | ID | STRIDE | Element | Threat | CWE | Priority |
 |----|--------|---------|--------|-----|----------|
-| T-S-P1-001 | S | Kong Gateway | OAuth token theft via XSS | CWE-79 | High |
-| T-S-P2-001 | S | Auth Service | Brute force login | CWE-307 | Medium |
-| T-T-DF1-001 | T | Order Input | Order amount manipulation | CWE-20 | Critical |
-| T-T-DF2-001 | T | Payment Callback | Webhook tampering | CWE-345 | High |
-| T-R-P3-001 | R | Order Service | Missing order audit trail | CWE-778 | Medium |
-| T-I-DS1-001 | I | Catalog DB | Product data not encrypted | CWE-311 | Low |
-| T-I-DF3-001 | I | Payment Flow | Card data in logs | CWE-532 | Critical |
-| T-D-P1-001 | D | Kong Gateway | API rate limit bypass | CWE-400 | Medium |
-| T-D-P4-001 | D | Catalog Service | Query complexity attack | CWE-400 | Medium |
-| T-E-P5-001 | E | Order Service | IDOR on order retrieval | CWE-639 | High |
-| T-E-P2-002 | E | Auth Service | Role escalation via JWT | CWE-269 | High |
+| T-S-P001-001 | S | Kong Gateway | OAuth token theft via XSS | CWE-79 | High |
+| T-S-P002-001 | S | Auth Service | Brute force login | CWE-307 | Medium |
+| T-T-DF001-001 | T | Order Input | Order amount manipulation | CWE-20 | Critical |
+| T-T-DF002-001 | T | Payment Callback | Webhook tampering | CWE-345 | High |
+| T-R-P003-001 | R | Order Service | Missing order audit trail | CWE-778 | Medium |
+| T-I-DS001-001 | I | Catalog DB | Product data not encrypted | CWE-311 | Low |
+| T-I-DF003-001 | I | Payment Flow | Card data in logs | CWE-532 | Critical |
+| T-D-P001-001 | D | Kong Gateway | API rate limit bypass | CWE-400 | Medium |
+| T-D-P004-001 | D | Catalog Service | Query complexity attack | CWE-400 | Medium |
+| T-E-P005-001 | E | Order Service | IDOR on order retrieval | CWE-639 | High |
+| T-E-P002-002 | E | Auth Service | Role escalation via JWT | CWE-269 | High |
 
 ### Phase 6: Mitigations
 
@@ -414,17 +414,17 @@ $ python scripts/query_kb.py --stride information_disclosure --pretty
 
 | Threat | Mitigation | Implementation |
 |--------|------------|----------------|
-| T-T-DF1-001 | Server-side price validation | Compare order amounts against catalog DB |
-| T-I-DF3-001 | PII data masking | Implement log sanitization middleware |
+| T-T-DF001-001 | Server-side price validation | Compare order amounts against catalog DB |
+| T-I-DF003-001 | PII data masking | Implement log sanitization middleware |
 
 **High Priority**:
 
 | Threat | Mitigation | Implementation |
 |--------|------------|----------------|
-| T-S-P1-001 | CSP headers | Add Content-Security-Policy to responses |
-| T-T-DF2-001 | Webhook signature | Verify Stripe signature on callbacks |
-| T-E-P5-001 | Ownership check | Query orders WHERE user_id = current_user |
-| T-E-P2-002 | JWT claim validation | Validate role claims server-side |
+| T-S-P001-001 | CSP headers | Add Content-Security-Policy to responses |
+| T-T-DF002-001 | Webhook signature | Verify Stripe signature on callbacks |
+| T-E-P005-001 | Ownership check | Query orders WHERE user_id = current_user |
+| T-E-P002-002 | JWT claim validation | Validate role claims server-side |
 
 ---
 
@@ -553,9 +553,9 @@ graph TB
 
 | ID | STRIDE | Element | Threat | Priority |
 |----|--------|---------|--------|----------|
-| T-S-P1-001 | S | API | JWT token leakage | High |
-| T-T-DF1-001 | T | Document Upload | Malicious file upload | High |
-| T-I-DS1-001 | I | S3 | Document access without auth | Critical |
+| T-S-P001-001 | S | API | JWT token leakage | High |
+| T-T-DF001-001 | T | Document Upload | Malicious file upload | High |
+| T-I-DS001-001 | I | S3 | Document access without auth | Critical |
 
 **LLM-Specific Threats (OWASP LLM Top 10)**:
 
@@ -696,8 +696,8 @@ python scripts/query_kb.py --stride spoofing --pretty
 python scripts/query_kb.py --cwe 89 --pretty
 
 # Generate threat ID
-python scripts/stride_matrix.py --generate-id T P1 001
-# Output: {"threat_id": "T-T-P1-001", ...}
+python scripts/stride_matrix.py --generate-id T P001 001
+# Output: {"threat_id": "T-T-P001-001", ...}
 ```
 
 ### Integration Example
@@ -722,10 +722,10 @@ python scripts/query_kb.py --cwe 79 --pretty  # XSS
 
 ### Threat Card Format
 ```markdown
-### T-S-P1-001: API Gateway Authentication Bypass
+### T-S-P001-001: API Gateway Authentication Bypass
 
 **Category**: Spoofing
-**Element**: API Gateway (P1)
+**Element**: API Gateway (P001)
 **Priority**: High
 **Status**: Open
 

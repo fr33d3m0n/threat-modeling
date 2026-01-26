@@ -296,10 +296,10 @@ threat_disposition:
       threat_refs: ["T-T-P13-001", "T-T-P13-002", "T-E-P13-001"]
       count: 3
     VR-002:
-      threat_refs: ["T-S-P01-001", "T-S-P01-002"]
+      threat_refs: ["T-S-P001-001", "T-S-P001-002"]
       count: 2
     VR-003:
-      threat_refs: ["T-I-DS01-001"]
+      threat_refs: ["T-I-DS001-001"]
       count: 1
     # ... 每个 VR 都必须列出其 threat_refs
 
@@ -478,9 +478,9 @@ completeness_verification:
 ```
 Main Agent
     │
-    ├──► T-S-P1-001 ──► Agent ──► CAPEC Query + ATT&CK Query + STRIDE Tests ──► Attack Path
-    ├──► T-T-DF1-001 ──► Agent ──► CAPEC Query + KEV Check + CWE Tests ──► POC Design
-    └──► T-E-P3-001 ──► Agent ──► CAPEC Query + CVE Search + WSTG Tests ──► Verification
+    ├──► T-S-P001-001 ──► Agent ──► CAPEC Query + ATT&CK Query + STRIDE Tests ──► Attack Path
+    ├──► T-T-DF001-001 ──► Agent ──► CAPEC Query + KEV Check + CWE Tests ──► POC Design
+    └──► T-E-P003-001 ──► Agent ──► CAPEC Query + CVE Search + WSTG Tests ──► Verification
     │
     ◄───────────── Aggregate Results ──────────────
 ```
@@ -510,7 +510,7 @@ validated_risks:
   # ─────────────────────────────────────────────────────────────────
   risk_details:
     - risk_id: "VR-001"
-      original_refs: ["T-S-P1-001", "SD-001", "DFD-002"]  # Consolidated sources
+      original_refs: ["T-S-P001-001", "SD-001", "DFD-002"]  # Consolidated sources
       stride_category: S
       severity: critical
 

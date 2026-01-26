@@ -37,3 +37,8 @@ tmp_notebook/
 # Claude session data
 .claude/
 *.sql
+
+# v2.2.1 新增但不发布的文件
+assets/knowledge/phase2/
+assets/knowledge/security_kb_extension.sqlite
+assets/knowledge/security_kb_v2.sqlite

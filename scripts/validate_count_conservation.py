@@ -2,13 +2,14 @@
 """
 Count Conservation Validation Script
 =====================================
-Version: 2.0.0
-Date: 2026-01-02
+Version: 2.1.0
+Date: 2026-01-26
 
 Validates data integrity in STRIDE threat modeling workflow:
-1. P5 → P6 threat count conservation
-2. VR threat_refs completeness
-3. ID format compliance
+1. CP1: P5 → P6 threat count conservation
+2. CP2: VR threat_refs completeness
+3. CP3: P6 → Reports VR count conservation (NEW)
+4. ID format compliance
 
 Usage:
     python validate_count_conservation.py <report_dir>
@@ -192,6 +193,169 @@ def validate_vr_threat_refs(vr_mapping: Dict[str, List[str]]) -> ValidationResul
     )
 
 
+# ============================================================
+# CP3: P6 → Reports VR Count Conservation
+# ============================================================
+
+# Report files that should contain VR entries
+FINAL_REPORTS = [
+    'RISK-INVENTORY',
+    'RISK-ASSESSMENT-REPORT',
+    'MITIGATION-MEASURES',
+    'PENETRATION-TEST-PLAN',
+]
+
+
+def extract_vr_ids_from_p6(p6_content: str) -> List[str]:
+    """
+    Extract all unique VR IDs from P6-RISK-VALIDATION.md.
+
+    Args:
+        p6_content: Full text content of P6-RISK-VALIDATION.md
+
+    Returns:
+        List of unique VR IDs in format VR-XXX (e.g., ['VR-001', 'VR-002', ...])
+    """
+    vr_pattern = re.compile(r'VR-\d{3}')
+    matches = vr_pattern.findall(p6_content)
+    return sorted(list(set(matches)))
+
+
+def extract_report_vr_counts(report_dir: Path) -> Dict[str, Dict[str, any]]:
+    """
+    Extract VR counts from all four final reports.
+
+    Args:
+        report_dir: Path to Risk_Assessment_Report directory
+
+    Returns:
+        Dict with report name as key containing file, vr_ids, count, found
+    """
+    report_counts = {}
+    vr_pattern = re.compile(r'VR-\d{3}')
+
+    for report_name in FINAL_REPORTS:
+        report_info = {
+            'file': None,
+            'vr_ids': [],
+            'count': 0,
+            'found': False
+        }
+
+        # Search for report file (case-insensitive, with project prefix)
+        for f in report_dir.glob('**/*.md'):
+            if report_name.upper() in f.name.upper():
+                report_info['file'] = f
+                report_info['found'] = True
+                try:
+                    content = f.read_text(encoding='utf-8')
+                    matches = vr_pattern.findall(content)
+                    report_info['vr_ids'] = sorted(list(set(matches)))
+                    report_info['count'] = len(report_info['vr_ids'])
+                except Exception as e:
+                    report_info['error'] = str(e)
+                break
+
+        report_counts[report_name] = report_info
+
+    return report_counts
+
+
+def validate_cp3_report_conservation(
+    p6_vr_count: int,
+    p6_vr_ids: List[str],
+    report_counts: Dict[str, Dict[str, any]]
+) -> ValidationResult:
+    """
+    Validate CP3: P6 VR count equals each report's VR count.
+
+    Args:
+        p6_vr_count: Total unique VR IDs in P6
+        p6_vr_ids: List of VR IDs from P6
+        report_counts: Output from extract_report_vr_counts()
+
+    Returns:
+        ValidationResult with PASS/FAIL/WARN status
+    """
+    discrepancies = []
+    missing_reports = []
+    all_match = True
+
+    for report_name, info in report_counts.items():
+        if not info['found']:
+            missing_reports.append(report_name)
+            continue
+
+        if info['count'] != p6_vr_count:
+            all_match = False
+            # Find which VRs are missing or extra
+            p6_set = set(p6_vr_ids)
+            report_set = set(info['vr_ids'])
+            missing_in_report = p6_set - report_set
+            extra_in_report = report_set - p6_set
+
+            discrepancies.append({
+                'report': report_name,
+                'expected': p6_vr_count,
+                'actual': info['count'],
+                'missing': list(missing_in_report)[:5] if missing_in_report else [],
+                'extra': list(extra_in_report)[:5] if extra_in_report else []
+            })
+
+    details = {
+        'p6_vr_count': p6_vr_count,
+        'p6_vr_ids': p6_vr_ids[:10] if len(p6_vr_ids) > 10 else p6_vr_ids,
+        'reports_checked': len(FINAL_REPORTS),
+        'reports_found': len(FINAL_REPORTS) - len(missing_reports),
+        'per_report_counts': {
+            name: info['count'] for name, info in report_counts.items() if info['found']
+        }
+    }
+
+    if missing_reports:
+        details['missing_reports'] = missing_reports
+
+    if discrepancies:
+        details['discrepancies'] = discrepancies
+
+    # Determine status
+    if not p6_vr_ids:
+        return ValidationResult(
+            ValidationStatus.WARN,
+            "No VR IDs found in P6 - skipping CP3 validation",
+            details
+        )
+
+    if missing_reports and len(missing_reports) == len(FINAL_REPORTS):
+        return ValidationResult(
+            ValidationStatus.WARN,
+            "No final reports found - skipping CP3 validation",
+            details
+        )
+
+    if discrepancies:
+        mismatch_reports = [d['report'] for d in discrepancies]
+        return ValidationResult(
+            ValidationStatus.FAIL,
+            f"CP3 FAIL: VR count mismatch in {mismatch_reports}. P6 has {p6_vr_count} VRs.",
+            details
+        )
+
+    if missing_reports:
+        return ValidationResult(
+            ValidationStatus.WARN,
+            f"CP3 PARTIAL: {len(FINAL_REPORTS) - len(missing_reports)} reports match, "
+            f"but missing: {missing_reports}",
+            details
+        )
+
+    return ValidationResult(
+        ValidationStatus.PASS,
+        f"CP3 PASS: All {len(FINAL_REPORTS)} reports have {p6_vr_count} VRs matching P6",
+        details
+    )
+
+
 def validate_id_formats(content: str) -> ValidationResult:
     """Check for forbidden ID formats"""
     issues = []
@@ -258,10 +422,22 @@ def run_validation(report_dir: str) -> Dict[str, ValidationResult]:
     consolidated = list(set(consolidated))
 
     # Run validations
-    results['count_conservation'] = validate_count_conservation(
+    # CP1: P5 → P6 threat count conservation
+    results['cp1_count_conservation'] = validate_count_conservation(
         p5_total, consolidated, excluded
     )
-    results['vr_threat_refs'] = validate_vr_threat_refs(vr_mapping)
+
+    # CP2: VR threat_refs completeness
+    results['cp2_vr_threat_refs'] = validate_vr_threat_refs(vr_mapping)
+
+    # CP3: P6 → Reports VR count conservation (NEW)
+    p6_vr_ids = extract_vr_ids_from_p6(p6_content)
+    report_vr_counts = extract_report_vr_counts(report_path)
+    results['cp3_report_conservation'] = validate_cp3_report_conservation(
+        len(p6_vr_ids), p6_vr_ids, report_vr_counts
+    )
+
+    # ID format validations
     results['id_format_p6'] = validate_id_formats(p6_content)
     results['id_format_inventory'] = validate_id_formats(inventory_content)
 
@@ -298,17 +474,41 @@ def print_report(results: Dict[str, ValidationResult]):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print(__doc__)
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description='Count Conservation Validation Script',
+        epilog='''
+Validates data integrity in STRIDE threat modeling workflow:
+1. P5 → P6 threat count conservation
+2. VR threat_refs completeness
+3. ID format compliance
+
+Examples:
+    python validate_count_conservation.py ./Risk_Assessment_Report/
+    python validate_count_conservation.py ./project/Risk_Assessment_Report/
+''',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+
+    parser.add_argument(
+        'report_dir',
+        help='Path to the Risk_Assessment_Report directory containing phase documents'
+    )
+
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='Enable verbose output with detailed validation information'
+    )
+
+    args = parser.parse_args()
+
+    if not os.path.isdir(args.report_dir):
+        print(f"Error: {args.report_dir} is not a directory")
         sys.exit(1)
 
-    report_dir = sys.argv[1]
-
-    if not os.path.isdir(report_dir):
-        print(f"Error: {report_dir} is not a directory")
-        sys.exit(1)
-
-    results = run_validation(report_dir)
+    results = run_validation(args.report_dir)
     exit_code = print_report(results)
     sys.exit(exit_code)
 

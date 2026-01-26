@@ -40,31 +40,31 @@
 ├─────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                  │
 │    ┌─────────┐                                                                  │
-│    │  EI01   │                                                                  │
+│    │   EI1   │                                                                  │
 │    │  User   │                                                                  │
 │    └────┬────┘                                                                  │
-│         │ DF01: HTTP Request (credentials)                                      │
+│         │ DF1: HTTP Request (credentials)                                       │
 │         ▼                                                                        │
-│   ══════════════════════════════════ TB01: Network Boundary ════════════════    │
+│   ══════════════════════════════════ TB1: Network Boundary ═════════════════    │
 │         │                                                                        │
 │         ▼                                                                        │
-│    ┌─────────┐       DF02: Auth Request       ┌─────────┐                       │
-│    │   P01   │──────────────────────────────►│   P02   │                       │
+│    ┌─────────┐       DF2: Auth Request        ┌─────────┐                       │
+│    │    P1   │──────────────────────────────►│    P2   │                       │
 │    │ Web App │                                │Auth Svc │                       │
 │    └────┬────┘                                └────┬────┘                       │
 │         │                                          │                             │
-│         │ DF03: Data Request                       │ DF04: Token Verify          │
+│         │ DF3: Data Request                        │ DF4: Token Verify           │
 │         ▼                                          ▼                             │
-│    ┌─────────┐       DF05: Query              ┌─────────┐                       │
-│    │   P03   │──────────────────────────────►│  DS01   │                       │
+│    ┌─────────┐       DF5: Query               ┌─────────┐                       │
+│    │    P3   │──────────────────────────────►│   DS1   │                       │
 │    │ API Svc │◄──────────────────────────────│Database │                       │
-│    └─────────┘       DF06: Results            └─────────┘                       │
+│    └─────────┘       DF6: Results             └─────────┘                       │
 │                                                                                  │
-│   ══════════════════════════════════ TB02: Process Boundary ════════════════    │
+│   ══════════════════════════════════ TB2: Process Boundary ═════════════════    │
 │                                                                                  │
 │    ┌─────────┐                                                                  │
-│    │  EI02   │                                                                  │
-│    │External │◄─── DF07: Webhook ────────────────────────────────────────────   │
+│    │   EI2   │                                                                  │
+│    │External │◄─── DF7: Webhook ─────────────────────────────────────────────   │
 │    │  API    │                                                                  │
 │    └─────────┘                                                                  │
 │                                                                                  │
@@ -93,9 +93,9 @@
 {PROCESSES_TABLE}
 <!--
 格式:
-| P01 | Web Application | 前端Web应用 | React/Next.js | Session | RBAC | 5 |
-| P02 | Authentication Service | 认证服务 | Node.js/Express | N/A | N/A | 8 |
-| P03 | API Service | 后端API服务 | Node.js/Express | JWT | RBAC | 12 |
+| P1 | Web Application | 前端Web应用 | React/Next.js | Session | RBAC | 5 |
+| P2 | Authentication Service | 认证服务 | Node.js/Express | N/A | N/A | 8 |
+| P3 | API Service | 后端API服务 | Node.js/Express | JWT | RBAC | 12 |
 -->
 
 #### 进程详情
@@ -103,7 +103,7 @@
 {PROCESS_DETAILS_SECTION}
 <!--
 格式:
-##### P01: Web Application
+##### P1: Web Application
 
 **描述**: {DESCRIPTION}
 
@@ -120,7 +120,7 @@
 | Input Sanitization | Yes |
 | Output Encoding | Yes |
 
-**威胁关联**: T-S-P01-001, T-T-P01-001, ...
+**威胁关联**: T-S-P001-001, T-T-P001-001, ...
 -->
 
 ### 2.2 数据存储 (Data Stores)
@@ -130,9 +130,9 @@
 {DATA_STORES_TABLE}
 <!--
 格式:
-| DS01 | PostgreSQL | RDBMS | 主数据库 | PII, 凭证 | 静态加密 | 6 |
-| DS02 | Redis | Cache | 会话缓存 | Session | 无 | 3 |
-| DS03 | S3 Bucket | Object Store | 文件存储 | 文档 | 服务端加密 | 2 |
+| DS1 | PostgreSQL | RDBMS | 主数据库 | PII, 凭证 | 静态加密 | 6 |
+| DS2 | Redis | Cache | 会话缓存 | Session | 无 | 3 |
+| DS3 | S3 Bucket | Object Store | 文件存储 | 文档 | 服务端加密 | 2 |
 -->
 
 #### 数据存储详情
@@ -140,7 +140,7 @@
 {DATA_STORE_DETAILS_SECTION}
 <!--
 格式:
-##### DS01: PostgreSQL Database
+##### DS1: PostgreSQL Database
 
 **描述**: {DESCRIPTION}
 
@@ -160,7 +160,7 @@
 - 凭证: 密码哈希、API密钥
 - 业务数据: 订单、交易记录
 
-**威胁关联**: T-T-DS01-001, T-I-DS01-001, ...
+**威胁关联**: T-T-DS001-001, T-I-DS001-001, ...
 -->
 
 ### 2.3 数据流 (Data Flows)
@@ -170,9 +170,9 @@
 {DATA_FLOWS_TABLE}
 <!--
 格式:
-| DF01 | User Request | EI01 | P01 | HTTPS | TLS 1.3 | Session | 3 |
-| DF02 | Auth Request | P01 | P02 | gRPC | mTLS | Internal | 2 |
-| DF03 | DB Query | P03 | DS01 | TCP | 无 | Password | 4 |
+| DF1 | User Request | EI1 | P1 | HTTPS | TLS 1.3 | Session | 3 |
+| DF2 | Auth Request | P1 | P2 | gRPC | mTLS | Internal | 2 |
+| DF3 | DB Query | P3 | DS1 | TCP | 无 | Password | 4 |
 -->
 
 #### 数据流详情
@@ -180,11 +180,11 @@
 {DATA_FLOW_DETAILS_SECTION}
 <!--
 格式:
-##### DF01: User HTTP Request
+##### DF1: User HTTP Request
 
 **描述**: 用户浏览器到Web应用的HTTP请求
 
-**路径**: EI01 (User) → P01 (Web App)
+**路径**: EI1 (User) → P1 (Web App)
 
 **安全属性**:
 | 属性 | 值 |
@@ -199,7 +199,7 @@
 - 用户输入
 - 文件上传
 
-**威胁关联**: T-T-DF01-001, T-I-DF01-001, ...
+**威胁关联**: T-T-DF001-001, T-I-DF001-001, ...
 -->
 
 ### 2.4 外部实体 (External Entities)
@@ -209,10 +209,10 @@
 {EXTERNAL_ENTITIES_TABLE}
 <!--
 格式:
-| EI01 | User | Human | 系统用户（浏览器） | Untrusted |
-| EI02 | Admin | Human | 管理员用户 | Partially Trusted |
-| EI03 | External API | System | 第三方API服务 | Partially Trusted |
-| EI04 | Webhook Sender | System | Webhook调用方 | Untrusted |
+| EI1 | User | Human | 系统用户（浏览器） | Untrusted |
+| EI2 | Admin | Human | 管理员用户 | Partially Trusted |
+| EI3 | External API | System | 第三方API服务 | Partially Trusted |
+| EI4 | Webhook Sender | System | Webhook调用方 | Untrusted |
 -->
 
 ---
@@ -226,10 +226,10 @@
 {TRUST_BOUNDARIES_TABLE}
 <!--
 格式:
-| TB01 | Internet-DMZ | Network | 互联网到DMZ区域 |
-| TB02 | DMZ-Internal | Network | DMZ到内部网络 |
-| TB03 | Application-Database | Process | 应用层到数据层 |
-| TB04 | User-Admin | User | 普通用户到管理员 |
+| TB1 | Internet-DMZ | Network | 互联网到DMZ区域 |
+| TB2 | DMZ-Internal | Network | DMZ到内部网络 |
+| TB3 | Application-Database | Process | 应用层到数据层 |
+| TB4 | User-Admin | User | 普通用户到管理员 |
 -->
 
 #### 边界详情
@@ -237,20 +237,20 @@
 {TRUST_BOUNDARY_DETAILS_SECTION}
 <!--
 格式:
-##### TB01: Internet-DMZ Boundary
+##### TB1: Internet-DMZ Boundary
 
 **类型**: Network
 
 **描述**: 公网到内部DMZ区域的网络边界
 
 **内部元素**:
-- P01: Web Application
-- P02: API Gateway
+- P1: Web Application
+- P2: API Gateway
 
 **穿越数据流**:
 | 数据流 | 方向 | 安全控制 |
 |--------|------|---------|
-| DF01 | Inbound | TLS, WAF, Rate Limit |
+| DF1 | Inbound | TLS, WAF, Rate Limit |
 | DF10 | Outbound | TLS |
 
 **安全控制**:
@@ -267,9 +267,9 @@
 {BOUNDARY_CROSSING_TABLE}
 <!--
 格式:
-| DF01 | TB01 | Inbound | User Input | TLS, Validation | Medium |
-| DF02 | TB02 | Internal | Auth Token | mTLS | Low |
-| DF03 | TB03 | Internal | SQL Query | None | High |
+| DF1 | TB1 | Inbound | User Input | TLS, Validation | Medium |
+| DF2 | TB2 | Internal | Auth Token | mTLS | Low |
+| DF3 | TB3 | Internal | SQL Query | None | High |
 -->
 
 ### 3.3 关键接口
@@ -279,9 +279,9 @@
 {CRITICAL_INTERFACES_TABLE}
 <!--
 格式:
-| API Gateway | HTTP | TB01 | JWT, Rate Limit | High |
-| Database Connection | TCP | TB03 | Password Auth | Critical |
-| Cache Connection | TCP | TB02 | None | High |
+| API Gateway | HTTP | TB1 | JWT, Rate Limit | High |
+| Database Connection | TCP | TB3 | Password Auth | Critical |
+| Cache Connection | TCP | TB2 | None | High |
 -->
 
 ---
@@ -387,7 +387,7 @@ PII Data Flow Path:
 格式:
 | ID | Code Type | Running As | Isolation | Auth | Authz | Input San. | Output Enc. |
 |----|-----------|------------|-----------|------|-------|------------|-------------|
-| P01 | Web | User | AppContainer | Yes | Yes | Yes | Yes |
+| P1 | Web | User | AppContainer | Yes | Yes | Yes | Yes |
 -->
 
 #### B.2 数据存储属性
@@ -397,7 +397,7 @@ PII Data Flow Path:
 格式:
 | ID | Stores Creds | Stores Logs | Encrypted | Signed | Backup |
 |----|--------------|-------------|-----------|--------|--------|
-| DS01 | Yes | No | Yes | N/A | Yes |
+| DS1 | Yes | No | Yes | N/A | Yes |
 -->
 
 #### B.3 数据流属性
@@ -407,7 +407,7 @@ PII Data Flow Path:
 格式:
 | ID | Protocol | Encrypted | Authenticated | Data Classification |
 |----|----------|-----------|---------------|---------------------|
-| DF01 | HTTPS | Yes (TLS 1.3) | Yes | User Input |
+| DF1 | HTTPS | Yes (TLS 1.3) | Yes | User Input |
 -->
 
 ---

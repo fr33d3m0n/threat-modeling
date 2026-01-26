@@ -274,32 +274,32 @@ graph LR
 ### 外部实体 (External Interactors)
 | ID | 名称 | 类型 | 发送数据 | 接收数据 |
 |----|------|------|---------|---------|
-| EI1 | 用户 | 人类 | 凭证, API请求 | 响应数据 |
-| EI2 | 管理员 | 人类 | 管理命令 | 管理数据 |
-| EI3 | 外部API | 系统 | 回调数据 | API请求 |
+| EI001 | 用户 | 人类 | 凭证, API请求 | 响应数据 |
+| EI002 | 管理员 | 人类 | 管理命令 | 管理数据 |
+| EI003 | 外部API | 系统 | 回调数据 | API请求 |
 
 ### 进程 (Processes)
 | ID | 名称 | 功能 | 认证要求 | 授权要求 |
 |----|------|------|---------|---------|
-| P1 | API网关 | 请求路由 | 是 | 部分 |
-| P2 | 认证服务 | 身份验证 | 否 | 否 |
-| P3 | 应用服务 | 业务逻辑 | 是 | 是 |
-| P4 | 后台任务 | 异步处理 | 系统 | 系统 |
+| P001 | API网关 | 请求路由 | 是 | 部分 |
+| P002 | 认证服务 | 身份验证 | 否 | 否 |
+| P003 | 应用服务 | 业务逻辑 | 是 | 是 |
+| P004 | 后台任务 | 异步处理 | 系统 | 系统 |
 
 ### 数据存储 (Data Stores)
 | ID | 名称 | 类型 | 敏感度 | 加密 | 备份 |
 |----|------|------|--------|------|------|
-| DS1 | 用户数据库 | PostgreSQL | 高(PII) | 是 | 是 |
-| DS2 | 应用数据库 | MongoDB | 中 | 部分 | 是 |
-| DS3 | 缓存 | Redis | 中(会话) | 否 | 否 |
+| DS001 | 用户数据库 | PostgreSQL | 高(PII) | 是 | 是 |
+| DS002 | 应用数据库 | MongoDB | 中 | 部分 | 是 |
+| DS003 | 缓存 | Redis | 中(会话) | 否 | 否 |
 
 ### 数据流 (Data Flows)
 | ID | 从 | 到 | 数据 | 协议 | 加密 |
 |----|-----|-----|------|------|------|
-| DF1 | EI1 | P1 | 用户请求 | HTTPS | 是 |
-| DF2 | P1 | P2 | 认证请求 | gRPC | 是 |
-| DF3 | P2 | DS1 | 用户查询 | TCP | 是 |
-| DF4 | P3 | DS2 | 业务数据 | TCP | 部分 |
+| DF001 | EI001 | P001 | 用户请求 | HTTPS | 是 |
+| DF002 | P001 | P002 | 认证请求 | gRPC | 是 |
+| DF003 | P002 | DS001 | 用户查询 | TCP | 是 |
+| DF004 | P003 | DS002 | 业务数据 | TCP | 部分 |
 ```
 
 ### Checkpoint
@@ -442,6 +442,11 @@ Before proceeding to Phase 4, verify:
 - Phase 1: Project overview, modules, security design
 - Phase 2: DFD, data flows, processes
 - Phase 3: Boundaries, interfaces, data nodes
+
+**Knowledge Base References**:
+- `assets/knowledge/security-design.yaml` - Security domain definitions and control patterns
+- `assets/knowledge/security-principles.yaml` - Core security principles (CIA, Defense-in-Depth, etc.)
+- `assets/knowledge/secure-coding-rules.yaml` - Language-specific secure coding guidelines
 
 ### Security Domains (Must Cover All)
 
@@ -608,8 +613,8 @@ Before proceeding to Phase 5, verify:
 
 5. **Generate Threat IDs**
    ```bash
-   python scripts/stride_matrix.py --generate-id S P1 001
-   # Output: T-S-P1-001
+   python scripts/stride_matrix.py --generate-id S P001 001
+   # Output: T-S-P001-001
    ```
 
 6. **Assess and prioritize**
@@ -713,36 +718,36 @@ error_handling:
 ### Spoofing 威胁
 | 威胁ID | 元素 | 威胁描述 | CWE | CAPEC | 优先级 |
 |--------|------|---------|-----|-------|--------|
-| T-S-P1-001 | API网关 | 凭证填充攻击 | CWE-307 | CAPEC-600 | High |
-| T-S-P1-002 | API网关 | JWT伪造 | CWE-347 | CAPEC-220 | High |
+| T-S-P001-001 | API网关 | 凭证填充攻击 | CWE-307 | CAPEC-600 | High |
+| T-S-P001-002 | API网关 | JWT伪造 | CWE-347 | CAPEC-220 | High |
 
 ### Tampering 威胁
 | 威胁ID | 元素 | 威胁描述 | CWE | CAPEC | 优先级 |
 |--------|------|---------|-----|-------|--------|
-| T-T-DF1-001 | 用户输入 | SQL注入 | CWE-89 | CAPEC-66 | Critical |
-| T-T-DF2-001 | API请求 | 参数篡改 | CWE-639 | CAPEC-88 | High |
+| T-T-DF001-001 | 用户输入 | SQL注入 | CWE-89 | CAPEC-66 | Critical |
+| T-T-DF002-001 | API请求 | 参数篡改 | CWE-639 | CAPEC-88 | High |
 
 ### Repudiation 威胁
 | 威胁ID | 元素 | 威胁描述 | CWE | CAPEC | 优先级 |
 |--------|------|---------|-----|-------|--------|
-| T-R-P3-001 | 应用服务 | 缺少审计日志 | CWE-778 | - | Medium |
+| T-R-P003-001 | 应用服务 | 缺少审计日志 | CWE-778 | - | Medium |
 
 ### Information Disclosure 威胁
 | 威胁ID | 元素 | 威胁描述 | CWE | CAPEC | 优先级 |
 |--------|------|---------|-----|-------|--------|
-| T-I-DS1-001 | 用户数据库 | PII泄露 | CWE-359 | CAPEC-116 | High |
-| T-I-DF3-001 | 数据库连接 | 敏感数据传输 | CWE-319 | CAPEC-157 | Medium |
+| T-I-DS001-001 | 用户数据库 | PII泄露 | CWE-359 | CAPEC-116 | High |
+| T-I-DF003-001 | 数据库连接 | 敏感数据传输 | CWE-319 | CAPEC-157 | Medium |
 
 ### Denial of Service 威胁
 | 威胁ID | 元素 | 威胁描述 | CWE | CAPEC | 优先级 |
 |--------|------|---------|-----|-------|--------|
-| T-D-P1-001 | API网关 | 速率限制绕过 | CWE-400 | CAPEC-469 | Medium |
+| T-D-P001-001 | API网关 | 速率限制绕过 | CWE-400 | CAPEC-469 | Medium |
 
 ### Elevation of Privilege 威胁
 | 威胁ID | 元素 | 威胁描述 | CWE | CAPEC | 优先级 |
 |--------|------|---------|-----|-------|--------|
-| T-E-P3-001 | 应用服务 | IDOR | CWE-639 | CAPEC-122 | High |
-| T-E-P3-002 | 应用服务 | 权限提升 | CWE-269 | CAPEC-233 | High |
+| T-E-P003-001 | 应用服务 | IDOR | CWE-639 | CAPEC-122 | High |
+| T-E-P003-002 | 应用服务 | 权限提升 | CWE-269 | CAPEC-233 | High |
 ```
 
 ### LLM/AI Specific Threats (if applicable)
@@ -786,30 +791,30 @@ threat_inventory:
   # ═════════════════════════════════════════════════════════════════════════
   element_threat_map:
     # 格式: element_id -> [threat_ids]
-    P01:                          # Process: API Gateway
-      - T-S-P01-001
-      - T-T-P01-001
-      - T-R-P01-001
-    P13:                          # Process: Plugin System
-      - T-T-P13-001
-      - T-T-P13-002
-      - T-E-P13-001
-      - T-E-P13-002
-    DS01:                         # DataStore: UserDB
-      - T-T-DS01-001
-      - T-I-DS01-001
-      - T-D-DS01-001
-    DF01:                         # DataFlow: User Input
-      - T-T-DF01-001
-      - T-I-DF01-001
+    P001:                         # Process: API Gateway
+      - T-S-P001-001
+      - T-T-P001-001
+      - T-R-P001-001
+    P013:                         # Process: Plugin System
+      - T-T-P013-001
+      - T-T-P013-002
+      - T-E-P013-001
+      - T-E-P013-002
+    DS001:                        # DataStore: UserDB
+      - T-T-DS001-001
+      - T-I-DS001-001
+      - T-D-DS001-001
+    DF001:                        # DataFlow: User Input
+      - T-T-DF001-001
+      - T-I-DF001-001
 
   # ═════════════════════════════════════════════════════════════════════════
   # 3. Full Threat List (完整威胁列表)
   # ═════════════════════════════════════════════════════════════════════════
   threats:
-    - id: "T-T-P13-001"
+    - id: "T-T-P013-001"
       stride_category: "T"        # Tampering
-      element_id: "P13"           # Plugin System
+      element_id: "P013"          # Plugin System
       element_name: "Plugin System"
       description: "Plugin 任意代码执行"
       cwe: "CWE-94"
@@ -818,9 +823,9 @@ threat_inventory:
       cvss: 10.0
       location: "utils/plugin.py:100,144"
 
-    - id: "T-T-P13-002"
+    - id: "T-T-P013-002"
       stride_category: "T"
-      element_id: "P13"
+      element_id: "P013"
       # ... (每个威胁完整字段)
 ```
 
@@ -842,7 +847,7 @@ p5_output_validation:
     mandatory:
       - id                    # T-{STRIDE}-{Element}-{Seq}
       - stride_category       # S/T/R/I/D/E
-      - element_id            # P01, DS01, DF01...
+      - element_id            # P001, DS001, DF001...
       - element_name          # 元素名称
       - description           # 威胁描述
       - priority              # critical/high/medium/low
@@ -928,7 +933,8 @@ Before completing threat modeling, verify all 8 phases:
 - [ ] Phase 4: 安全设计评审完成
 - [ ] Phase 5: STRIDE 威胁分析完成
 - [ ] Phase 6: 风险验证完成 (see VALIDATION.md)
-- [ ] Phase 7-8: 报告生成完成 (see REPORT.md)
+- [ ] Phase 7: 缓解措施规划完成 (see REPORT.md §Phase 7)
+- [ ] Phase 8: 报告生成完成 (see REPORT.md §Phase 8)
 - [ ] 所有阶段产物已发布到 Risk_Assessment_Report/
 - [ ] 4份必需报告已生成
 - [ ] 内容完整性验证通过 (P6 条目数 = 最终报告条目数)
@@ -985,3 +991,61 @@ python scripts/unified_kb_query.py --cwe CWE-89 --mitigations
 python scripts/unified_kb_query.py --control authentication
 python scripts/unified_kb_query.py --cloud aws --category compute
 ```
+
+---
+
+## Appendix: Phase Interface Definitions
+
+**Purpose**: Formal definition of inputs and outputs for each phase to ensure consistent data flow.
+
+### Interface Summary
+
+| Phase | Input From | Output Key | Output Type | Output File |
+|-------|------------|------------|-------------|-------------|
+| P1 | User request | `project_context` | YAML | P1-PROJECT-UNDERSTANDING.md |
+| P2 | P1 | `dfd_elements` | Mermaid + YAML | P2-DFD-ANALYSIS.md |
+| P3 | P1, P2 | `boundary_context` | YAML | P3-TRUST-BOUNDARY.md |
+| P4 | P1-P3 | `security_gaps` | Matrix (Markdown) | P4-SECURITY-DESIGN-REVIEW.md |
+| P5 | P2-P4 | `threat_inventory` | Threat Inventory | P5-STRIDE-THREATS.md |
+| P6 | P5 | `validated_risks` | Risk List + POC | P6-RISK-VALIDATION.md |
+| P7 | P6 | `mitigation_plan` | Mitigation Matrix | See REPORT.md |
+| P8 | P1-P7 | Final Reports | 4 Required Reports | Risk_Assessment_Report/ |
+
+### Critical Interface Chain (P5 → P6 → P7)
+
+```yaml
+# P5 Output → P6 Input
+threat_inventory:
+  - threat_id: "T-S-P001-001"
+    category: "Spoofing"
+    element: "API Gateway"
+    description: "..."
+    priority: "High"
+    cwe: "CWE-287"
+    capec: "CAPEC-114"
+
+# P6 Output → P7 Input
+validated_risks:
+  - risk_id: "VR-001"
+    source_threat: "T-S-P001-001"  # Reference to P5
+    validation_status: "CONFIRMED"
+    attack_feasibility: "HIGH"
+    poc_design: "..."
+    evidence: "..."
+
+# P7 Output (See REPORT.md for full schema)
+mitigation_plan:
+  - risk_id: "VR-001"
+    mitigation_strategy: "..."
+    asvs_alignment: ["V2.1.1", "V2.1.2"]
+    implementation_priority: "P0"
+```
+
+### Cross-Reference Rules
+
+1. **Threat ID Format**: `T-{STRIDE}-{ElementID}-{Seq}` (generated in P5, referenced in P6/P7)
+2. **Risk ID Format**: `VR-{Seq}` (generated in P6, referenced in P7/P8)
+3. **Element ID Format**: `{Type}{Seq}` (generated in P2, referenced in P3-P8)
+4. **Count Consistency**: P6 risk count must equal P7 mitigation count must equal P8 report entries
+
+> **Schema Details**: See `assets/schemas/phase-risk-summary.schema.md` for complete YAML schemas

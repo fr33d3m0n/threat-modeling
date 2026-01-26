@@ -594,7 +594,7 @@ Data Flow │   │ ✓ │   │ ✓ │ ✓ │   │
 ```
 
 **威胁 ID 格式**: `T-{STRIDE}-{ElementID}-{Seq}`
-- 示例: `T-S-P1-001` (身份伪造威胁，针对进程P1，第1个)
+- 示例: `T-S-P001-001` (身份伪造威胁，针对进程P001，第1个)
 
 ### Phase 6: 风险验证 (Risk Validation)
 
@@ -951,17 +951,17 @@ Reference: reference-set-03-sql-injection-prevention.md
 │                                                                                      │
 │  Main Agent                                                                          │
 │      │                                                                               │
-│      ├──▶ T-S-P1-001 ──▶ Sub-Agent ──▶ KB: --capec CAPEC-600 --attack-chain        │
-│      │                              ──▶ KB: --attack-technique T1110.004             │
-│      │                              ◀── 攻击路径 + POC方法                            │
+│      ├──▶ T-S-P001-001 ──▶ Sub-Agent ──▶ KB: --capec CAPEC-600 --attack-chain      │
+│      │                                ──▶ KB: --attack-technique T1110.004           │
+│      │                                ◀── 攻击路径 + POC方法                          │
 │      │                                                                               │
-│      ├──▶ T-T-DF1-001 ──▶ Sub-Agent ──▶ KB: --capec CAPEC-66 --attack-chain        │
-│      │                              ──▶ KB: --cve-for-cwe CWE-89                     │
-│      │                              ──▶ KB: --check-kev                              │
-│      │                              ◀── 攻击路径 + KEV状态                            │
+│      ├──▶ T-T-DF001-001 ──▶ Sub-Agent ──▶ KB: --capec CAPEC-66 --attack-chain      │
+│      │                                ──▶ KB: --cve-for-cwe CWE-89                   │
+│      │                                ──▶ KB: --check-kev                            │
+│      │                                ◀── 攻击路径 + KEV状态                          │
 │      │                                                                               │
-│      └──▶ T-E-P3-001 ──▶ Sub-Agent ──▶ KB: --capec CAPEC-122 --attack-chain        │
-│                                     ◀── 攻击路径 + POC方法                            │
+│      └──▶ T-E-P003-001 ──▶ Sub-Agent ──▶ KB: --capec CAPEC-122 --attack-chain      │
+│                                       ◀── 攻击路径 + POC方法                          │
 │      │                                                                               │
 │      ◀──────────────────── 聚合验证结果 ─────────────────────                        │
 │                                                                                      │
@@ -971,17 +971,17 @@ Reference: reference-set-03-sql-injection-prevention.md
 │                                                                                      │
 │  Main Agent                                                                          │
 │      │                                                                               │
-│      ├──▶ T-S-P1-001 ──▶ Sub-Agent ──▶ KB: --cwe CWE-307 --mitigations             │
-│      │                              ──▶ KB: --control authentication                 │
-│      │                              ◀── 缓解措施 + 代码示例                           │
+│      ├──▶ T-S-P001-001 ──▶ Sub-Agent ──▶ KB: --cwe CWE-307 --mitigations           │
+│      │                                ──▶ KB: --control authentication               │
+│      │                                ◀── 缓解措施 + 代码示例                         │
 │      │                                                                               │
-│      ├──▶ T-T-DF1-001 ──▶ Sub-Agent ──▶ KB: --cwe CWE-89 --mitigations             │
-│      │                              ──▶ KB: --control input-validation               │
-│      │                              ◀── 缓解措施 + 代码示例                           │
+│      ├──▶ T-T-DF001-001 ──▶ Sub-Agent ──▶ KB: --cwe CWE-89 --mitigations           │
+│      │                                ──▶ KB: --control input-validation             │
+│      │                                ◀── 缓解措施 + 代码示例                         │
 │      │                                                                               │
-│      └──▶ T-E-P3-001 ──▶ Sub-Agent ──▶ KB: --cwe CWE-639 --mitigations             │
-│                                     ──▶ KB: --control authorization                  │
-│                                     ◀── 缓解措施 + 代码示例                           │
+│      └──▶ T-E-P003-001 ──▶ Sub-Agent ──▶ KB: --cwe CWE-639 --mitigations           │
+│                                       ──▶ KB: --control authorization                │
+│                                       ◀── 缓解措施 + 代码示例                         │
 │      │                                                                               │
 │      ◀──────────────────── 聚合缓解计划 ─────────────────────                        │
 │                                                                                      │

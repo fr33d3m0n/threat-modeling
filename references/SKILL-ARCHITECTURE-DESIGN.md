@@ -743,11 +743,11 @@
 │  │ id:           │            │ id:           │          │ id:           │                 │
 │  │  F-P{N}-{Seq} │            │  T-{S}-{E}-   │          │  VR-{Seq}     │                 │
 │  │  F-P1-001     │            │    {Seq}      │          │  VR-001       │                 │
-│  │               │    N:1     │  T-T-P13-002  │   N:1    │               │                 │
+│  │               │    N:1     │  T-T-P013-002 │   N:1    │               │                 │
 │  │ source_phase: │ ─────────► │               │ ───────► │ threat_refs:  │                 │
-│  │  P1|P2|P3|P4  │            │ element_id:   │          │  [T-T-P13-001,│                 │
-│  │               │            │  P01|DS02|DF03│          │   T-T-P13-002,│                 │
-│  │ description   │            │               │          │   T-E-P13-001]│                 │
+│  │  P1|P2|P3|P4  │            │ element_id:   │          │ [T-T-P013-001,│                 │
+│  │               │            │ P001|DS002|DF3│          │  T-T-P013-002,│                 │
+│  │ description   │            │               │          │  T-E-P013-001]│                 │
 │  │ location      │            │ stride_cat:   │          │               │                 │
 │  │ severity      │            │  S|T|R|I|D|E  │          │ severity:     │                 │
 │  │               │            │               │          │  critical|high│                 │
@@ -813,7 +813,7 @@
 | Entity | Format | Example | Phase |
 |--------|--------|---------|-------|
 | Finding | `F-P{N}-{Seq:03d}` | F-P1-001, F-P4-003 | P1-P4 |
-| Threat | `T-{STRIDE}-{Element}-{Seq}` | T-T-P13-002, T-S-DS01-001 | P5 |
+| Threat | `T-{STRIDE}-{Element}-{Seq}` | T-T-P013-002, T-S-DS001-001 | P5 |
 | ValidatedRisk | `VR-{Seq:03d}` | VR-001, VR-025 | P6 |
 | POC | `POC-{Seq:03d}` | POC-001 | P6 |
 | AttackPath | `AP-{Seq:03d}` | AP-001 | P6 |

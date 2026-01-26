@@ -24,7 +24,7 @@ description: |
   Use when: threat model, STRIDE, DFD, security assessment, 威胁建模, 安全评估.
 ---
 
-# Code-First Deep Risk Analysis v2.0
+# Code-First Deep Risk Analysis v2.2.1
 
 Code-first automated deep threat modeling with comprehensive security chain analysis.
 
@@ -142,15 +142,17 @@ Understanding  DFD      Boundaries   Design     Analysis   Validation
 1. 将阶段输出写入 `.phase_working/P{N}-*.md`
 2. 更新 `_session_meta.yaml` 的 `phases_completed`
 
-**会话元数据** (`_session_meta.yaml`):
+**会话元数据** (`_session_meta.yaml`) — **Authoritative Definition**:
 ```yaml
-session_id: "20260103-120000"
-project_name: "OPEN-WEBUI"
-project_path: "/path/to/project"
-started_at: "2026-01-03T12:00:00+08:00"
-phases_completed: [1, 2, 3]  # 已完成的阶段
-current_phase: 4
-skill_version: "2.1.0"
+# Session Management Schema (v2.2.0)
+# This is the single source of truth for session state
+session_id: "20260103-120000"       # Format: YYYYMMDD-HHMMSS
+project_name: "OPEN-WEBUI"          # Uppercase, max 30 chars
+project_path: "/path/to/project"    # Absolute path to target project
+started_at: "2026-01-03T12:00:00+08:00"  # ISO 8601 with timezone
+phases_completed: [1, 2, 3]         # List of completed phase numbers
+current_phase: 4                    # Currently active phase (1-8)
+skill_version: "2.2.1"              # Skill version for compatibility
 ```
 
 ### Session Recovery
@@ -502,7 +504,7 @@ Bridges Security Control Set and Threat Pattern Set, providing test procedures f
 │  │  Threat (威胁)                                           │   │
 │  │  ─────────────────                                       │   │
 │  │  来源: Phase 5 STRIDE 分析                               │   │
-│  │  ID: T-{STRIDE}-{ElementID}-{Seq}  例: T-T-P13-002       │   │
+│  │  ID: T-{STRIDE}-{ElementID}-{Seq}  例: T-T-P013-002      │   │
 │  │  性质: 针对 DFD 元素的潜在攻击向量                         │   │
 │  │  数量: 通常 50-200 个 (每元素多个)                         │   │
 │  │  状态: identified (已识别)                                │   │
@@ -537,7 +539,7 @@ Bridges Security Control Set and Threat Pattern Set, providing test procedures f
 
 ```
 DFD Element              1:N                 ┌──────────┐
-(P01, DS01, DF01...)    ─────────────────────▶│  Threat  │
+(P001, DS001, DF001...) ─────────────────────▶│  Threat  │
                                              │ (T-xxx)  │
                                              └────┬─────┘
                                                   │
@@ -548,9 +550,9 @@ Finding ────────────────────────
 (F-xxx)   合并                           │   (VR-xxx)      │
                                         │                 │
                                         │ threat_refs:    │
-                                        │ [T-T-P13-001,   │
-                                        │  T-T-P13-002,   │
-                                        │  T-E-P13-001]   │
+                                        │ [T-T-P013-001,  │
+                                        │  T-T-P013-002,  │
+                                        │  T-E-P013-001]  │
                                         └────────┬────────┘
                                                  │
                                                  │ N:1 (覆盖)
@@ -575,7 +577,7 @@ Finding ────────────────────────
 | 实体类型 | ID 格式 | 示例 | 阶段 |
 |---------|--------|------|------|
 | Finding | F-P{N}-{Seq:03d} | F-P1-001 | P1-P4 |
-| Threat | T-{STRIDE}-{Element}-{Seq} | T-T-P13-002 | P5 |
+| Threat | T-{STRIDE}-{Element}-{Seq} | T-T-P013-002 | P5 |
 | ValidatedRisk | VR-{Seq:03d} | VR-001 | P6 |
 | Mitigation | M-{Seq:03d} | M-001 | P7 |
 | POC | POC-{Seq:03d} | POC-001 | P6 |
@@ -584,7 +586,7 @@ Finding ────────────────────────
 
 **❌ 禁止的 ID 格式** (不再使用):
 - `RISK-{Seq}` → 改用 `VR-{Seq}`
-- `T-E-RCE-001` → 改用 `T-E-P13-001` (保留 ElementID)
+- `T-E-RCE-001` → 改用 `T-E-P013-001` (保留 ElementID)
 - `SD-{Seq}` → 改用 `F-P4-{Seq}`
 
 ### Count Conservation Rules (数量守恒规则) ⚠️ CRITICAL
@@ -630,7 +632,7 @@ ValidatedRisk:
   threat_refs:
     type: array[Threat.id]
     description: "此风险来源的所有威胁 ID"
-    example: ["T-T-P13-001", "T-T-P13-002", "T-E-P13-001"]
+    example: ["T-T-P013-001", "T-T-P013-002", "T-E-P013-001"]
     requirement: "MANDATORY - 必须列出所有源威胁"
 
   finding_refs:
@@ -709,12 +711,58 @@ ValidatedRisk:
 | Phase | Context Name | Key Fields |
 |-------|--------------|------------|
 | P1→P2 | `project_context` | project_type, modules[], integrations[], security_design{} |
-| P2→P3 | `dfd_elements` | elements[{id,type,name}], flows[{id,source,target,data}], dfd_diagram |
+| P2→P3 | `dfd_elements` | external_interactors[], processes[], data_stores[], data_flows[], dfd_diagram, dfd_issues[] |
 | P3→P4 | `boundary_context` | boundaries[], interfaces[], data_nodes[], cross_boundary_flows[] |
 | P4→P5 | `security_gaps` | gaps[{domain,severity,description}], design_matrix{} |
 | P5→P6 | `threat_inventory` | threats[{id,element_id,stride,cwe,priority}] |
 | P6→P7 | `validated_risks` | risk_summary{}, risk_details[], attack_paths[] |
 | P7→P8 | `mitigation_plan` | mitigations[{risk_id,measures,implementation}], roadmap{} |
+
+### `dfd_elements` Detailed Structure (P2 Output)
+
+```yaml
+dfd_elements:
+  external_interactors:
+    - id: "EI001"                   # Format: EI{NNN}
+      name: "用户"
+      type: "人类|系统"
+      sends: ["凭证", "API请求"]     # Data sent to system
+      receives: ["响应数据"]         # Data received from system
+
+  processes:
+    - id: "P001"                    # Format: P{NNN}
+      name: "API网关"
+      function: "请求路由"
+      authn_required: true          # Authentication required
+      authz_required: true          # Authorization required
+
+  data_stores:
+    - id: "DS001"                   # Format: DS{NNN}
+      name: "用户数据库"
+      type: "PostgreSQL|MongoDB|Redis|..."
+      sensitivity: "高(PII)|中|低"
+      encrypted: true|false
+      backup: true|false
+
+  data_flows:
+    - id: "DF001"                   # Format: DF{NNN}
+      source: "EI001"               # Source element ID
+      target: "P001"                # Target element ID
+      data: "用户请求"
+      protocol: "HTTPS|gRPC|TCP|..."
+      encrypted: true|false
+
+  dfd_diagram: |
+    # Mermaid source code
+    graph LR
+      ...
+
+  dfd_issues:
+    - issue_id: "DFD-001"
+      element_id: "DF003"
+      description: "敏感数据未加密传输"
+      severity: "High"
+```
 
 ### Element ID Naming Convention
 
@@ -722,20 +770,20 @@ ValidatedRisk:
 
 | Element Type | Prefix | Format | Example |
 |--------------|--------|--------|---------|
-| External Interactor | EI | EI{NN} | EI01, EI02 |
-| Process | P | P{NN} | P01, P02, P03 |
-| Data Store | DS | DS{NN} | DS01, DS02 |
-| Data Flow | DF | DF{NN} | DF01, DF02 |
-| Trust Boundary | TB | TB{NN} | TB01, TB02 |
+| External Interactor | EI | EI{NNN} | EI001, EI002 |
+| Process | P | P{NNN} | P001, P002, P003 |
+| Data Store | DS | DS{NNN} | DS001, DS002 |
+| Data Flow | DF | DF{NNN} | DF001, DF002 |
+| Trust Boundary | TB | TB{NNN} | TB001, TB002 |
 
 **Threat ID Format** (Phase 5 generates):
 ```
 T-{STRIDE}-{ElementID}-{Seq}
 ```
 - STRIDE: S/T/R/I/D/E (single letter)
-- ElementID: From P2 element ID
+- ElementID: From P2 element ID (3-digit format)
 - Seq: Three-digit sequence (001-999)
-- Example: `T-S-P01-001` (First Spoofing threat for Process 01)
+- Example: `T-S-P001-001` (First Spoofing threat for Process 001)
 
 ---
 
@@ -988,7 +1036,7 @@ validated_risks:
   # Part 2: POC Details (每个 Critical/High 威胁一个完整块)
   poc_details:
     - poc_id: "POC-001"                         # Format: POC-{SEQ:03d}
-      threat_ref: "T-S-P01-001"                 # 关联威胁ID
+      threat_ref: "T-S-P001-001"                # 关联威胁ID
       stride_type: "S"                          # STRIDE类型
       verification_status: "verified"           # verified|pending|theoretical|excluded
       exploitation_difficulty: "medium"         # low|medium|high
@@ -1024,7 +1072,7 @@ validated_risks:
   # Part 3: Risk Details (per item) - See assets/schemas/risk-detail.schema.md
   risk_details:
     - risk_id: "VR-001"                         # Format: VR-{SEQ:03d}
-      original_refs: ["T-S-P01-001", "SD-001"]  # From multiple phases
+      original_refs: ["T-S-P001-001", "SD-001"] # From multiple phases
       priority: "P1"                             # P0/P1/P2/P3
       location: {files: [], elements: [], trust_boundary: ""}
       detailed_analysis: {...}
@@ -1056,7 +1104,7 @@ validated_risks:
       target: "管理员权限"
       impact_scope: "完全系统控制"
       difficulty: "medium"
-      related_threats: ["T-E-P01-001", "T-S-P02-001"]
+      related_threats: ["T-E-P001-001", "T-S-P002-001"]
       steps:
         - step: 1
           title: "初始访问"

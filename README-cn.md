@@ -143,7 +143,7 @@ Claude: [自动激活 skill]
 
         ## 威胁清单
         | ID | 类别 | 描述 | 优先级 |
-        | T-S-P1-001 | Spoofing | API 缺少认证 | Critical |
+        | T-S-P001-001 | Spoofing | API 缺少认证 | Critical |
         ...
 ```
 
@@ -152,9 +152,9 @@ Claude: [自动激活 skill]
 用户: 快速检查这个服务的安全问题 @/path/to/service
 
 Claude: 发现 3 个高危威胁：
-        - T-S-P1-001: API 端点缺少认证
-        - T-E-P2-001: 删除接口缺少授权检查
-        - T-I-DF1-001: 敏感数据明文传输
+        - T-S-P001-001: API 端点缺少认证
+        - T-E-P002-001: 删除接口缺少授权检查
+        - T-I-DF001-001: 敏感数据明文传输
 ```
 
 **AI/LLM 应用**

@@ -1,7 +1,7 @@
 # Report Naming Schema
 
-> **版本**: 1.5.0
-> **最后更新**: 2026-01-02
+> **版本**: 1.6.0
+> **最后更新**: 2026-01-26
 > **所属模块**: Report Module v2.0.4
 
 ---
@@ -539,13 +539,20 @@ output_locations:
     use_case: "Phase 8 生成的正式交付物"
     auto_create: true
 
-  # 阶段产物目录 (持久化)
+  # 阶段产物目录 (持久化，支持多版本)
   phase_outputs:
-    path: "{PROJECT_ROOT}/Risk_Assessment_Report/.phase_working/"
-    description: "阶段中间产物 (持久化工作目录)"
-    use_case: "Phase 1-7 输出，支持会话恢复和审计追溯"
+    path: "{PROJECT_ROOT}/Risk_Assessment_Report/.phase_working/{SESSION_ID}/"
+    description: "阶段中间产物 (持久化工作目录，按会话版本存储)"
+    use_case: "Phase 1-7 输出，支持会话恢复、多版本管理和审计追溯"
     auto_create: true
     hidden: true  # 隐藏目录，不作为交付物
+    session_id_format: "{PROJECT_NAME}-{YYYYMMDD}-{HHMMSS}"  # 如 OPEN-WEBUI-20260126-143052
+
+  # 会话状态文件
+  session_state:
+    path: "{PROJECT_ROOT}/Risk_Assessment_Report/.phase_working/_session.yaml"
+    description: "唯一的会话状态文件"
+    use_case: "项目信息、活动会话、阶段状态、历史会话 ID"
 
   # 归档目录
   archive:
@@ -559,19 +566,21 @@ output_locations:
 | 类型 | 位置 | 文件名格式 | 说明 |
 |------|------|-----------|------|
 | **最终报告** | `Risk_Assessment_Report/` | `{PROJECT}-{REPORT_TYPE}.md` | Phase 8 输出的正式交付物 |
-| **阶段产物** | `Risk_Assessment_Report/.phase_working/` | `P{N}-{PHASE_NAME}.md` | Phase 1-7 持久化中间结果 |
+| **会话状态** | `Risk_Assessment_Report/.phase_working/` | `_session.yaml` | 唯一的会话状态文件 |
+| **阶段产物** | `Risk_Assessment_Report/.phase_working/{SESSION_ID}/` | `P{N}-{PHASE_NAME}.md` | Phase 1-7 持久化中间结果 (按会话版本) |
 | **归档报告** | `Risk_Assessment_Report/archive/` | `{PROJECT}-{REPORT_TYPE}.md` | 历史版本存档 |
 
 ### 4.3 阶段产物规范
 
 **设计原理**: 阶段产物必须持久化保存，防止上下文丢失、会话中断、信息不完整。
 
-**缓存策略**: 单副本缓存，只保留当前/最新一次分析会话的阶段产物
+**版本控制策略**: 多版本存储，每次会话在独立的 `{SESSION_ID}/` 子目录中保存，支持历史版本回溯和对比分析。
+
+**Session ID 格式**: `{PROJECT_NAME}-{YYYYMMDD}-{HHMMSS}` (如 `OPEN-WEBUI-20260126-143052`)
 
 **阶段产物文件列表**:
 | Phase | 文件名 | 主要内容 |
 |-------|--------|---------|
-| - | `_session_meta.yaml` | 会话元数据 (必需) |
 | P1 | `P1-PROJECT-UNDERSTANDING.md` | 项目上下文、技术栈、安全相关模块 |
 | P2 | `P2-DFD-ANALYSIS.md` | DFD元素清单、数据分类、Mermaid源码 |
 | P3 | `P3-TRUST-BOUNDARY.md` | 信任边界定义、边界穿越、关键接口 |
@@ -580,27 +589,38 @@ output_locations:
 | P6 | `P6-RISK-VALIDATION.md` | 验证结果、攻击路径、POC方法、误报排除 |
 | P7 | `P7-MITIGATION-PLANNING.md` | 缓解计划、优先级矩阵、防御架构 |
 
-**会话元数据 (_session_meta.yaml)** - 必需:
+**会话状态文件 (_session.yaml)** - 简化设计:
 ```yaml
-session:
-  project_name: "N8N"                           # 项目名称
-  session_id: "20251230-100000"                 # 会话ID (YYYYMMDD-HHMMSS)
-  started_at: "2025-12-30T10:00:00+08:00"       # ISO 8601 时间戳
-  last_updated: "2025-12-30T14:32:15+08:00"     # 最后更新时间
-  framework_version: "v2.0.0"                   # 框架版本
-  analyst: "Claude (STRIDE Deep Threat Modeling)"
-  status: "in_progress"                         # in_progress | completed | failed
+# STRIDE Session State - Single source of truth
 
+# === 项目信息 (Phase 1 收集) ===
+project:
+  name: "N8N"                     # 项目名称 (大写)
+  path: "/path/to/n8n"            # 被分析项目路径
+  type: "web_application"         # 项目类型
+
+# === 当前活动会话 ===
+active:
+  id: "N8N-20251230-100000"       # 当前会话 ID
+  phase: 3                        # 当前阶段 (1-8)
+  status: "in_progress"           # in_progress|completed|paused
+
+# === 阶段状态 ===
 phases:
-  P1: { status: "completed", completed_at: "2025-12-30T10:15:32+08:00" }
-  P2: { status: "completed", completed_at: "2025-12-30T10:45:18+08:00" }
-  P3: { status: "in_progress", started_at: "2025-12-30T11:00:00+08:00" }
-  P4: { status: "pending" }
-  P5: { status: "pending" }
-  P6: { status: "pending" }
-  P7: { status: "pending" }
-  P8: { status: "pending" }
+  1: "completed"                  # pending|in_progress|completed
+  2: "completed"
+  3: "in_progress"
+  4: "pending"
+  5: "pending"
+  6: "pending"
+  7: "pending"
+  8: "pending"
+
+# === 历史会话 (仅 ID 列表) ===
+history: []
 ```
+
+> **设计原则**: 单文件管理，利用文件系统元数据，历史会话通过 `ls {session_dir}` 推断
 
 **阶段产物文件头部 (YAML front matter)**:
 ```yaml
@@ -652,14 +672,18 @@ project-root/
 │   │  └──────────────────────────────────────────────────────────────┘
 │   │
 │   ├── .phase_working/                      # 阶段工作目录 (隐藏)
-│   │   ├── P1-PROJECT-UNDERSTANDING.md
-│   │   ├── P2-DFD-ANALYSIS.md
-│   │   ├── P3-TRUST-BOUNDARY.md
-│   │   ├── P4-SECURITY-DESIGN-REVIEW.md
-│   │   ├── P5-STRIDE-THREATS.md
-│   │   ├── P6-RISK-VALIDATION.md
-│   │   ├── P7-MITIGATION-PLAN.md
-│   │   └── _session_meta.yaml               # 会话元数据
+│   │   ├── _session.yaml                    # 唯一的会话状态文件
+│   │   │
+│   │   ├── N8N-20251230-100000/             # 会话 1
+│   │   │   ├── P1-PROJECT-UNDERSTANDING.md
+│   │   │   ├── P2-DFD-ANALYSIS.md
+│   │   │   ├── P3-TRUST-BOUNDARY.md
+│   │   │   ├── P4-SECURITY-DESIGN-REVIEW.md
+│   │   │   ├── P5-STRIDE-THREATS.md
+│   │   │   ├── P6-RISK-VALIDATION.md
+│   │   │   └── P7-MITIGATION-PLAN.md
+│   │   │
+│   │   └── N8N-20251231-091530/             # 会话 2 (历史)
 │   │
 │   └── archive/                             # 归档目录
 │       └── v1.0.0/
@@ -695,7 +719,7 @@ naming_validation:
     file_pattern:
       regex: "^[A-Z][A-Z0-9-]{0,29}-(RISK-ASSESSMENT-REPORT|RISK-INVENTORY|MITIGATION-MEASURES|PENETRATION-TEST-PLAN|ARCHITECTURE-ANALYSIS|DFD-DIAGRAM|COMPLIANCE-REPORT|ATTACK-PATH-VALIDATION)\\.md$"
 
-  # === 阶段产物命名规则 (.phase_working/) ===
+  # === 阶段产物命名规则 (.phase_working/{SESSION_ID}/) ===
   phase_output:
     file_pattern:
       regex: "^P[1-7]-[A-Z][A-Z0-9-]+\\.md$"
@@ -708,7 +732,19 @@ naming_validation:
       - "P5-STRIDE-ANALYSIS.md"
       - "P6-RISK-VALIDATION.md"
       - "P7-MITIGATION-PLANNING.md"
-      - "_session_meta.yaml"
+
+  # === 会话状态文件命名规则 (.phase_working/) ===
+  session_state:
+    allowed_files:
+      - "_session.yaml"        # 唯一的会话状态文件
+
+  # === Session ID 格式规则 ===
+  session_id:
+    pattern: "{PROJECT_NAME}-{YYYYMMDD}-{HHMMSS}"
+    regex: "^[A-Z][A-Z0-9-]+-[0-9]{8}-[0-9]{6}$"
+    examples:
+      - "OPEN-WEBUI-20260126-143052"
+      - "N8N-20260127-091530"
 
   # === 禁止的命名模式 (仅适用于最终报告目录) ===
   forbidden_in_final_reports:
@@ -811,6 +847,8 @@ report_metadata:
 
 | 版本 | 日期 | 变更说明 |
 |------|------|---------|
+| 1.6.0 | 2026-01-26 | Session 简化设计：合并三文件为单一 `_session.yaml`，移除 `_session_meta.yaml`/`_session_index.yaml`/`_session_info.yaml`，利用文件系统元数据 |
+| 1.5.0 | 2026-01-26 | Session 版本控制：多版本存储设计，Session ID 格式 `{PROJECT}-{YYYYMMDD}-{HHMMSS}`，阶段产物路径更新为 `.phase_working/{SESSION_ID}/` |
 | 1.4.0 | 2025-12-31 | 渗透测试方案升级为必需报告；阶段过程文档发布保留英文名；重组报告类型表 |
 | 1.3.0 | 2025-12-30 | 单副本缓存策略：添加时间戳/版本元数据，定义 `_session_meta.yaml` 和文件头部规范 |
 | 1.2.0 | 2025-12-30 | 阶段产物持久化设计：添加 `.phase_working/` 目录，定义 P{N}-{NAME}.md 命名规范 |

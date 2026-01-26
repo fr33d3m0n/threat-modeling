@@ -144,7 +144,7 @@ Claude: [Auto-activates skill]
 
         ## Threat List
         | ID | Category | Description | Priority |
-        | T-S-P1-001 | Spoofing | API lacks authentication | Critical |
+        | T-S-P001-001 | Spoofing | API lacks authentication | Critical |
         ...
 ```
 
@@ -153,9 +153,9 @@ Claude: [Auto-activates skill]
 User: Quick security check on this service @/path/to/service
 
 Claude: Found 3 high-severity threats:
-        - T-S-P1-001: API endpoint lacks authentication
-        - T-E-P2-001: Delete endpoint missing authorization
-        - T-I-DF1-001: Sensitive data transmitted in plaintext
+        - T-S-P001-001: API endpoint lacks authentication
+        - T-E-P002-001: Delete endpoint missing authorization
+        - T-I-DF001-001: Sensitive data transmitted in plaintext
 ```
 
 **AI/LLM Applications**

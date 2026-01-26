@@ -23,8 +23,64 @@ Output: JSON format for integration with threat modeling workflow.
 
 import argparse
 import json
+import re
 import sys
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
+
+
+# Element ID validation pattern
+# Standard formats: P001, DS001, DF001, EI001, TB001 (prefix + 3-digit number)
+# Flexible formats: P1, DS2, GW, API (alphanumeric identifiers)
+# Forbidden: special characters, whitespace, empty
+ELEMENT_ID_PATTERN = re.compile(r'^[A-Za-z][A-Za-z0-9]*$')
+
+
+def validate_element_id(element_id: str) -> Optional[str]:
+    """
+    Validate element ID format.
+
+    Standard formats (per SKILL.md):
+        - P001, P002 (Process)
+        - DS001, DS002 (Data Store)
+        - DF001, DF002 (Data Flow)
+        - EI001, EI002 (External Interactor)
+        - TB001, TB002 (Trust Boundary)
+
+    Flexible formats (backward compatible):
+        - P1, DS2, GW, API (alphanumeric identifiers)
+
+    Forbidden:
+        - Empty strings
+        - Special characters (@, #, $, -, etc.)
+        - Whitespace
+        - Strings starting with numbers
+
+    Args:
+        element_id: The element ID to validate
+
+    Returns:
+        None if valid, error message string if invalid
+    """
+    if not element_id:
+        return "Element ID cannot be empty"
+
+    if not isinstance(element_id, str):
+        return f"Element ID must be a string, got {type(element_id).__name__}"
+
+    # Strip whitespace
+    element_id = element_id.strip()
+
+    if not element_id:
+        return "Element ID cannot be empty or whitespace"
+
+    # Check pattern: alphanumeric starting with letter
+    if not ELEMENT_ID_PATTERN.match(element_id):
+        return (
+            f"Invalid element ID format: '{element_id}'. "
+            f"Expected: alphanumeric starting with letter (e.g., P1, DS001, GW, API)"
+        )
+
+    return None  # Valid
 
 
 # STRIDE per Interaction Matrix
@@ -144,12 +200,32 @@ def analyze_interaction(source: str, target: str) -> Dict:
 
 
 def generate_threat_id(stride_code: str, element_id: str, sequence: str) -> Dict:
-    """Generate a threat ID in TMT format."""
+    """
+    Generate a threat ID in TMT format.
+
+    Args:
+        stride_code: STRIDE category code (S, T, R, I, D, E)
+        element_id: DFD element ID (e.g., P1, DS2, DF001)
+        sequence: Threat sequence number (will be zero-padded to 3 digits)
+
+    Returns:
+        Dict with threat_id and metadata, or error dict if invalid input
+    """
     stride_code = stride_code.upper()
 
+    # Validate STRIDE code
     if stride_code not in STRIDE_CATEGORIES:
         return {"error": f"Invalid STRIDE code: {stride_code}"}
 
+    # Validate element ID format (ARCH-001 fix)
+    element_id_error = validate_element_id(element_id)
+    if element_id_error:
+        return {"error": element_id_error}
+
+    # Normalize element_id (strip whitespace)
+    element_id = element_id.strip()
+
+    # Generate threat ID
     threat_id = f"T-{stride_code}-{element_id}-{sequence.zfill(3)}"
 
     return {
