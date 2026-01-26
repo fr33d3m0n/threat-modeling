@@ -1,6 +1,6 @@
 {
   "name": "skill-threat-modeling",
-  "version": "2.1.2",
+  "version": "2.2.1",
   "description": "Code-First Deep Threat Modeling Skill - Automated 8-phase security analysis with STRIDE methodology, knowledge base integration, and risk validation",
   "author": {
     "name": "fr33d3m0n",
