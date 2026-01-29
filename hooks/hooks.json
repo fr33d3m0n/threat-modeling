@@ -1,0 +1,17 @@
+{
+  "description": "STRIDE Threat Modeling Skill Hooks - Automatic phase data extraction and validation",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/phase_end_hook.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,210 @@
+# STRIDE to Security Controls Mapping
+# Maps STRIDE threat categories to CodeGuard security rules and mitigation patterns
+# Source: Project CodeGuard (software-security skill) + auth-implementation-patterns
+
+stride_to_controls:
+  spoofing:
+    code: S
+    security_property: Authentication
+    description: "Attacker pretends to be someone or something else"
+    primary_controls:
+      - codeguard-0-authentication-mfa.md
+      - codeguard-0-session-management-and-cookies.md
+    secondary_controls:
+      - codeguard-1-crypto-algorithms.md
+    mitigation_patterns:
+      - name: "JWT Authentication"
+        description: "Short-lived access tokens with refresh token rotation"
+        reference: "auth-implementation-patterns: JWT Implementation"
+      - name: "MFA (WebAuthn/TOTP)"
+        description: "Phishing-resistant multi-factor authentication"
+        reference: "codeguard-0-authentication-mfa: MFA section"
+      - name: "OAuth2/OIDC"
+        description: "Authorization Code + PKCE for public clients"
+        reference: "codeguard-0-authentication-mfa: Federation section"
+    test_patterns:
+      - "Credential stuffing resistance"
+      - "Token replay prevention"
+      - "Session hijacking prevention"
+
+  tampering:
+    code: T
+    security_property: Integrity
+    description: "Attacker modifies data in transit or at rest"
+    primary_controls:
+      - codeguard-0-input-validation-injection.md
+      - codeguard-1-crypto-algorithms.md
+    secondary_controls:
+      - codeguard-0-api-web-services.md
+    mitigation_patterns:
+      - name: "Input Validation"
+        description: "Syntactic + semantic validation at trust boundaries"
+        reference: "codeguard-0-input-validation-injection: Validation Playbook"
+      - name: "Parameterized Queries"
+        description: "100% parameterization for SQL/LDAP/commands"
+        reference: "codeguard-0-input-validation-injection: SQL Injection Prevention"
+      - name: "Digital Signatures"
+        description: "Sign data to detect tampering"
+        reference: "codeguard-1-crypto-algorithms: Digital Signatures"
+    test_patterns:
+      - "SQL/LDAP/OS injection fuzzing"
+      - "Mass assignment prevention"
+      - "Prototype pollution tests"
+
+  repudiation:
+    code: R
+    security_property: Non-repudiation
+    description: "Attacker denies performing an action"
+    primary_controls:
+      - codeguard-0-logging.md
+    secondary_controls:
+      - codeguard-1-crypto-algorithms.md
+      - codeguard-0-authentication-mfa.md
+    mitigation_patterns:
+      - name: "Structured Logging"
+        description: "Immutable audit logs with correlation IDs"
+        reference: "codeguard-0-logging"
+      - name: "Transaction Authorization"
+        description: "Step-up auth for sensitive operations"
+        reference: "codeguard-0-authorization-access-control: Transaction Authorization"
+      - name: "Digital Signatures"
+        description: "Sign transactions for non-repudiation"
+        reference: "codeguard-1-crypto-algorithms"
+    test_patterns:
+      - "Audit log completeness"
+      - "Log tampering prevention"
+      - "Transaction traceability"
+
+  information_disclosure:
+    code: I
+    security_property: Confidentiality
+    description: "Attacker accesses data they shouldn't"
+    primary_controls:
+      - codeguard-1-hardcoded-credentials.md
+      - codeguard-0-data-storage.md
+    secondary_controls:
+      - codeguard-0-api-web-services.md
+      - codeguard-1-crypto-algorithms.md
+    mitigation_patterns:
+      - name: "Secrets Management"
+        description: "Never hardcode credentials, use KMS/HSM"
+        reference: "codeguard-1-hardcoded-credentials"
+      - name: "Encryption at Rest"
+        description: "Encrypt sensitive data in storage"
+        reference: "codeguard-0-data-storage"
+      - name: "TLS/mTLS"
+        description: "Encrypt data in transit"
+        reference: "codeguard-0-api-web-services: Transport and TLS"
+      - name: "IDOR Prevention"
+        description: "User-scoped queries, non-enumerable IDs"
+        reference: "codeguard-0-authorization-access-control: Preventing IDOR"
+    test_patterns:
+      - "Credential scanning"
+      - "IDOR/BOLA testing"
+      - "Information leakage in errors"
+
+  denial_of_service:
+    code: D
+    security_property: Availability
+    description: "Attacker prevents legitimate access"
+    primary_controls:
+      - codeguard-0-api-web-services.md
+    secondary_controls:
+      - codeguard-0-input-validation-injection.md
+    mitigation_patterns:
+      - name: "Rate Limiting"
+        description: "Per-IP/user/client limits with circuit breakers"
+        reference: "codeguard-0-api-web-services: Rate Limiting and DoS"
+      - name: "Input Size Limits"
+        description: "Reject oversize payloads and set timeouts"
+        reference: "codeguard-0-api-web-services: Input and Content Handling"
+      - name: "GraphQL Limits"
+        description: "Query depth, complexity limits, pagination"
+        reference: "codeguard-0-api-web-services: GraphQL-Specific Controls"
+      - name: "Resource Quotas"
+        description: "Database connection limits, queue limits"
+        reference: "codeguard-0-data-storage"
+    test_patterns:
+      - "Stress testing"
+      - "Slowloris/connection exhaustion"
+      - "Query complexity bombs"
+
+  elevation_of_privilege:
+    code: E
+    security_property: Authorization
+    description: "Attacker gains unauthorized capabilities"
+    primary_controls:
+      - codeguard-0-authorization-access-control.md
+    secondary_controls:
+      - codeguard-0-authentication-mfa.md
+      - codeguard-0-api-web-services.md
+    mitigation_patterns:
+      - name: "RBAC/ABAC"
+        description: "Role/Attribute-based access control with deny-by-default"
+        reference: "codeguard-0-authorization-access-control: Core Principles"
+      - name: "Least Privilege"
+        description: "Minimum permissions required"
+        reference: "codeguard-0-authorization-access-control: Core Principles"
+      - name: "Mass Assignment Prevention"
+        description: "DTOs and allow-lists for bindable fields"
+        reference: "codeguard-0-authorization-access-control: Preventing Mass Assignment"
+      - name: "Step-Up Authorization"
+        description: "Second factor for sensitive operations"
+        reference: "codeguard-0-authorization-access-control: Transaction Authorization"
+    test_patterns:
+      - "Privilege escalation testing"
+      - "Authorization bypass attempts"
+      - "Role confusion testing"
+
+# Element type to applicable STRIDE categories (per Microsoft TMT)
+element_stride_matrix:
+  process:
+    applicable: [S, T, R, I, D, E]
+    description: "All STRIDE categories apply to processes"
+  data_store:
+    applicable: [T, R, I, D]
+    description: "Processes handle authentication/authorization"
+  data_flow:
+    applicable: [T, I, D]
+    description: "Data in transit vulnerabilities"
+  external_interactor:
+    applicable: [S, R]
+    description: "As source of interaction"
+
+# Language-specific security rule applicability (from CodeGuard)
+language_rules:
+  python:
+    - codeguard-0-input-validation-injection.md
+    - codeguard-0-authentication-mfa.md
+    - codeguard-0-authorization-access-control.md
+    - codeguard-0-api-web-services.md
+    - codeguard-0-session-management-and-cookies.md
+  javascript:
+    - codeguard-0-input-validation-injection.md
+    - codeguard-0-authentication-mfa.md
+    - codeguard-0-authorization-access-control.md
+    - codeguard-0-client-side-web-security.md
+    - codeguard-0-api-web-services.md
+  typescript:
+    - codeguard-0-input-validation-injection.md
+    - codeguard-0-authentication-mfa.md
+    - codeguard-0-authorization-access-control.md
+    - codeguard-0-client-side-web-security.md
+    - codeguard-0-api-web-services.md
+  go:
+    - codeguard-0-input-validation-injection.md
+    - codeguard-0-authentication-mfa.md
+    - codeguard-0-authorization-access-control.md
+    - codeguard-0-api-web-services.md
+  java:
+    - codeguard-0-input-validation-injection.md
+    - codeguard-0-authentication-mfa.md
+    - codeguard-0-authorization-access-control.md
+    - codeguard-0-api-web-services.md
+
+# Always-apply rules (checked on every code operation)
+always_apply_rules:
+  - rule: codeguard-1-hardcoded-credentials.md
+    description: "Never hardcode secrets, passwords, API keys, tokens"
+  - rule: codeguard-1-crypto-algorithms.md
+    description: "Use only modern, secure cryptographic algorithms"

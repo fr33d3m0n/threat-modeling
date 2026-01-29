@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_comment": "Example settings.json configuration for STRIDE Threat Modeling Phase End Hook",
+  "_usage": [
+    "Copy the 'hooks' section to your settings file:",
+    "  - ~/.claude/settings.json (global)",
+    "  - .claude/settings.json (project)",
+    "  - .claude/settings.local.json (local, not committed)",
+    "",
+    "Update the path to phase_end_hook.sh based on your setup:",
+    "  - If using as a skill: ${CLAUDE_PLUGIN_ROOT}/hooks/phase_end_hook.sh",
+    "  - If using globally: ~/.claude/skills/threat-modeling/hooks/phase_end_hook.sh",
+    "  - If using per-project: \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/phase_end_hook.sh"
+  ],
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/skills/threat-modeling/hooks/phase_end_hook.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
