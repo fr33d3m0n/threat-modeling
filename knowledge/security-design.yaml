@@ -1,4 +1,4 @@
-# Code-First Deep Threat Modeling Workflow | Version 2.1.0 | https://github.com/fr33d3m0n/skill-threat-modeling | License: BSD-3-Clause | Welcome to cite but please retain all sources and declarations
+# Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
 
 # Security Design - Unified Security Domain Structure
 # Version: 4.0 (Strict Domain Sequence + Extension Naming)
@@ -18,7 +18,7 @@
 # Core Domain:        control-set-{NN}-{topic}.md          (NN: 01-10)
 # Domain Extension:   control-set-ext-{NN}-{topic}.md      (e.g., ext-10-hardcoded-credentials)
 # Cross-Domain Ext:   control-set-ext-{NN}_{MM}-{topic}.md (e.g., ext-01_02-auth-patterns)
-# Extended Domain:    control-set-ext-{NN}-{topic}.md      (NN: 11-15 for extended domains)
+# Extended Domain:    control-set-ext-{NN}-{topic}.md      (NN: 11-16 for extended domains)
 # Ext-Domain Sub-Ext: control-set-ext-{NN}-a{N}-{topic}.md (e.g., ext-11-a1-container-hardening)
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -256,7 +256,7 @@ cross_domain_extensions:
     controls_ref: control-set-ext-01_02-auth-patterns.md
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# EXTENDED SECURITY DOMAINS (5) - Loaded on-demand based on tech stack detection
+# EXTENDED SECURITY DOMAINS (6) - Loaded on-demand based on tech stack detection
 # ═══════════════════════════════════════════════════════════════════════════════
 
 extended_domains:
@@ -360,6 +360,31 @@ extended_domains:
     owasp_refs:
       - reference-set-ext-15-cloud-architecture.md
 
+  agent:
+    code: AGENT
+    seq: "ext-16"
+    name: "Agent系统安全"
+    trigger_conditions:
+      - "langchain/langgraph import"
+      - "crewai/autogen/autogpt import"
+      - "anthropic.Agent/openai.Assistant API"
+      - "MCP Server config (mcp.json)"
+      - "Agent workflow (agent.yaml, crew.yaml)"
+      - "Tool/Function definitions"
+      - "Skill definitions (.claude/skills/)"
+    core_requirements:
+      - "目标与意图保护 (Goal Hijack 防护)"
+      - "工具与技能治理 (最小权限)"
+      - "自主边界与人工干预"
+      - "Agent 身份与认证"
+      - "多 Agent 协作安全"
+      - "Agent 行为审计与监控"
+    core_principles: [LP, ZT, CM, SOD]  # Least Privilege, Zero Trust, Continuous Monitoring, Separation of Duties
+    controls_ref: control-set-ext-16-agentic.md
+    owasp_refs:
+      - reference-set-ext-13-ai-agent-security.md  # Shared with ext-13
+    cross_reference: ext-13  # Complementary with AI/LLM Security
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # STRIDE TO DOMAIN MAPPING
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -391,12 +416,13 @@ control_set_index:
   # Domain Extensions
   "ext-01_02": { domain: AUTHN_AUTHZ, file: control-set-ext-01_02-auth-patterns.md }
   "ext-10": { domain: DATA_EXT, file: control-set-ext-10-hardcoded-credentials.md }
-  # Extended Domains (ext-11 to ext-15)
+  # Extended Domains (ext-11 to ext-16)
   "ext-11": { domain: INFRA, file: control-set-ext-11-infrastructure.md }
   "ext-12": { domain: SUPPLY, file: control-set-ext-12-supply-chain.md }
   "ext-13": { domain: AI, file: control-set-ext-13-ai-llm.md }
   "ext-14": { domain: MOBILE, file: control-set-ext-14-mobile.md }
   "ext-15": { domain: CLOUD, file: control-set-ext-15-cloud.md }
+  "ext-16": { domain: AGENT, file: control-set-ext-16-agentic.md }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # PHASE REFERENCE

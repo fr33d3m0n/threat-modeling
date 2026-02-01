@@ -1,5 +1,5 @@
 {
-  "description": "STRIDE Threat Modeling Skill Hooks - Automatic phase data extraction and validation",
+  "description": "Threat Modeling Skill Hooks - Automatic phase data extraction and validation",
   "hooks": {
     "PostToolUse": [
       {

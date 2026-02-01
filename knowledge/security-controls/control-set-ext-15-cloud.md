@@ -1,3 +1,5 @@
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+
 # Control Set 16: Cloud Security (CLOUD)
 
 **Domain**: CLOUD - 云服务安全

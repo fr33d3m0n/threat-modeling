@@ -1,3 +1,5 @@
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+
 # Phase 3: Trust Boundary Evaluation
 
 **Type**: Evaluative
@@ -6,9 +8,81 @@
 
 ---
 
+## ⚠️ MANDATORY OUTPUT RULES
+
+> **CRITICAL**: Phase 3 requires TWO outputs - a YAML data file AND a Markdown report.
+
+### Dual Output Requirement
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  PHASE 3 MUST PRODUCE TWO FILES:                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  1. DATA FILE (PRIMARY - Write First!)                              │
+│     Path: .phase_working/{SESSION_ID}/data/P3_boundary_context.yaml │
+│     Purpose: Structured data for P4 to read                         │
+│     Format: Valid YAML with schema_version: "3.0.0 (20260201a)"                   │
+│                                                                      │
+│  2. REPORT FILE (SECONDARY - Write After Data!)                     │
+│     Path: .phase_working/{SESSION_ID}/reports/P3-TRUST-BOUNDARY.md  │
+│     Purpose: Human-readable trust boundary analysis                 │
+│     Format: Markdown with diagrams and matrices                     │
+│                                                                      │
+│  INPUT REQUIREMENT:                                                  │
+│     Read: .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml     │
+│     ❌ DO NOT read P2's .md report for data extraction              │
+│     ✅ REQUIRED: Parse P2's YAML for dfd_elements                   │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Required Data Sections in YAML
+
+| Section | Validation |
+|---------|------------|
+| `boundary_context.boundaries[]` | BLOCKING - all trust boundaries with TB-xxx IDs |
+| `boundary_context.interfaces[]` | BLOCKING - cross-boundary interfaces |
+| `boundary_context.data_nodes[]` | BLOCKING - sensitive data locations |
+| `boundary_context.cross_boundary_flows[]` | BLOCKING - all boundary crossings |
+| `boundary_findings` | WARNING - security observations from boundary analysis |
+
+### Validation Gate
+
+Phase 3 CANNOT complete until:
+1. `.phase_working/{SESSION_ID}/data/P3_boundary_context.yaml` exists and is valid YAML
+2. Every DFD element mapped to a trust boundary zone
+3. All cross-boundary flows have security controls documented
+4. `.phase_working/{SESSION_ID}/reports/P3-TRUST-BOUNDARY.md` exists
+
+---
+
 ## Input Context
 
-← P1/P2: `project_context`, `dfd_elements`
+← P2: `dfd_elements` from `.phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml`
+
+### ⚠️ MANDATORY: Query P2 Data Before Analysis
+
+**Before starting P3 analysis**, LLM MUST execute these queries to obtain P2 data:
+
+```bash
+# Step 1: Get P2 summary for DFD overview
+python scripts/phase_data.py --query --phase 2 --summary --root {PROJECT_ROOT}
+
+# Step 2: Get detailed DFD elements (REQUIRED for boundary mapping)
+python scripts/phase_data.py --query --phase 2 --type dfd --root {PROJECT_ROOT}
+
+# Step 3: Get data flows (REQUIRED for cross-boundary analysis)
+python scripts/phase_data.py --query --phase 2 --type flows --root {PROJECT_ROOT}
+```
+
+**Or read YAML directly**:
+```bash
+# PRIMARY source - REQUIRED
+cat .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml
+```
+
+**CRITICAL**: Do NOT generate P3 trust boundaries from memory. MUST read P2 DFD data first!
 
 ## Output Context
 
@@ -34,6 +108,19 @@ Based on DFD, identify trust boundaries, key interfaces, and data nodes; evaluat
 
 ---
 
+## Error Handling
+
+| Error | Cause | Recovery Action |
+|-------|-------|-----------------|
+| P2 YAML not found | P2 not completed | Return to P2, complete DFD analysis |
+| DFD elements incomplete | Missing flows or stores | Return to P2 for supplemental analysis |
+| Boundary mapping failure | Complex architecture | Break into smaller zones, consult architect |
+| Cross-boundary flow gaps | Incomplete P2 data | Document gaps, flag for manual review |
+
+**Fallback Strategy**: If boundary analysis cannot complete due to data gaps, document known boundaries and mark incomplete zones with `status: partial` and `gaps: ["description"]`.
+
+---
+
 ## Trust Boundary Types
 
 | Type | Description | Example |
@@ -43,6 +130,8 @@ Based on DFD, identify trust boundaries, key interfaces, and data nodes; evaluat
 | User | User privilege boundaries | Anonymous/Authenticated, User/Admin |
 | Data | Data sensitivity boundaries | Public/Internal/Confidential |
 | Service | Service trust boundaries | Internal/External services |
+| **Model** | AI/LLM model boundaries | User/Model, Model/Tool, Model/Data |
+| **Agent** | AI agent autonomy boundaries | Human/Agent, Agent/External API |
 
 ---
 
@@ -234,10 +323,51 @@ boundary_context:
 |-----------|----------|-------------|------------|
 | DN-001 | Internal | CRITICAL | Encrypted, RBAC |
 
-## Boundary Issues Identified
+## Boundary Findings
 
-1. ...
-2. ...
+[yaml:boundary_findings block - see below]
+
+```yaml:boundary_findings
+findings:
+  - id: F-P3-001
+    type: boundary
+    title: "Finding title"
+    description: "Detailed description"
+    severity: HIGH      # CRITICAL|HIGH|MEDIUM|LOW|INFO
+    category: missing_control|weak_encryption|excessive_permission|unprotected_crossing
+    location:
+      boundary_id: TB-xxx
+      interface_id: IF-xxx
+      flow_id: DF-xxx
+    affected_elements:
+      - type: trust_boundary
+        id: TB-xxx
+      - type: cross_boundary_flow
+        id: DF-xxx
+    security_relevance: "Why this matters for security"
+    crossing_risk: HIGH  # Risk level of boundary crossing
+    recommended_action: "What to investigate in later phases"
+
+summary:
+  total: 0
+  by_severity:
+    critical: 0
+    high: 0
+    medium: 0
+    low: 0
+    info: 0
+  by_category:
+    missing_control: 0
+    weak_encryption: 0
+    excessive_permission: 0
+    unprotected_crossing: 0
+```
+
+**Finding Categories**:
+- `missing_control`: Boundary crossing without security control
+- `weak_encryption`: Inadequate encryption at boundary
+- `excessive_permission`: Cross-boundary access with excessive privileges
+- `unprotected_crossing`: Input not validated at boundary
 
 ## Recommendations
 
@@ -256,6 +386,7 @@ Before marking Phase 3 complete:
 - [ ] Interface security assessed
 - [ ] Sensitive data nodes mapped
 - [ ] Trust boundary diagram included
+- [ ] yaml:boundary_findings present (even if empty)
 - [ ] Boundary issues documented
 - [ ] Validation passed
 

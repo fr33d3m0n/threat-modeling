@@ -1,3 +1,5 @@
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+
 # Phase 7: Mitigation Planning
 
 **Type**: Prescriptive
@@ -6,9 +8,96 @@
 
 ---
 
+## ⚠️ MANDATORY OUTPUT RULES
+
+> **CRITICAL**: Phase 7 requires TWO outputs - a YAML data file AND a Markdown report.
+
+### Dual Output Requirement
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  PHASE 7 MUST PRODUCE TWO FILES:                                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  1. DATA FILE (PRIMARY - Write First!)                              │
+│     Path: .phase_working/{SESSION_ID}/data/P7_mitigation_plan.yaml  │
+│     Purpose: Structured mitigation data for P8 to read              │
+│     Format: Valid YAML with schema_version: "3.0.0 (20260201a)"                   │
+│                                                                      │
+│  2. REPORT FILE (SECONDARY - Write After Data!)                     │
+│     Path: .phase_working/{SESSION_ID}/reports/P7-MITIGATION-PLAN.md │
+│     Purpose: Human-readable mitigation roadmap                      │
+│     Format: Markdown with code examples and timelines               │
+│                                                                      │
+│  INPUT REQUIREMENT:                                                  │
+│     Read: .phase_working/{SESSION_ID}/data/P6_validated_risks.yaml  │
+│     ❌ DO NOT read previous .md reports for data extraction         │
+│     ✅ REQUIRED: Parse YAML files for validated_risks               │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Required Data Sections in YAML
+
+| Section | Validation |
+|---------|------------|
+| `mitigation_plan.mitigations[]` | BLOCKING - all mitigations with MIT-xxx IDs |
+| `mitigation_plan.roadmap` | BLOCKING - timeline with priorities |
+
+### Validation Gate
+
+Phase 7 CANNOT complete until:
+1. `.phase_working/{SESSION_ID}/data/P7_mitigation_plan.yaml` exists and is valid YAML
+2. Every validated risk (VR-xxx) has corresponding mitigation (MIT-xxx)
+3. Implementation steps are specific (not generic)
+4. `.phase_working/{SESSION_ID}/reports/P7-MITIGATION-PLAN.md` exists
+
+---
+
+## Error Handling
+
+| Error | Cause | Recovery Action |
+|-------|-------|-----------------|
+| P6 YAML not found | P6 not completed | Return to P6, complete risk validation |
+| Missing risk_refs | Orphan mitigation | Link MIT-xxx to VR-xxx, verify coverage |
+| Generic mitigation | Insufficient detail | Add specific code/config with file:line references |
+| KB lookup failure | Knowledge base error | Provide manual ASVS/WSTG reference |
+
+**Fallback Strategy**: If specific implementation cannot be determined due to missing code context, mark mitigation with `implementation_level: guidance` and provide general security principles.
+
+---
+
 ## Input Context
 
-← P6: `validated_risks` (complete Phase 6 output)
+← P6: `validated_risks` from `.phase_working/{SESSION_ID}/data/P6_validated_risks.yaml`
+
+### ⚠️ MANDATORY: Query P6 Data Before Planning
+
+**Before starting P7 mitigation planning**, LLM MUST execute these queries to obtain P6 validated risks:
+
+```bash
+# Step 1: Get P6 risk summary for overview
+python scripts/phase_data.py --query --phase 6 --summary --root {PROJECT_ROOT}
+
+# Step 2: Get detailed validated risks (PRIMARY input)
+python scripts/phase_data.py --query --phase 6 --type risks --root {PROJECT_ROOT}
+
+# Step 3: Verify P6 coverage for completeness
+python scripts/phase_data.py --verify-p6-coverage --root {PROJECT_ROOT}
+```
+
+**Or read YAML directly**:
+```bash
+# PRIMARY source - REQUIRED
+cat .phase_working/{SESSION_ID}/data/P6_validated_risks.yaml
+```
+
+**CRITICAL**: Every VR-xxx in P6 MUST have a corresponding MIT-xxx mitigation!
+```
+∀ VR-xxx ∈ P6.validated_risks → ∃ MIT-xxx ∈ P7.mitigation_plan
+```
+
+Do NOT plan mitigations from memory. MUST read P6 validated risks first!
 
 ## Output Context
 
@@ -30,7 +119,76 @@ $SKILL_PATH/kb --cwe CWE-89 --mitigations      # CWE-specific mitigations
 $SKILL_PATH/kb --control authentication         # Security control details
 $SKILL_PATH/kb --asvs-level L2                  # ASVS requirements
 $SKILL_PATH/kb --asvs-chapter V4                # ASVS by chapter
+$SKILL_PATH/kb --wstg V1                        # OWASP WSTG tests
 ```
+
+### KB Mitigation Sources (MANDATORY per GAP-4 Contract)
+
+> **CRITICAL**: P7 MUST query KB for mitigation guidance per KBQueryContract in assets/contracts/data-model.yaml
+
+**Required Queries per Risk**:
+1. `--cwe CWE-{NNN} --mitigations` - For each risk's related_cwe
+2. `--asvs-level {L1|L2|L3}` - For verification requirements
+3. `--control {domain}` - For implementation guidance
+
+```yaml
+# In P7_mitigation_plan.yaml - MANDATORY section (GAP-4 Contract)
+kb_mitigation_sources:
+  # Query record
+  queries_made:
+    - query: "--cwe CWE-287 --mitigations"
+      timestamp: "2026-01-31T14:30:00Z"
+      result_count: 8
+      usage: "Informed MIT-001 implementation steps"
+      mitigations_informed: [MIT-001, MIT-002]
+    - query: "--asvs-level L2"
+      timestamp: "2026-01-31T14:30:15Z"
+      result_count: 286
+      usage: "Populated verification.asvs_requirement fields"
+      mitigations_informed: [MIT-001, MIT-002, MIT-003]
+    - query: "--control authentication"
+      timestamp: "2026-01-31T14:30:30Z"
+      result_count: 15
+      usage: "Detailed implementation guidance for auth controls"
+      mitigations_informed: [MIT-001]
+
+  # Source tracking per mitigation
+  mitigation_kb_refs:
+    - mitigation_id: MIT-001
+      cwe_ref: CWE-287
+      cwe_mitigations_applied: ["Use multi-factor authentication", "Implement secure session management"]
+      asvs_requirement: "V2.1.1"
+      control_guidance: "control-set-01"
+    - mitigation_id: MIT-002
+      cwe_ref: CWE-89
+      cwe_mitigations_applied: ["Use parameterized queries", "Apply input validation"]
+      asvs_requirement: "V5.3.4"
+      control_guidance: "control-set-03"
+
+  # Coverage metrics (MANDATORY)
+  coverage:
+    total_mitigations: 25
+    cwes_with_mitigations: 22       # Mitigations with CWE --mitigations query
+    asvs_requirements_mapped: 20    # Mitigations with ASVS refs
+    control_guidance_applied: 18    # Mitigations with control refs
+    p0_p1_mitigations_total: 8
+    p0_p1_with_kb_ref: 8            # MUST be 100% - ERROR if not
+    mitigation_kb_coverage: 88.0    # cwes_with_mitigations / total_mitigations
+
+  # Error handling
+  errors:
+    - query: "--cwe CWE-9999 --mitigations"
+      error_type: "not_found"
+      action_taken: "Used general CWE category mitigations"
+      affected_mitigations: [MIT-015]
+
+  kb_available: true
+```
+
+**Validation Rules** (GAP-4 Contract):
+- **ERROR**: P0/P1 mitigation without any KB reference (`p0_p1_with_kb_ref < p0_p1_mitigations_total`)
+- **WARNING**: `mitigation_kb_coverage < 70%`
+- **INFO**: Generic mitigations should reference control guidance even if CWE-specific unavailable
 
 ---
 

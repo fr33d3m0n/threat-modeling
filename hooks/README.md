@@ -1,6 +1,8 @@
-# STRIDE Threat Modeling - Claude Code Hooks
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
-This directory contains PostToolUse hooks for automating the STRIDE threat modeling workflow.
+# Threat Modeling Skill - Claude Code Hooks
+
+This directory contains PostToolUse hooks for automating the threat modeling workflow.
 
 ## Phase End Protocol Hook
 
@@ -53,7 +55,7 @@ The hooks are automatically available when using the threat-modeling skill. The 
 
 ```json
 {
-  "description": "STRIDE Threat Modeling Skill Hooks",
+  "description": "Threat Modeling Skill Hooks",
   "hooks": {
     "PostToolUse": [
       {

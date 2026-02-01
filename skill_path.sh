@@ -1,4 +1,6 @@
 #!/bin/bash
+# Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
+
 # Skill Path Detection Helper for threat-modeling skill
 # Usage: SKILL_PATH=$(bash skill_path.sh)
 #        python "$SKILL_PATH/scripts/unified_kb_query.py" --stride spoofing
