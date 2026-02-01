@@ -50,7 +50,7 @@ git clone https://github.com/fr33d3m0n/threat-modeling.git \
 
 2. **Invoke the skill** with a simple prompt:
    ```
-   Perform a complete threat model analysis on @.
+   /threat-modeling Perform a complete threat model analysis on @.
    ```
 
 3. **Follow the 8-phase workflow** - Claude will guide you through each phase.
@@ -64,7 +64,7 @@ The skill supports **6 flexible application modes** beyond the standard 8-phase 
 Full 8-phase threat modeling for codebases.
 
 ```
-Perform a complete threat model analysis on @/path/to/project
+/threat-modeling Perform a complete threat model analysis on @/path/to/project
 
 Project context:
 - This is an e-commerce platform backend API service

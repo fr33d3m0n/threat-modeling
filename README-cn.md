@@ -50,11 +50,11 @@ git clone https://github.com/fr33d3m0n/threat-modeling.git \
 
 2. **使用简单提示词调用 Skill**：
    ```
-   对 @. 执行完整的威胁建模分析
+   /threat-modeling 对 @. 执行完整的威胁建模分析
    ```
    或英文：
    ```
-   Perform a complete threat model analysis on @.
+   /threat-modeling Perform a complete threat model analysis on @.
    ```
 
 3. **按照8阶段工作流执行** - Claude 将引导你完成每个阶段。
@@ -68,7 +68,7 @@ Skill 支持 **6 种灵活的应用模式**，不仅限于标准的8阶段工作
 对代码库执行完整的8阶段威胁建模。
 
 ```
-对 @/path/to/project 执行完整的威胁建模分析
+/threat-modeling 对 @/path/to/project 执行完整的威胁建模分析
 
 项目背景：
 - 这是一个电商平台的后端API服务
