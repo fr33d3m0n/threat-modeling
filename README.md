@@ -193,20 +193,6 @@ python scripts/phase_data.py --validate --phase 2 --root /path/to/project
 python scripts/phase_data.py --init --project "PROJECT-NAME" --path /path/to/project
 ```
 
-## 8-Phase Workflow
-
-```
-P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8
-│    │    │    │    │    │    │    └── Report Generation
-│    │    │    │    │    │    └── Mitigation Planning
-│    │    │    │    │    └── Risk Validation (POC, attack paths)
-│    │    │    │    └── STRIDE Threat Analysis (threat matrix)
-│    │    │    └── Security Design Review (16 domains)
-│    │    └── Trust Boundary Evaluation
-│    └── Call Flow & DFD Analysis (data flows, call flows)
-└── Project Understanding (modules, entry points)
-```
-
 ## Advanced Scenarios (Extended Prompts)
 
 Beyond the standard 8-phase workflow, use these extended prompts for deeper security analysis:
@@ -348,6 +334,20 @@ Output format:
 | **Attack Tree & POC** | Attack chains + Exploits | Pentest plan with POC code |
 | **Docker Test Env** | Isolated testing | Test environment + Auto scripts |
 | **Attack Visualization** | Visual analysis | Attack graphs + Heatmaps |
+
+## 8-Phase Workflow
+
+```
+P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8
+│    │    │    │    │    │    │    └── Report Generation
+│    │    │    │    │    │    └── Mitigation Planning
+│    │    │    │    │    └── Risk Validation (POC, attack paths)
+│    │    │    │    └── STRIDE Threat Analysis (threat matrix)
+│    │    │    └── Security Design Review (16 domains)
+│    │    └── Trust Boundary Evaluation
+│    └── Call Flow & DFD Analysis (data flows, call flows)
+└── Project Understanding (modules, entry points)
+```
 
 ## Output Structure
 
