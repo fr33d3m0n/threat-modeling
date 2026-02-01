@@ -1,10 +1,109 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 1: Project Understanding
 
 **Type**: Exploratory
 **Executor**: Script + LLM
 **Knowledge**: Security Principles
+
+---
+
+## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
+
+> **CRITICAL**: 必须按顺序完成以下四个阶段。跳过任何阶段将导致分析质量下降！
+
+### ① THINKING (理解阶段) - 在任何规划前完成
+
+**Purpose**: Phase 1是首个Phase，没有上游数据依赖，专注于项目发现。
+
+在开始P1分析前，必须明确回答以下问题：
+
+```yaml
+thinking_checkpoint:
+  core_problem: "全面发现项目架构、模块、入口点，建立威胁建模基础"
+  what_i_know:
+    - "项目路径: [PROJECT_ROOT]"
+    - "项目类型: [待发现 - Web/API/Desktop/Mobile/AI-LLM]"
+    - "技术栈: [待发现 - 通过package.json/requirements.txt/go.mod等]"
+  what_i_dont_know:
+    - "[模块组织结构]"
+    - "[入口点分布 - 10+种类型需扫描]"
+    - "[动态路由指示器]"
+    - "[文档质量等级]"
+  what_could_go_wrong:
+    - "入口点类型扫描不完整 (14种类型必须全部扫描)"
+    - "动态路由指示器遗漏 (Layer 3 coverage)"
+    - "coverage_confidence过低 (<0.70)"
+    - "模块security_level未分配"
+```
+
+⛔ **STOP条件**: 如果无法访问项目路径 → 先确认路径再继续
+
+### ② PLANNING (规划阶段) - 理解确认后
+
+**Purpose**: 分解为可验证的子任务，确保三层发现完整覆盖。
+
+**Step 1: 验证项目路径** (BLOCKING - 必须执行)
+```bash
+# 验证项目存在
+ls {PROJECT_ROOT}
+
+# 检查是否有.phase_working目录
+ls {PROJECT_ROOT}/Risk_Assessment_Report/.phase_working/ 2>/dev/null || echo "Will create"
+```
+
+**Step 2: 分解子任务** (建议3-7个)
+```
+- T1: 执行P1.0三层静态发现 (module_discovery.py --p1-discovery)
+- T2: 根据quality_grade决定P1.1文档分析
+- T3: P1.2代码分析 - 生成3个YAML块
+- T4: P1.3动态路由检测 (如Layer 3指示器>0)
+- T5: P1.4三源对齐验证
+- T6: P1.5验证与覆盖置信度计算
+- T7: 写入P1_project_context.yaml + P1-PROJECT-UNDERSTANDING.md
+```
+
+**Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
+```
+⚠️ 在开始任何实施前，TaskList必须显示所有子任务！
+```
+
+### ③ EXECUTION LOOP (执行阶段)
+
+For each sub-task:
+1. `TaskUpdate(status: "in_progress")`
+2. 实施子任务
+3. 验证: 输出是否符合预期？
+4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
+5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+
+**输出顺序** (CRITICAL):
+1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P1_project_context.yaml`
+2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P1-PROJECT-UNDERSTANDING.md`
+
+**关键命令**:
+```bash
+# P1.0 三层发现
+python $SKILL_PATH/scripts/module_discovery.py {PROJECT_ROOT} --p1-discovery --output-yaml \
+  > .phase_working/{SESSION_ID}/data/P1_static_discovery.yaml
+
+# P1.5 验证
+python $SKILL_PATH/scripts/phase_data.py --validate --phase 1 --root {PROJECT_ROOT}
+```
+
+### ④ REFLECTION (反思阶段) - 完成前必须确认
+
+Before marking Phase 1 complete, verify ALL:
+
+- [ ] P1.0三层发现已执行？(P1_static_discovery.yaml存在)
+- [ ] P1_project_context.yaml 存在且有效？
+- [ ] discovery_checklist 全部14种入口类型scanned:true？
+- [ ] 每个模块有security_level分配？
+- [ ] 每个入口点有唯一ID (EP-xxx格式)？
+- [ ] coverage_confidence.overall_confidence ≥ 0.70？
+- [ ] Hook验证通过 (exit 0)？
+
+⛔ 任何检查失败 → 修复并重新验证，直到全部通过
 
 ---
 

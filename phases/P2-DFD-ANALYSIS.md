@@ -1,10 +1,114 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 2: Call Flow & DFD Analysis
 
 **Type**: Constructive
 **Executor**: LLM + Script
 **Knowledge**: Security Principles, security-design.yaml, Phase 2 Knowledge Base
+
+---
+
+## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
+
+> **CRITICAL**: 必须按顺序完成以下四个阶段。跳过任何阶段将导致分析质量下降！
+
+### ① THINKING (理解阶段) - 在任何规划前完成
+
+**Purpose**: 基于P1数据构建DFD，不能从记忆生成。
+
+在开始P2分析前，必须明确回答以下问题：
+
+```yaml
+thinking_checkpoint:
+  core_problem: "构建完整的数据流图(DFD)和调用流图(CFD)，为STRIDE分析奠定基础"
+  what_i_know:
+    - "P1模块总数: [从P1 YAML读取 module_inventory.summary.total_modules]"
+    - "P1入口点总数: [从P1 YAML读取 entry_point_inventory.summary.total]"
+    - "P1覆盖置信度: [从P1 YAML读取 coverage_confidence.overall_confidence]"
+    - "项目类型: [从P1 YAML读取 project_context.project_type]"
+  what_i_dont_know:
+    - "[每个入口点的完整数据流路径]"
+    - "[跨模块调用链]"
+    - "[数据存储访问模式]"
+    - "[安全检查点位置]"
+  what_could_go_wrong:
+    - "L1覆盖 < 100% (任何维度)"
+    - "接口缺少data_flow映射"
+    - "数据存储缺少access_patterns"
+    - "动态调用指示器未记录"
+```
+
+⛔ **STOP条件**: 如果 `what_i_know` 中任何数值未从P1 YAML读取 → 先读取P1数据再继续
+
+### ② PLANNING (规划阶段) - 理解确认后
+
+**Purpose**: 分解为可验证的子任务，确保DFD完整构建。
+
+**Step 1: 读取上游数据** (BLOCKING - 必须执行)
+```bash
+# 读取P1 YAML数据
+python scripts/phase_data.py --query --phase 1 --summary --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 1 --type entry_points --root {PROJECT_ROOT}
+
+# 或直接读取
+cat .phase_working/{SESSION_ID}/data/P1_project_context.yaml
+```
+⛔ 如果P1 YAML不存在或无效 → STOP并返回完成P1
+
+**Step 2: 分解子任务** (建议3-7个)
+```
+- T1: 读取P1数据，提取模块/入口点清单
+- T2: P2.0 Init - 提取遍历任务
+- T3: P2.1-P2.4 Critical Path Track (接口/数据流/调用流/数据存储)
+- T4: P2.T Full Traversal Track (并行子代理)
+- T5: P2.T.3 覆盖验证 (100%要求)
+- T6: P2.5 合成 - 生成dfd_elements
+- T7: 写入P2_dfd_elements.yaml + P2-DFD-ANALYSIS.md
+```
+
+**Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
+```
+⚠️ 在开始任何实施前，TaskList必须显示所有子任务！
+```
+
+### ③ EXECUTION LOOP (执行阶段)
+
+For each sub-task:
+1. `TaskUpdate(status: "in_progress")`
+2. 实施子任务
+3. 验证: 输出是否符合预期？
+4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
+5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+
+**输出顺序** (CRITICAL):
+1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml`
+2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P2-DFD-ANALYSIS.md`
+
+**关键命令**:
+```bash
+# P2.0 任务提取
+python scripts/phase_data.py --p2-extract-tasks --root {PROJECT_ROOT}
+
+# P2.T.3 覆盖验证
+python scripts/phase_data.py --p2-validate-coverage --root {PROJECT_ROOT}
+```
+
+### ④ REFLECTION (反思阶段) - 完成前必须确认
+
+Before marking Phase 2 complete, verify ALL:
+
+- [ ] P1 YAML数据已读取并理解？
+- [ ] P2_dfd_elements.yaml 存在且有效？
+- [ ] interface_inventory 包含所有L1-L3接口？
+- [ ] data_flow_traces 覆盖所有入口点？
+- [ ] l1_coverage 四维度全部100%？
+  - [ ] interfaces.coverage_percentage == 100
+  - [ ] data_flows.coverage_percentage == 100
+  - [ ] call_chains.coverage_percentage >= 95
+  - [ ] data_stores.coverage_percentage == 100
+- [ ] Hook验证通过 (exit 0)？
+
+⛔ 任何检查失败 → 修复并重新验证，直到全部通过
 
 ---
 

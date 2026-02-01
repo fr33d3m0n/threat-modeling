@@ -1,10 +1,117 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 7: Mitigation Planning
 
 **Type**: Prescriptive
 **Executor**: LLM
 **Knowledge**: Control Sets, CWE Mitigations, ASVS
+
+---
+
+## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
+
+> **CRITICAL**: 必须按顺序完成以下四个阶段。跳过任何阶段将导致分析质量下降！
+> **⚠️ CHECKPOINT PHASE**: P7是用户检查点，缓解措施完成后请求用户确认。
+
+### ① THINKING (理解阶段) - 在任何规划前完成
+
+**Purpose**: 基于P6验证的风险设计具体、可实施的缓解措施。
+
+在开始P7分析前，必须明确回答以下问题：
+
+```yaml
+thinking_checkpoint:
+  core_problem: "为每个VR-xxx设计具体的缓解措施MIT-xxx，包含可执行的代码示例"
+  what_i_know:
+    - "P6已验证风险数: [从P6 YAML读取 risk_summary.total_verified]"
+    - "P6理论风险数: [从P6 YAML读取 risk_summary.total_theoretical]"
+    - "P6 Critical风险数: [从P6 YAML读取 risk_summary.risk_by_severity.critical]"
+    - "P6 High风险数: [从P6 YAML读取 risk_summary.risk_by_severity.high]"
+    - "Tech stack: [从P1 YAML project_context.tech_stack]"
+  what_i_dont_know:
+    - "[具体代码修复位置]"
+    - "[最佳实践实施细节]"
+    - "[ASVS合规要求]"
+  what_could_go_wrong:
+    - "VR-xxx缺少对应的MIT-xxx"
+    - "缓解措施过于泛化 (无具体代码)"
+    - "缺少验证步骤"
+    - "KB缓解覆盖率过低"
+```
+
+⛔ **STOP条件**: 如果P6风险数未从YAML读取 → 先读取P6数据再继续
+
+### ② PLANNING (规划阶段) - 理解确认后
+
+**Purpose**: 分解为可验证的子任务，确保每个风险有缓解措施。
+
+**Step 1: 读取上游数据** (BLOCKING - 必须执行)
+```bash
+# 读取P6验证风险
+python scripts/phase_data.py --query --phase 6 --summary --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 6 --type risks --root {PROJECT_ROOT}
+
+# 或直接读取
+cat .phase_working/{SESSION_ID}/data/P6_validated_risks.yaml
+```
+⛔ 如果P6 YAML不存在或无效 → STOP并返回完成P6
+
+**Step 2: 分解子任务** (建议3-7个)
+```
+- T1: 读取P6数据，提取VR-xxx清单
+- T2: 为P0 (Critical)风险设计立即缓解措施
+- T3: 为P1 (High)风险设计紧急缓解措施
+- T4: 为P2/P3风险设计计划缓解措施
+- T5: KB查询 - CWE缓解和ASVS映射
+- T6: 创建实施路线图
+- T7: 写入P7_mitigation_plan.yaml + P7-MITIGATION-PLAN.md
+```
+
+**Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
+```
+⚠️ 在开始任何实施前，TaskList必须显示所有子任务！
+```
+
+### ③ EXECUTION LOOP (执行阶段)
+
+For each sub-task:
+1. `TaskUpdate(status: "in_progress")`
+2. 实施子任务
+3. 验证: 输出是否符合预期？
+4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
+5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+
+**输出顺序** (CRITICAL):
+1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P7_mitigation_plan.yaml`
+2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P7-MITIGATION-PLAN.md`
+
+**关键KB查询**:
+```bash
+$SKILL_PATH/kb --cwe CWE-89 --mitigations      # CWE特定缓解
+$SKILL_PATH/kb --control authentication         # 安全控制详情
+$SKILL_PATH/kb --asvs-level L2                  # ASVS要求
+```
+
+**缓解覆盖验证**:
+```
+∀ VR-xxx ∈ P6.validated_risks → ∃ MIT-xxx ∈ P7.mitigation_plan
+```
+
+### ④ REFLECTION (反思阶段) - 完成前必须确认
+
+Before marking Phase 7 complete, verify ALL:
+
+- [ ] P6 YAML数据已读取并理解？
+- [ ] P7_mitigation_plan.yaml 存在且有效？
+- [ ] 每个VR-xxx有对应的MIT-xxx？
+- [ ] kb_mitigation_sources 存在？
+- [ ] P0/P1风险的MIT-xxx有KB引用？
+- [ ] implementation_steps 包含具体代码？
+- [ ] roadmap (immediate/short/medium/long) 已定义？
+- [ ] ASVS/WSTG引用已提供？
+- [ ] Hook验证通过 (exit 0)？
+
+⛔ 任何检查失败 → 修复并重新验证，直到全部通过
 
 ---
 

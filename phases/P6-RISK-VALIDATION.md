@@ -1,10 +1,118 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 6: Risk Validation
 
 **Type**: Verification
 **Executor**: LLM
 **Knowledge**: CAPEC → ATT&CK → CVE/KEV, WSTG, MASTG
+
+---
+
+## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
+
+> **CRITICAL**: 必须按顺序完成以下四个阶段。跳过任何阶段将导致分析质量下降！
+> **⚠️ CHECKPOINT PHASE**: P6是用户检查点，复杂分析完成后请求用户确认。
+
+### ① THINKING (理解阶段) - 在任何规划前完成
+
+**Purpose**: 聚合所有P1-P5数据，设计攻击路径和POC验证威胁。
+
+在开始P6分析前，必须明确回答以下问题：
+
+```yaml
+thinking_checkpoint:
+  core_problem: "验证威胁可利用性，设计攻击路径和POC，NOT缓解措施"
+  what_i_know:
+    - "P1模块数: [从P1 YAML读取]"
+    - "P1入口点数: [从P1 YAML读取]"
+    - "P2 DFD元素数: [从P2 YAML读取]"
+    - "P3边界数: [从P3 YAML读取]"
+    - "P4 Gap数: [从P4 YAML读取]"
+    - "P5威胁总数: [从P5 YAML读取 threat_inventory.summary.total] ← COUNT CONSERVATION基准"
+  what_i_dont_know:
+    - "[威胁实际可利用性]"
+    - "[攻击路径可行性]"
+    - "[POC执行前提条件]"
+  what_could_go_wrong:
+    - "Count Conservation失败: P5.total ≠ verified + theoretical + pending + excluded"
+    - "Critical/High威胁缺少POC"
+    - "攻击链缺少ASCII图"
+    - "findings_coverage < 100%"
+```
+
+⛔ **STOP条件**: 如果P5威胁总数未从YAML读取 → 先读取P5数据再继续
+
+### ② PLANNING (规划阶段) - 理解确认后
+
+**Purpose**: 分解为可验证的子任务，确保Count Conservation和POC完整。
+
+**Step 1: 读取ALL上游数据** (BLOCKING - 必须执行)
+```bash
+# 聚合所有P1-P5数据
+python scripts/phase_data.py --aggregate --phases 1,2,3,4,5 --format summary --root {PROJECT_ROOT}
+
+# 验证P5威胁数 (Count Conservation基准)
+python scripts/phase_data.py --verify-p5-coverage --root {PROJECT_ROOT}
+
+# 或直接读取全部
+cat .phase_working/{SESSION_ID}/data/P1_project_context.yaml
+cat .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml
+cat .phase_working/{SESSION_ID}/data/P3_boundary_context.yaml
+cat .phase_working/{SESSION_ID}/data/P4_security_gaps.yaml
+cat .phase_working/{SESSION_ID}/data/P5_threat_inventory.yaml
+```
+⛔ 如果任何上游YAML不存在或无效 → STOP并返回完成上游Phase
+
+**Step 2: 分解子任务** (建议3-7个)
+```
+- T1: 聚合P1-P5所有发现 (F-P1-xxx, F-P2-xxx, F-P3-xxx, GAP-xxx, T-xxx)
+- T2: 聚类相关发现，创建VR-xxx
+- T3: 验证威胁可利用性 (verified/theoretical/pending/excluded)
+- T4: 设计Critical/High威胁的POC
+- T5: 设计攻击路径 (AP-xxx) 和攻击链 (AC-xxx)
+- T6: 验证Count Conservation公式
+- T7: 写入P6_validated_risks.yaml + P6-RISK-VALIDATION.md
+```
+
+**Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
+```
+⚠️ 在开始任何实施前，TaskList必须显示所有子任务！
+```
+
+### ③ EXECUTION LOOP (执行阶段)
+
+For each sub-task:
+1. `TaskUpdate(status: "in_progress")`
+2. 实施子任务
+3. 验证: 输出是否符合预期？
+4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
+5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+
+**输出顺序** (CRITICAL):
+1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P6_validated_risks.yaml`
+2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P6-RISK-VALIDATION.md`
+
+**Count Conservation验证** (MANDATORY):
+```
+P5.threat_inventory.total = verified + theoretical + pending + excluded
+```
+
+### ④ REFLECTION (反思阶段) - 完成前必须确认
+
+Before marking Phase 6 complete, verify ALL:
+
+- [ ] ALL P1-P5 YAML数据已读取并理解？
+- [ ] P6_validated_risks.yaml 存在且有效？
+- [ ] input_aggregation.count_conservation.conservation_verified == true？
+- [ ] findings_coverage_verification 存在？
+  - [ ] p4_gaps.coverage_percentage == 100%
+  - [ ] p5_threats.coverage_percentage == 100%
+- [ ] 所有excluded_findings有documented reasons？
+- [ ] Critical/High VR-xxx有POC-xxx详情？
+- [ ] attack_chains 存在且有ASCII图？
+- [ ] Hook验证通过 (exit 0)？
+
+⛔ 任何检查失败 → 修复并重新验证，直到全部通过
 
 ---
 
