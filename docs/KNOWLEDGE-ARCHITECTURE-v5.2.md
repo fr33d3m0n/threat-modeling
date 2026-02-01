@@ -321,7 +321,7 @@ unified_kb_query.py --wstg-category ATHN
 | **Type** | Exploratory |
 | **Input** | Project code tree |
 | **Knowledge** | Security Principles |
-| **Script** | `module_discovery.py --analyze` |
+| **Script** | `list_files.py --detect-type` |
 | **Output** | `findings_1`: Project context, tech stack, entry points, dependencies |
 
 ```yaml
@@ -765,7 +765,7 @@ final_report:
 
 | Phase | Name | Type | Security Control Set | Threat Pattern Set | Verification Set | Script Support |
 |-------|------|------|----------------------|---------------------|------------------|----------------|
-| 1 | Project Understanding | Exploratory | - | - | - | `module_discovery.py` |
+| 1 | Project Understanding | Exploratory | - | - | - | `list_files.py` |
 | 2 | Call Flow & DFD | Constructive | `security-design.yaml` | - | - | - |
 | 3 | Trust Boundaries | Evaluative | `security-design.yaml` | - | - | - |
 | 4 | Security Design | Evaluative | `security-design.yaml` → `control-set-*.md` → `reference-set-*.md` | - | - | `--control`, `--stride-controls` |

@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 ---
 name: threat-modeling
@@ -29,7 +29,7 @@ hooks:
 
 > **Note**: All relative paths in this skill are relative to `SKILL_PATH` (the directory containing this SKILL.md file).
 
-# Threat Modeling Skill v3.0.0 (20260201a)
+# Threat Modeling Skill v3.0.0 (20260201b)
 
 AI-native automated software risk analysis skill. LLM-driven, Code-First approach for comprehensive security risk assessment, threat modeling, security testing, penetration testing, and compliance checking.
 
@@ -37,7 +37,7 @@ AI-native automated software risk analysis skill. LLM-driven, Code-First approac
 
 ```
 ════════════════════════════════════════════════════════════════════════════════
-  🛡️ Threat Modeling Skill v3.0.0 (20260201a)
+  🛡️ Threat Modeling Skill v3.0.0 (20260201b)
 ════════════════════════════════════════════════════════════════════════════════
 ```
 
@@ -61,14 +61,14 @@ vX.Y.Z (YYYYMMDDx)
 
 | Version Part | Auto-Change Allowed | Example |
 |--------------|---------------------|---------|
-| 日期子版本 (x) | ✅ Yes | `(20260201a)` → `(20260131b)` |
-| 日期 (YYYYMMDD) | ✅ Yes | `(20260201a)` → `(20260201a)` |
+| 日期子版本 (x) | ✅ Yes | `(20260201b)` → `(20260131b)` |
+| 日期 (YYYYMMDD) | ✅ Yes | `(20260201b)` → `(20260201b)` |
 | X.Y.Z | ❌ **NO** - 需用户明确授权 | `3.0.0` → `3.0.1` or `3.1.0` |
 
 ### Current Version
 
 - **Base Version**: `3.0.0` (frozen until user approval)
-- **Date Version**: `20260201a` (auto-updates allowed)
+- **Date Version**: `20260201b` (auto-updates allowed)
 
 ## Command Line Flags
 
@@ -260,13 +260,13 @@ FOR each phase N in [1..8]:
 
 ```yaml
 # .phase_working/{SESSION_ID}/_session_meta.yaml
-schema_version: "3.0.0 (20260201a)"
+schema_version: "3.0.0 (20260201b)"
 session_id: "OPEN-WEBUI_20260130_143022"  # {PROJECT}_{YYYYMMDD_HHMMSS}
 project_name: "OPEN-WEBUI"
 project_path: "/path/to/project"
 started_at: "ISO8601 timestamp"
 language: "en"
-skill_version: "3.0.0 (20260201a)"
+skill_version: "3.0.0 (20260201b)"
 
 phases:
   P1:

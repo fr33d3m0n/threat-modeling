@@ -320,7 +320,7 @@ unified_kb_query.py --wstg-category ATHN
 | **类型** | 探索性 |
 | **输入** | 项目代码树 |
 | **知识** | 安全原则 |
-| **脚本** | `module_discovery.py --analyze` |
+| **脚本** | `list_files.py --detect-type` |
 | **输出** | `findings_1`: 项目上下文、技术栈、入口点、依赖 |
 
 ```yaml
@@ -773,7 +773,7 @@ final_report:
 
 | Phase | 名称 | 类型 | 安全控制集 | 威胁模式集 | 验证集 | 脚本支持 |
 |-------|------|------|-----------|-----------|--------|---------|
-| 1 | 项目理解 | 探索性 | - | - | - | `module_discovery.py` |
+| 1 | 项目理解 | 探索性 | - | - | - | `list_files.py` |
 | 2 | 调用流与DFD | 构建性 | `security-design.yaml` + **phase2/*.yaml** | - | - | - |
 | 3 | 信任边界 | 评估性 | `security-design.yaml` | - | - | - |
 | 4 | 安全设计 | 评估性 | `security-design.yaml` → `control-set-*.md` → `reference-set-*.md` | - | - | `--control`, `--stride-controls` |
