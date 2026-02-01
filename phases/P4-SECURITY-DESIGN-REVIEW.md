@@ -1,10 +1,101 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 4: Security Design Review
 
 **Type**: Evaluative
 **Executor**: LLM
 **Knowledge**: Control Sets, OWASP References
+
+---
+
+## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
+
+> **CRITICAL**: 必须按顺序完成以下四个阶段。跳过任何阶段将导致分析质量下降！
+
+### ① THINKING (理解阶段) - 在任何规划前完成
+
+**Purpose**: 深度理解后再行动，防止基于不完整理解的仓促行动。
+
+在开始P4分析前，必须明确回答以下问题：
+
+```yaml
+thinking_checkpoint:
+  core_problem: "评估项目在16个安全域的设计成熟度，识别安全控制缺口"
+  what_i_know:
+    - "P1模块总数: [从P1 YAML读取 module_inventory.summary.total_modules]"
+    - "P2数据流总数: [从P2 YAML读取 data_flow_traces.summary.total_flows]"
+    - "P2数据存储数: [从P2 YAML读取 data_store_inventory.summary.total_data_stores]"
+    - "P3边界数量: [从P3 YAML读取 boundary_context.boundaries 长度]"
+    - "Tech stack: [从P1 YAML读取 project_context.tech_stack]"
+  what_i_dont_know:
+    - "[需要通过代码审查确认的安全控制]"
+    - "[需要KB查询确认的最佳实践]"
+  what_could_go_wrong:
+    - "域评估不完整 (16个域未全部覆盖)"
+    - "Gap与Module/Flow的追溯链缺失"
+    - "扩展域触发检测遗漏"
+```
+
+⛔ **STOP条件**: 如果 `what_i_know` 中任何数值未从YAML读取 → 先读取数据再继续
+
+### ② PLANNING (规划阶段) - 理解确认后
+
+**Purpose**: 分解为可验证的子任务，确保完整覆盖。
+
+**Step 1: 读取上游数据** (BLOCKING - 必须执行)
+```bash
+# 读取P1-P3 YAML数据 (选择其一)
+python scripts/phase_data.py --aggregate --phases 1,2,3 --format summary --root {PROJECT_ROOT}
+
+# 或直接读取
+cat .phase_working/{SESSION_ID}/data/P1_project_context.yaml
+cat .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml
+cat .phase_working/{SESSION_ID}/data/P3_boundary_context.yaml
+```
+⛔ 如果任何文件不存在或无效 → STOP并返回完成上游Phase
+
+**Step 2: 分解子任务** (建议3-7个)
+```
+- T1: 读取P1-P3数据，提取模块/流/边界清单
+- T2: 评估10个核心安全域 (AUTHN→DATA)
+- T3: 检测扩展域触发条件 (ext-11→ext-16)
+- T4: 评估已触发的扩展域
+- T5: 生成Gap清单 (GAP-xxx)
+- T6: 写入P4_security_gaps.yaml
+- T7: 写入P4-SECURITY-REVIEW.md
+```
+
+**Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
+```
+⚠️ 在开始任何实施前，TaskList必须显示所有子任务！
+```
+
+### ③ EXECUTION LOOP (执行阶段)
+
+For each sub-task:
+1. `TaskUpdate(status: "in_progress")`
+2. 实施子任务
+3. 验证: 输出是否符合预期？
+4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
+5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+
+**输出顺序** (CRITICAL):
+1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P4_security_gaps.yaml`
+2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P4-SECURITY-REVIEW.md`
+
+### ④ REFLECTION (反思阶段) - 完成前必须确认
+
+Before marking Phase 4 complete, verify ALL:
+
+- [ ] 所有子任务已完成？(TaskList check)
+- [ ] P4_security_gaps.yaml 存在且有效？
+- [ ] design_matrix 包含全部16个域？
+- [ ] 每个Gap有唯一ID (GAP-xxx)？
+- [ ] coverage_verification 显示100%覆盖？
+- [ ] Hook验证通过 (exit 0)？
+- [ ] input_ref 字段指向 P3_boundary_context.yaml？
+
+⛔ 任何检查失败 → 修复并重新验证，直到全部通过
 
 ---
 

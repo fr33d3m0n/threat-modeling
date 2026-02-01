@@ -569,4 +569,63 @@ Per Phase:
 
 ---
 
-**End of SKILL.md** (~500 lines, ~6K tokens)
+## §11 Phase Isolation Rules (BLOCKING)
+
+> **CRITICAL**: 每个Phase是独立的执行单元，禁止合并执行！
+
+### ⛔ FORBIDDEN Behaviors
+
+| 禁止行为 | 原因 | 正确做法 |
+|----------|------|----------|
+| 在单个响应中执行多个Phase | 跳过了Entry/Exit Gate | 每个Phase独立迭代 |
+| Phase N+1 在 Phase N 验证前开始 | 数据链断裂 | 等待exit 0后再继续 |
+| 在一个thinking block中规划多个Phase | 上下文混淆 | 每个Phase独立THINKING |
+| 跳过上游YAML读取直接分析 | 基于假设而非事实 | 必须Read → Parse → Analyze |
+
+### ✅ REQUIRED Phase Isolation
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        PHASE ISOLATION PROTOCOL                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Phase N Execution:                                                          │
+│                                                                              │
+│  1. READ: @phases/P{N}-*.md instructions                                    │
+│  2. ENTRY GATE: 4-Phase Gating Protocol (THINKING → PLANNING)               │
+│  3. EXECUTE: Analysis per instructions                                       │
+│  4. WRITE: P{N}_*.yaml (PRIMARY) → P{N}-*.md (SECONDARY)                    │
+│  5. EXIT GATE: Hook validation (exit 0 required)                            │
+│  6. UPDATE: Session meta (status = "completed")                             │
+│                                                                              │
+│  ════════════════════════ PHASE BOUNDARY ════════════════════════           │
+│                                                                              │
+│  Phase N+1 Execution:                                                        │
+│  (Only after Phase N EXIT GATE passes)                                      │
+│                                                                              │
+│  1. READ: @phases/P{N+1}-*.md instructions                                  │
+│  2. ENTRY GATE: Read P{N}_*.yaml as input                                   │
+│  3. ... (repeat cycle)                                                       │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Phase Boundary Enforcement
+
+**Entry Gate Checklist** (每个Phase开始前):
+- [ ] 上一个Phase的YAML文件存在且有效？
+- [ ] 上一个Phase的session_meta.status == "completed"？
+- [ ] 当前Phase的instructions已加载？
+- [ ] THINKING checkpoint已完成？
+
+**Exit Gate Checklist** (每个Phase结束前):
+- [ ] YAML数据文件已写入且验证通过？
+- [ ] MD报告文件已写入？
+- [ ] Hook validation返回exit 0？
+- [ ] REFLECTION确认所有子任务完成？
+
+⛔ **任何Gate检查失败 → STOP并修复，禁止跨越Phase边界**
+
+---
+
+**End of SKILL.md** (~550 lines, ~7K tokens)
