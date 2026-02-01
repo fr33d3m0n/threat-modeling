@@ -153,46 +153,6 @@ help construct complete attack chain
 /threat-model @my-project --lang=zh --debug  # Chinese output with debug
 ```
 
-## Script Commands
-
-### Knowledge Base Queries
-
-```bash
-# STRIDE threat patterns
-python scripts/unified_kb_query.py --stride spoofing
-
-# Security controls
-python scripts/unified_kb_query.py --control AUTHN
-
-# CWE information with full chain
-python scripts/unified_kb_query.py --cwe CWE-89 --full-chain
-
-# CAPEC attack patterns
-python scripts/unified_kb_query.py --capec CAPEC-66 --attack-chain
-
-# AI/LLM specific threats
-python scripts/unified_kb_query.py --all-llm
-```
-
-### Module Discovery
-
-```bash
-python scripts/module_discovery.py /path/to/project --p1-discovery
-```
-
-### Phase Data Management
-
-```bash
-# Query previous phase data
-python scripts/phase_data.py --query --phase 1 --root /path/to/project
-
-# Validate phase output
-python scripts/phase_data.py --validate --phase 2 --root /path/to/project
-
-# Initialize new session
-python scripts/phase_data.py --init --project "PROJECT-NAME" --path /path/to/project
-```
-
 ## Advanced Scenarios (Extended Prompts)
 
 Beyond the standard 8-phase workflow, use these extended prompts for deeper security analysis:
@@ -335,20 +295,6 @@ Output format:
 | **Docker Test Env** | Isolated testing | Test environment + Auto scripts |
 | **Attack Visualization** | Visual analysis | Attack graphs + Heatmaps |
 
-## 8-Phase Workflow
-
-```
-P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8
-│    │    │    │    │    │    │    └── Report Generation
-│    │    │    │    │    │    └── Mitigation Planning
-│    │    │    │    │    └── Risk Validation (POC, attack paths)
-│    │    │    │    └── STRIDE Threat Analysis (threat matrix)
-│    │    │    └── Security Design Review (16 domains)
-│    │    └── Trust Boundary Evaluation
-│    └── Call Flow & DFD Analysis (data flows, call flows)
-└── Project Understanding (modules, entry points)
-```
-
 ## Output Structure
 
 ```
@@ -366,6 +312,60 @@ P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8
     └── reports/                      # Markdown reports
         ├── P1-PROJECT-UNDERSTANDING.md
         └── ...
+```
+
+## Script Commands
+
+### Knowledge Base Queries
+
+```bash
+# STRIDE threat patterns
+python scripts/unified_kb_query.py --stride spoofing
+
+# Security controls
+python scripts/unified_kb_query.py --control AUTHN
+
+# CWE information with full chain
+python scripts/unified_kb_query.py --cwe CWE-89 --full-chain
+
+# CAPEC attack patterns
+python scripts/unified_kb_query.py --capec CAPEC-66 --attack-chain
+
+# AI/LLM specific threats
+python scripts/unified_kb_query.py --all-llm
+```
+
+### Module Discovery
+
+```bash
+python scripts/module_discovery.py /path/to/project --p1-discovery
+```
+
+### Phase Data Management
+
+```bash
+# Query previous phase data
+python scripts/phase_data.py --query --phase 1 --root /path/to/project
+
+# Validate phase output
+python scripts/phase_data.py --validate --phase 2 --root /path/to/project
+
+# Initialize new session
+python scripts/phase_data.py --init --project "PROJECT-NAME" --path /path/to/project
+```
+
+## 8-Phase Workflow
+
+```
+P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8
+│    │    │    │    │    │    │    └── Report Generation
+│    │    │    │    │    │    └── Mitigation Planning
+│    │    │    │    │    └── Risk Validation (POC, attack paths)
+│    │    │    │    └── STRIDE Threat Analysis (threat matrix)
+│    │    │    └── Security Design Review (16 domains)
+│    │    └── Trust Boundary Evaluation
+│    └── Call Flow & DFD Analysis (data flows, call flows)
+└── Project Understanding (modules, entry points)
 ```
 
 ## Knowledge Base

@@ -155,46 +155,6 @@ Skill 支持 **6 种灵活的应用模式**，不仅限于标准的8阶段工作
 /threat-model @my-project --lang=zh --debug  # 中文输出+调试
 ```
 
-## 脚本命令
-
-### 知识库查询
-
-```bash
-# STRIDE威胁模式
-python scripts/unified_kb_query.py --stride spoofing
-
-# 安全控制
-python scripts/unified_kb_query.py --control AUTHN
-
-# CWE完整链
-python scripts/unified_kb_query.py --cwe CWE-89 --full-chain
-
-# CAPEC攻击模式
-python scripts/unified_kb_query.py --capec CAPEC-66 --attack-chain
-
-# AI/LLM特定威胁
-python scripts/unified_kb_query.py --all-llm
-```
-
-### 模块发现
-
-```bash
-python scripts/module_discovery.py /path/to/project --p1-discovery
-```
-
-### 阶段数据管理
-
-```bash
-# 查询前一阶段数据
-python scripts/phase_data.py --query --phase 1 --root /path/to/project
-
-# 验证阶段输出
-python scripts/phase_data.py --validate --phase 2 --root /path/to/project
-
-# 初始化新会话
-python scripts/phase_data.py --init --project "PROJECT-NAME" --path /path/to/project
-```
-
 ## 纵深扩展分析（高级场景）
 
 在标准8阶段工作流之外，使用以下扩展 prompt 进行更深入的安全分析：
@@ -337,20 +297,6 @@ python scripts/phase_data.py --init --project "PROJECT-NAME" --path /path/to/pro
 | **Docker测试环境** | 隔离测试 | 测试环境 + 自动化脚本 |
 | **攻击可视化** | 可视化分析 | 攻击图谱 + 热力图 |
 
-## 8阶段工作流
-
-```
-P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8
-│    │    │    │    │    │    │    └── 报告生成
-│    │    │    │    │    │    └── 缓解规划
-│    │    │    │    │    └── 风险验证（POC、攻击路径）
-│    │    │    │    └── STRIDE威胁分析（威胁矩阵）
-│    │    │    └── 安全设计审查（16个领域）
-│    │    └── 信任边界评估
-│    └── 调用流与DFD分析（数据流、调用流）
-└── 项目理解（模块、入口点）
-```
-
 ## 输出结构
 
 ```
@@ -368,6 +314,60 @@ P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8
     └── reports/                      # Markdown报告
         ├── P1-PROJECT-UNDERSTANDING.md
         └── ...
+```
+
+## 脚本命令
+
+### 知识库查询
+
+```bash
+# STRIDE威胁模式
+python scripts/unified_kb_query.py --stride spoofing
+
+# 安全控制
+python scripts/unified_kb_query.py --control AUTHN
+
+# CWE完整链
+python scripts/unified_kb_query.py --cwe CWE-89 --full-chain
+
+# CAPEC攻击模式
+python scripts/unified_kb_query.py --capec CAPEC-66 --attack-chain
+
+# AI/LLM特定威胁
+python scripts/unified_kb_query.py --all-llm
+```
+
+### 模块发现
+
+```bash
+python scripts/module_discovery.py /path/to/project --p1-discovery
+```
+
+### 阶段数据管理
+
+```bash
+# 查询前一阶段数据
+python scripts/phase_data.py --query --phase 1 --root /path/to/project
+
+# 验证阶段输出
+python scripts/phase_data.py --validate --phase 2 --root /path/to/project
+
+# 初始化新会话
+python scripts/phase_data.py --init --project "PROJECT-NAME" --path /path/to/project
+```
+
+## 8阶段工作流
+
+```
+P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8
+│    │    │    │    │    │    │    └── 报告生成
+│    │    │    │    │    │    └── 缓解规划
+│    │    │    │    │    └── 风险验证（POC、攻击路径）
+│    │    │    │    └── STRIDE威胁分析（威胁矩阵）
+│    │    │    └── 安全设计审查（16个领域）
+│    │    └── 信任边界评估
+│    └── 调用流与DFD分析（数据流、调用流）
+└── 项目理解（模块、入口点）
 ```
 
 ## 知识库
