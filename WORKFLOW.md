@@ -1,8 +1,8 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # WORKFLOW.md - Orchestration Contracts
 
-**Version**: 3.0.0 (20260201b)
+**Version**: 3.0.0 (20260202a)
 **Purpose**: Phase orchestration, **structured data contracts**, validation gates, **4-phase gating protocol**
 
 ---
@@ -149,208 +149,30 @@ Create 8 items at session start:
 
 ---
 
-## §2 Phase Execution Protocol (4-Phase Gating)
+## §2 Phase Execution Protocol
 
-> **REFERENCE**: 核心执行规则见 SKILL.md §10 Core Execution Rules
-> **PROTOCOL**: THINKING → PLANNING → EXECUTION LOOP → REFLECTION (Mandatory)
+> **⚠️ IMPORTANT**: 每个 Phase 的 Entry Gate (THINKING/PLANNING/EXECUTION/REFLECTION) 定义在各自的 Phase 指令文件中。
+> **详见**: `@phases/P{N}-*.md` 文件中的 "⚠️ MANDATORY: Entry Gate" 部分
 
-### 4-Phase Gating Protocol
+### Phase Execution Summary
 
 ```
 FOR each phase N in [1..8]:
-
-  ┌─ ① THINKING (Understanding Phase) ────────────────────────────────────┐
-  │                                                                         │
-  │  PURPOSE: Deep understanding BEFORE any planning. Prevents premature    │
-  │           action on incomplete understanding.                           │
-  │                                                                         │
-  │  1. CORE PROBLEM/GOAL                                                   │
-  │     - State Phase {N}'s objective in ONE sentence                       │
-  │     - What security aspect does this phase address?                     │
-  │                                                                         │
-  │  2. WHAT I KNOW (Confirmed Facts)                                       │
-  │     - What data is available from P{N-1}_*.yaml?                       │
-  │     - What constraints apply (schema, validation rules)?                │
-  │     - What patterns exist in the codebase?                              │
-  │                                                                         │
-  │  3. WHAT I DON'T KNOW (Unknowns & Assumptions)                         │
-  │     - What gaps exist in input data?                                    │
-  │     - What assumptions am I making?                                     │
-  │     - What requires deeper investigation?                               │
-  │                                                                         │
-  │  4. WHAT COULD GO WRONG (Risks & Edge Cases)                           │
-  │     - What would cause this phase to fail?                              │
-  │     - What edge cases might be missed?                                  │
-  │     - What validation failures are likely?                              │
-  │                                                                         │
-  │  ⚠️ STOP CONDITION: If ANY question unanswered → STOP and clarify     │
-  │  ⚠️ STOP CONDITION: If input data incomplete → STOP and report        │
-  │                                                                         │
-  └─────────────────────────────────────────────────────────────────────────┘
-                                    ↓
-  ┌─ ② PLANNING (Decomposition Phase) ────────────────────────────────────┐
-  │                                                                         │
-  │  PURPOSE: Break phase into verifiable sub-tasks AFTER understanding    │
-  │           confirmed. Never plan without understanding.                  │
-  │                                                                         │
-  │  1. STATE PHASE OBJECTIVE                                               │
-  │     - Explicitly declare: "Phase {N} objective is..."                   │
-  │     - Verify alignment with overall threat model goal                   │
-  │                                                                         │
-  │  2. LOAD & VERIFY INPUT DATA (except P1)                                │
-  │     - Read .phase_working/data/P{N-1}_*.yaml                           │
-  │     - Parse as structured data                                          │
-  │     - ❌ DO NOT read previous .md reports for data                      │
-  │     - ⚠️ STOP if input incomplete or malformed                         │
-  │                                                                         │
-  │  3. DECOMPOSE INTO SUB-TASKS                                            │
-  │     - Break phase work into 3-7 discrete sub-tasks                      │
-  │     - Each sub-task MUST have:                                          │
-  │       • Clear objective                                                 │
-  │       • Defined input (from upstream or discovery)                      │
-  │       • Defined output (what gets written)                              │
-  │       • Verification criteria                                           │
-  │                                                                         │
-  │  4. ⭐ MANDATORY TASK CREATION                                          │
-  │     - Call TaskCreate for EACH sub-task (NO EXCEPTIONS)                │
-  │     - TaskList MUST show ALL sub-tasks BEFORE any implementation       │
-  │     - Establish execution order (dependencies)                          │
-  │                                                                         │
-  │  ⚠️ STOP CONDITION: If decomposition unclear → return to THINKING     │
-  │  ⚠️ STOP CONDITION: If TaskList incomplete → create remaining tasks   │
-  │                                                                         │
-  └─────────────────────────────────────────────────────────────────────────┘
-                                    ↓
-  ┌─ ③ EXECUTION LOOP (Implementation Phase) ─────────────────────────────┐
-  │                                                                         │
-  │  PURPOSE: Execute each sub-task with verification and iteration.       │
-  │           Never proceed with unresolved issues.                         │
-  │                                                                         │
-  │  1. UPDATE SESSION META                                                 │
-  │     - Set phases.P{N}.status = "in_progress"                            │
-  │     - Set phases.P{N}.started_at = now()                                │
-  │                                                                         │
-  │  2. FOR EACH SUB-TASK (in dependency order):                           │
-  │     ┌─────────────────────────────────────────────────────────────┐    │
-  │     │  a. TaskUpdate(status: "in_progress")                        │    │
-  │     │  b. Implement sub-task per @phases/P{N}-*.md instructions   │    │
-  │     │  c. Verify: Does output match expected structure?            │    │
-  │     │                                                              │    │
-  │     │  IF VERIFY PASSES:                                           │    │
-  │     │     → TaskUpdate(status: "completed")                        │    │
-  │     │     → Proceed to next sub-task                               │    │
-  │     │                                                              │    │
-  │     │  IF VERIFY FAILS:                                            │    │
-  │     │     → Diagnose root cause                                    │    │
-  │     │     → Fix the issue                                          │    │
-  │     │     → Verify again (retry_count += 1)                        │    │
-  │     │     → If retry_count >= 3: ⛔ CHECKPOINT → ask user          │    │
-  │     │     → Once fixed: document error → TaskUpdate(completed)     │    │
-  │     └─────────────────────────────────────────────────────────────┘    │
-  │                                                                         │
-  │  3. WRITE OUTPUT DATA (YAML first!)                                     │
-  │     - Write .phase_working/data/P{N}_*.yaml                            │
-  │     - Validate schema compliance                                        │
-  │     - ✅ This is the PRIMARY output                                     │
-  │                                                                         │
-  │  4. WRITE REPORT (MD second)                                            │
-  │     - Write .phase_working/reports/P{N}-*.md                           │
-  │     - Reference data from YAML, format for humans                       │
-  │     - ❌ This is SECONDARY, for human reading only                      │
-  │                                                                         │
-  │  ⚠️ RULE: Never proceed to next sub-task with unresolved issues       │
-  │                                                                         │
-  └─────────────────────────────────────────────────────────────────────────┘
-                                    ↓
-  ┌─ ④ REFLECTION (Verification Phase) ───────────────────────────────────┐
-  │                                                                         │
-  │  PURPOSE: Confirm completeness and capture lessons BEFORE proceeding.  │
-  │           Stop if any verification fails.                               │
-  │                                                                         │
-  │  1. VALIDATE & UPDATE META                                              │
-  │     - Run phase_data.py --phase-end --phase {N}                        │
-  │     - ⚠️ If validation fails: fix YAML, re-validate, iterate (max 3x) │
-  │                                                                         │
-  │  2. VERIFY COMPLETENESS                                                 │
-  │     - All sub-tasks completed? (TaskList check)                        │
-  │     - All issues resolved? (no pending failures)                        │
-  │     - All YAML data written and validated? (exit code 0)               │
-  │     - All required fields present? (schema compliance)                  │
-  │                                                                         │
-  │  3. CONFIRM ALIGNMENT                                                   │
-  │     - Does output align with phase objective?                           │
-  │     - Does output support next phase's needs?                           │
-  │     - Is data traceable (input_ref field set)?                         │
-  │                                                                         │
-  │  4. DOCUMENT LESSONS LEARNED (Brief)                                    │
-  │     - What worked well?                                                 │
-  │     - What required iteration?                                          │
-  │     - (Optional: Record in session notes)                              │
-  │                                                                         │
-  │  5. UPDATE SESSION & PROCEED                                            │
-  │     - Update phases.P{N}.status = "completed"                          │
-  │     - Set phases.P{N}.completed_at = now()                             │
-  │     - Set phases.P{N}.data_file = path to YAML                         │
-  │     - Set phases.P{N}.report_file = path to MD                         │
-  │     - ✅ Only then proceed to Phase {N+1}                               │
-  │                                                                         │
-  │  ⚠️ STOP CONDITION: ANY verification fails → iterate until pass       │
-  │                                                                         │
-  └─────────────────────────────────────────────────────────────────────────┘
+  1. Read @phases/P{N}-*.md (phase instructions with Entry Gate)
+  2. Execute Entry Gate: THINKING → PLANNING → EXECUTION → REFLECTION
+  3. Write .phase_working/{SESSION_ID}/data/P{N}_*.yaml (PRIMARY)
+  4. Write .phase_working/{SESSION_ID}/reports/P{N}-*.md (SECONDARY)
+  5. Wait for PostToolUse hook validation (exit 0)
+  6. Proceed to Phase {N+1}
 ```
 
 ### Checkpoint Phases
-
-Certain phases require explicit user confirmation before proceeding:
 
 | Phase | Checkpoint | Purpose |
 |-------|------------|---------|
 | P5 | After threat enumeration | User confirms threat list is complete |
 | P6 | After risk validation | User confirms attack paths before mitigation |
 | P7 | After mitigation planning | User confirms remediation plan before report |
-
-### Verification Loop Protocol
-
-```
-retry_count = 0
-MAX_RETRIES = 3
-
-WHILE verification_fails:
-    diagnose_root_cause()
-    fix_issue()
-    verify_again()
-    retry_count += 1
-
-    IF retry_count >= MAX_RETRIES:
-        ⛔ CHECKPOINT: Ask user for decision
-        OPTIONS:
-          - "Continue trying (reset retry_count)"
-          - "Skip this verification (with documented risk)"
-          - "Abort phase (investigate manually)"
-```
-
-### Task Creation Mandate
-
-> **RULE**: Before ANY implementation, TaskList MUST show all sub-tasks.
-
-```
-❌ WRONG:
-   1. Start implementing
-   2. Create task mid-way
-   3. Complete task
-
-✅ CORRECT:
-   1. THINKING: Understand phase
-   2. PLANNING: Decompose into sub-tasks
-   3. TaskCreate for ALL sub-tasks (before implementation)
-   4. TaskList shows complete plan
-   5. EXECUTION LOOP: For each sub-task:
-      - TaskUpdate(in_progress)
-      - Implement
-      - Verify
-      - TaskUpdate(completed)
-   6. REFLECTION: Verify all complete
-```
 
 ---
 

@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 7: Mitigation Planning
 
@@ -10,69 +10,101 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
 > **⚠️ CHECKPOINT PHASE**: P7是用户检查点，缓解措施完成后请求用户确认。
 
-### ① THINKING (理解阶段) - 在任何规划前完成
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🧠 THINKING - Phase 7 Entry Gate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Purpose**: 基于P6验证的风险设计具体、可实施的缓解措施。
 
-在开始P7分析前，必须明确回答以下问题：
+**⚠️ 你必须输出以下格式的 THINKING 结果：**
 
-```yaml
-thinking_checkpoint:
-  core_problem: "为每个VR-xxx设计具体的缓解措施MIT-xxx，包含可执行的代码示例"
-  what_i_know:
-    - "P6已验证风险数: [从P6 YAML读取 risk_summary.total_verified]"
-    - "P6理论风险数: [从P6 YAML读取 risk_summary.total_theoretical]"
-    - "P6 Critical风险数: [从P6 YAML读取 risk_summary.risk_by_severity.critical]"
-    - "P6 High风险数: [从P6 YAML读取 risk_summary.risk_by_severity.high]"
-    - "Tech stack: [从P1 YAML project_context.tech_stack]"
-  what_i_dont_know:
-    - "[具体代码修复位置]"
-    - "[最佳实践实施细节]"
-    - "[ASVS合规要求]"
-  what_could_go_wrong:
-    - "VR-xxx缺少对应的MIT-xxx"
-    - "缓解措施过于泛化 (无具体代码)"
-    - "缺少验证步骤"
-    - "KB缓解覆盖率过低"
+```
+🧠 THINKING - P7 Entry Gate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 CORE PROBLEM
+为每个VR-xxx设计具体的缓解措施MIT-xxx，包含可执行的代码示例
+
+📊 UPSTREAM DATA (从 P6 YAML 读取)
+| 指标 | 值 | 来源 |
+|------|-----|------|
+| P6已验证风险数 | {实际值} | P6_validated_risks.yaml → risk_summary.total_verified |
+| P6理论风险数 | {实际值} | P6_validated_risks.yaml → risk_summary.total_theoretical |
+| P6 Critical风险数 | {实际值} | P6_validated_risks.yaml → risk_summary.risk_by_severity.critical |
+| P6 High风险数 | {实际值} | P6_validated_risks.yaml → risk_summary.risk_by_severity.high |
+| Tech stack | {实际值} | P1_project_context.yaml → project_context.tech_stack |
+
+❓ UNKNOWNS
+- 具体代码修复位置
+- 最佳实践实施细节
+- ASVS合规要求
+
+⚠️ RISKS
+- VR-xxx缺少对应的MIT-xxx
+- 缓解措施过于泛化 (无具体代码)
+- 缺少验证步骤
+- KB缓解覆盖率过低
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⛔ STOP CHECK
+- P6 YAML 已读取? [YES/NO]
+- P6风险数已记录? [YES/NO]
+- 上游数据完整? [YES/NO]
+- 可以继续PLANNING? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果P6风险数未从YAML读取 → 先读取P6数据再继续
+⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取P6数据再继续
 
-### ② PLANNING (规划阶段) - 理解确认后
-
-**Purpose**: 分解为可验证的子任务，确保每个风险有缓解措施。
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 📋 PLANNING - Sub-task Decomposition
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Step 1: 读取上游数据** (BLOCKING - 必须执行)
 ```bash
 # 读取P6验证风险
-python scripts/phase_data.py --query --phase 6 --summary --root {PROJECT_ROOT}
-python scripts/phase_data.py --query --phase 6 --type risks --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 6 --summary --root .
+python scripts/phase_data.py --query --phase 6 --type risks --root .
 
 # 或直接读取
 cat .phase_working/{SESSION_ID}/data/P6_validated_risks.yaml
 ```
 ⛔ 如果P6 YAML不存在或无效 → STOP并返回完成P6
 
-**Step 2: 分解子任务** (建议3-7个)
+**Step 2: 输出子任务表格** (MANDATORY)
+
+**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+
 ```
-- T1: 读取P6数据，提取VR-xxx清单
-- T2: 为P0 (Critical)风险设计立即缓解措施
-- T3: 为P1 (High)风险设计紧急缓解措施
-- T4: 为P2/P3风险设计计划缓解措施
-- T5: KB查询 - CWE缓解和ASVS映射
-- T6: 创建实施路线图
-- T7: 写入P7_mitigation_plan.yaml + P7-MITIGATION-PLAN.md
+📋 PLANNING - P7 Sub-tasks
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| # | 子任务 | 预期输出 |
+|---|--------|----------|
+| T1 | 读取P6数据，提取VR-xxx清单 | VR清单 |
+| T2 | 为P0 (Critical)风险设计立即缓解措施 | MIT-xxx (Critical) |
+| T3 | 为P1 (High)风险设计紧急缓解措施 | MIT-xxx (High) |
+| T4 | 为P2/P3风险设计计划缓解措施 | MIT-xxx (Medium/Low) |
+| T5 | KB查询 - CWE缓解和ASVS映射 | KB引用 |
+| T6 | 创建实施路线图 | roadmap |
+| T7 | 写入最终输出 | P7_mitigation_plan.yaml + MD |
+
+⛔ PLANNING CHECK
+- 子任务已分解? [YES/NO]
+- 准备创建 TaskCreate? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
-```
-⚠️ 在开始任何实施前，TaskList必须显示所有子任务！
-```
 
-### ③ EXECUTION LOOP (执行阶段)
+⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### ⚡ EXECUTION LOOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
@@ -97,19 +129,33 @@ $SKILL_PATH/kb --asvs-level L2                  # ASVS要求
 ∀ VR-xxx ∈ P6.validated_risks → ∃ MIT-xxx ∈ P7.mitigation_plan
 ```
 
-### ④ REFLECTION (反思阶段) - 完成前必须确认
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🔍 REFLECTION - Completion Verification
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Before marking Phase 7 complete, verify ALL:
+**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
 
-- [ ] P6 YAML数据已读取并理解？
-- [ ] P7_mitigation_plan.yaml 存在且有效？
-- [ ] 每个VR-xxx有对应的MIT-xxx？
-- [ ] kb_mitigation_sources 存在？
-- [ ] P0/P1风险的MIT-xxx有KB引用？
-- [ ] implementation_steps 包含具体代码？
-- [ ] roadmap (immediate/short/medium/long) 已定义？
-- [ ] ASVS/WSTG引用已提供？
-- [ ] Hook验证通过 (exit 0)？
+```
+🔍 REFLECTION - P7 Completion Check
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| 检查项 | 状态 |
+|--------|------|
+| P6 YAML数据已读取并理解? | [✅/❌] |
+| P7_mitigation_plan.yaml 存在且有效? | [✅/❌] |
+| 每个VR-xxx有对应的MIT-xxx? | [✅/❌] |
+| kb_mitigation_sources 存在? | [✅/❌] |
+| P0/P1风险的MIT-xxx有KB引用? | [✅/❌] |
+| implementation_steps 包含具体代码? | [✅/❌] |
+| roadmap (immediate/short/medium/long) 已定义? | [✅/❌] |
+| ASVS/WSTG引用已提供? | [✅/❌] |
+| Hook验证通过 (exit 0)? | [✅/❌] |
+
+⛔ COMPLETION GATE
+- 所有检查通过? [YES/NO]
+- 可以进入P8? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ⛔ 任何检查失败 → 修复并重新验证，直到全部通过
 
@@ -184,13 +230,13 @@ Phase 7 CANNOT complete until:
 
 ```bash
 # Step 1: Get P6 risk summary for overview
-python scripts/phase_data.py --query --phase 6 --summary --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 6 --summary --root .
 
 # Step 2: Get detailed validated risks (PRIMARY input)
-python scripts/phase_data.py --query --phase 6 --type risks --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 6 --type risks --root .
 
 # Step 3: Verify P6 coverage for completeness
-python scripts/phase_data.py --verify-p6-coverage --root {PROJECT_ROOT}
+python scripts/phase_data.py --verify-p6-coverage --root .
 ```
 
 **Or read YAML directly**:

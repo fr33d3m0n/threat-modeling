@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 1: Project Understanding
 
@@ -10,65 +10,95 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
 
-### ① THINKING (理解阶段) - 在任何规划前完成
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🧠 THINKING - Phase 1 Entry Gate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Purpose**: Phase 1是首个Phase，没有上游数据依赖，专注于项目发现。
 
-在开始P1分析前，必须明确回答以下问题：
+**⚠️ 你必须输出以下格式的 THINKING 结果：**
 
-```yaml
-thinking_checkpoint:
-  core_problem: "全面发现项目架构、模块、入口点，建立威胁建模基础"
-  what_i_know:
-    - "项目路径: [PROJECT_ROOT]"
-    - "项目类型: [待发现 - Web/API/Desktop/Mobile/AI-LLM]"
-    - "技术栈: [待发现 - 通过package.json/requirements.txt/go.mod等]"
-  what_i_dont_know:
-    - "[模块组织结构]"
-    - "[入口点分布 - 10+种类型需扫描]"
-    - "[动态路由指示器]"
-    - "[文档质量等级]"
-  what_could_go_wrong:
-    - "入口点类型扫描不完整 (14种类型必须全部扫描)"
-    - "动态路由指示器遗漏 (Layer 3 coverage)"
-    - "coverage_confidence过低 (<0.70)"
-    - "模块security_level未分配"
+```
+🧠 THINKING - P1 Entry Gate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 CORE PROBLEM
+全面发现项目架构、模块、入口点，建立威胁建模基础
+
+📊 KNOWN CONTEXT
+| 指标 | 值 | 来源 |
+|------|-----|------|
+| 项目路径 | {实际路径} | 用户输入 |
+| 项目类型 | [待发现] | 需扫描 |
+| 技术栈 | [待发现] | package.json/requirements.txt |
+
+❓ UNKNOWNS
+- 模块组织结构
+- 入口点分布 (14种类型需扫描)
+- 动态路由指示器
+- 文档质量等级
+
+⚠️ RISKS
+- 入口点类型扫描不完整 (14种类型必须全部扫描)
+- 动态路由指示器遗漏 (Layer 3 coverage)
+- coverage_confidence过低 (<0.70)
+- 模块security_level未分配
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⛔ STOP CHECK
+- 项目路径可访问? [YES/NO]
+- 可以继续PLANNING? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果无法访问项目路径 → 先确认路径再继续
+⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先解决问题再继续
 
-### ② PLANNING (规划阶段) - 理解确认后
-
-**Purpose**: 分解为可验证的子任务，确保三层发现完整覆盖。
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 📋 PLANNING - Sub-task Decomposition
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Step 1: 验证项目路径** (BLOCKING - 必须执行)
 ```bash
-# 验证项目存在
-ls {PROJECT_ROOT}
+# 验证项目存在 (在项目根目录执行)
+ls .
 
 # 检查是否有.phase_working目录
-ls {PROJECT_ROOT}/Risk_Assessment_Report/.phase_working/ 2>/dev/null || echo "Will create"
+ls ./Risk_Assessment_Report/.phase_working/ 2>/dev/null || echo "Will create"
 ```
 
-**Step 2: 分解子任务** (建议3-7个)
+**Step 2: 输出子任务表格** (MANDATORY)
+
+**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+
 ```
-- T1: 执行P1.0三层静态发现 (module_discovery.py --p1-discovery)
-- T2: 根据quality_grade决定P1.1文档分析
-- T3: P1.2代码分析 - 生成3个YAML块
-- T4: P1.3动态路由检测 (如Layer 3指示器>0)
-- T5: P1.4三源对齐验证
-- T6: P1.5验证与覆盖置信度计算
-- T7: 写入P1_project_context.yaml + P1-PROJECT-UNDERSTANDING.md
+📋 PLANNING - P1 Sub-tasks
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| # | 子任务 | 预期输出 |
+|---|--------|----------|
+| T1 | 执行P1.0三层静态发现 | P1_static_discovery.yaml |
+| T2 | 根据quality_grade决定P1.1文档分析 | yaml:doc_analysis (条件) |
+| T3 | P1.2代码分析 | 3个YAML块 |
+| T4 | P1.3动态路由检测 | Layer 3指示器 |
+| T5 | P1.4三源对齐验证 | P1_source_alignment.yaml |
+| T6 | P1.5验证与置信度计算 | coverage_confidence |
+| T7 | 写入最终输出 | P1_project_context.yaml + MD |
+
+⛔ PLANNING CHECK
+- 子任务已分解? [YES/NO]
+- 准备创建 TaskCreate? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
-```
-⚠️ 在开始任何实施前，TaskList必须显示所有子任务！
-```
 
-### ③ EXECUTION LOOP (执行阶段)
+⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### ⚡ EXECUTION LOOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
@@ -83,25 +113,40 @@ For each sub-task:
 
 **关键命令**:
 ```bash
-# P1.0 三层发现
-python $SKILL_PATH/scripts/module_discovery.py {PROJECT_ROOT} --p1-discovery --output-yaml \
+# P1.0 三层发现 (路径为位置参数，不是 --project-root)
+python $SKILL_PATH/scripts/module_discovery.py . --p1-discovery --output-yaml \
   > .phase_working/{SESSION_ID}/data/P1_static_discovery.yaml
+# 注意: "." 表示当前项目目录，也可用绝对路径如 /path/to/project
 
 # P1.5 验证
-python $SKILL_PATH/scripts/phase_data.py --validate --phase 1 --root {PROJECT_ROOT}
+python $SKILL_PATH/scripts/phase_data.py --validate --phase 1 --root .
 ```
 
-### ④ REFLECTION (反思阶段) - 完成前必须确认
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🔍 REFLECTION - Completion Verification
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Before marking Phase 1 complete, verify ALL:
+**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
 
-- [ ] P1.0三层发现已执行？(P1_static_discovery.yaml存在)
-- [ ] P1_project_context.yaml 存在且有效？
-- [ ] discovery_checklist 全部14种入口类型scanned:true？
-- [ ] 每个模块有security_level分配？
-- [ ] 每个入口点有唯一ID (EP-xxx格式)？
-- [ ] coverage_confidence.overall_confidence ≥ 0.70？
-- [ ] Hook验证通过 (exit 0)？
+```
+🔍 REFLECTION - P1 Completion Check
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| 检查项 | 状态 |
+|--------|------|
+| P1.0三层发现已执行? (P1_static_discovery.yaml存在) | [✅/❌] |
+| P1_project_context.yaml 存在且有效? | [✅/❌] |
+| discovery_checklist 全部14种入口类型scanned:true? | [✅/❌] |
+| 每个模块有security_level分配? | [✅/❌] |
+| 每个入口点有唯一ID (EP-xxx格式)? | [✅/❌] |
+| coverage_confidence.overall_confidence ≥ 0.70? | [✅/❌] |
+| Hook验证通过 (exit 0)? | [✅/❌] |
+
+⛔ COMPLETION GATE
+- 所有检查通过? [YES/NO]
+- 可以进入P2? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ⛔ 任何检查失败 → 修复并重新验证，直到全部通过
 
@@ -258,8 +303,9 @@ P1.5 (Script+LLM)    Validation & Coverage Confidence
 
 ```bash
 # NEW: Full three-layer P1 discovery with YAML output
-python $SKILL_PATH/scripts/module_discovery.py <project_path> \
-  --p1-discovery --output-yaml > .phase_working/{SESSION_ID}/data/P1_static_discovery.yaml
+# 用法: module_discovery.py <路径> [选项]  (路径为位置参数)
+python $SKILL_PATH/scripts/module_discovery.py . --p1-discovery --output-yaml \
+  > .phase_working/{SESSION_ID}/data/P1_static_discovery.yaml
 ```
 
 ### Error Handling
@@ -296,8 +342,8 @@ The three-layer discovery produces:
 
 **Correct Pattern**:
 ```bash
-# Step 1: Run full P1 discovery
-python $SKILL_PATH/scripts/module_discovery.py <path> --p1-discovery --output-yaml \
+# Step 1: Run full P1 discovery (路径为第一个位置参数)
+python $SKILL_PATH/scripts/module_discovery.py . --p1-discovery --output-yaml \
   > .phase_working/{SESSION_ID}/data/P1_static_discovery.yaml
 
 # Step 2: Check coverage confidence
@@ -649,7 +695,7 @@ For projects that don't fit standard patterns (SDK/libraries, data pipelines, ba
 ```bash
 # Skip if P1.0 layer3_dynamic_indicators.total_count == 0
 # Run only for deeper analysis of HIGH risk indicators
-python $SKILL_PATH/scripts/module_discovery.py <project_path> --detect-dynamic --pretty
+python $SKILL_PATH/scripts/module_discovery.py . --detect-dynamic --pretty
 ```
 
 ### Layer 3 Indicator Types

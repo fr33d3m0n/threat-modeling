@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 3: Trust Boundary Evaluation
 
@@ -10,67 +10,98 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
 
-### ① THINKING (理解阶段) - 在任何规划前完成
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🧠 THINKING - Phase 3 Entry Gate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Purpose**: 基于P2 DFD识别信任边界，评估跨边界安全态势。
 
-在开始P3分析前，必须明确回答以下问题：
+**⚠️ 你必须输出以下格式的 THINKING 结果：**
 
-```yaml
-thinking_checkpoint:
-  core_problem: "识别所有信任边界，评估跨边界流的安全控制"
-  what_i_know:
-    - "P2外部交互者数: [从P2 YAML读取 dfd_elements.external_interactors 长度]"
-    - "P2进程数: [从P2 YAML读取 dfd_elements.processes 长度]"
-    - "P2数据存储数: [从P2 YAML读取 dfd_elements.data_stores 长度]"
-    - "P2数据流数: [从P2 YAML读取 dfd_elements.data_flows 长度]"
-    - "L1覆盖状态: [从P2 YAML读取 l1_coverage.overall.overall_score]"
-  what_i_dont_know:
-    - "[信任边界类型分布 - Network/Process/User/Data/Service/Model/Agent]"
-    - "[跨边界流的安全控制]"
-    - "[敏感数据节点位置]"
-  what_could_go_wrong:
-    - "DFD元素未全部映射到边界区域"
-    - "跨边界流缺少安全控制记录"
-    - "边界图遗漏关键crossing points"
+```
+🧠 THINKING - P3 Entry Gate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 CORE PROBLEM
+识别所有信任边界，评估跨边界流的安全控制
+
+📊 UPSTREAM DATA (从 P2 YAML 读取)
+| 指标 | 值 | 来源 |
+|------|-----|------|
+| P2外部交互者数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.external_interactors 长度 |
+| P2进程数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.processes 长度 |
+| P2数据存储数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.data_stores 长度 |
+| P2数据流数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.data_flows 长度 |
+| L1覆盖得分 | {实际值} | P2_dfd_elements.yaml → l1_coverage.overall.overall_score |
+
+❓ UNKNOWNS
+- 信任边界类型分布 (Network/Process/User/Data/Service/Model/Agent)
+- 跨边界流的安全控制
+- 敏感数据节点位置
+
+⚠️ RISKS
+- DFD元素未全部映射到边界区域
+- 跨边界流缺少安全控制记录
+- 边界图遗漏关键crossing points
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⛔ STOP CHECK
+- P2 YAML 已读取? [YES/NO]
+- 上游数据完整 (DFD元素数均有值)? [YES/NO]
+- 可以继续PLANNING? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果 `what_i_know` 中任何数值未从P2 YAML读取 → 先读取P2数据再继续
+⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取P2数据再继续
 
-### ② PLANNING (规划阶段) - 理解确认后
-
-**Purpose**: 分解为可验证的子任务，确保边界分析完整。
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 📋 PLANNING - Sub-task Decomposition
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Step 1: 读取上游数据** (BLOCKING - 必须执行)
 ```bash
 # 读取P2 YAML数据
-python scripts/phase_data.py --query --phase 2 --summary --root {PROJECT_ROOT}
-python scripts/phase_data.py --query --phase 2 --type dfd --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 2 --summary --root .
+python scripts/phase_data.py --query --phase 2 --type dfd --root .
 
 # 或直接读取
 cat .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml
 ```
 ⛔ 如果P2 YAML不存在或无效 → STOP并返回完成P2
 
-**Step 2: 分解子任务** (建议3-7个)
+**Step 2: 输出子任务表格** (MANDATORY)
+
+**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+
 ```
-- T1: 读取P2 DFD数据，提取元素清单
-- T2: 识别信任边界 (TB-xxx)，确定类型
-- T3: 分析跨边界数据流
-- T4: 评估接口安全 (认证/授权/加密)
-- T5: 映射敏感数据节点
-- T6: 生成边界图 (ASCII + Mermaid)
-- T7: 写入P3_boundary_context.yaml + P3-TRUST-BOUNDARY.md
+📋 PLANNING - P3 Sub-tasks
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| # | 子任务 | 预期输出 |
+|---|--------|----------|
+| T1 | 读取P2 DFD数据，提取元素清单 | 数据结构 |
+| T2 | 识别信任边界 (TB-xxx)，确定类型 | 边界清单 |
+| T3 | 分析跨边界数据流 | 跨边界流映射 |
+| T4 | 评估接口安全 (认证/授权/加密) | 安全控制评估 |
+| T5 | 映射敏感数据节点 | 敏感数据标记 |
+| T6 | 生成边界图 (ASCII + Mermaid) | 可视化图表 |
+| T7 | 写入最终输出 | P3_boundary_context.yaml + MD |
+
+⛔ PLANNING CHECK
+- 子任务已分解? [YES/NO]
+- 准备创建 TaskCreate? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
-```
-⚠️ 在开始任何实施前，TaskList必须显示所有子任务！
-```
 
-### ③ EXECUTION LOOP (执行阶段)
+⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### ⚡ EXECUTION LOOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
@@ -83,18 +114,32 @@ For each sub-task:
 1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P3_boundary_context.yaml`
 2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P3-TRUST-BOUNDARY.md`
 
-### ④ REFLECTION (反思阶段) - 完成前必须确认
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🔍 REFLECTION - Completion Verification
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Before marking Phase 3 complete, verify ALL:
+**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
 
-- [ ] P2 YAML数据已读取并理解？
-- [ ] P3_boundary_context.yaml 存在且有效？
-- [ ] 所有TB-xxx边界已识别并分类？
-- [ ] 所有DFD元素已映射到边界区域？
-- [ ] 所有跨边界流有安全控制记录？
-- [ ] 边界图 (ASCII) 已包含？
-- [ ] boundary_findings 存在 (即使为空)？
-- [ ] Hook验证通过 (exit 0)？
+```
+🔍 REFLECTION - P3 Completion Check
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| 检查项 | 状态 |
+|--------|------|
+| P2 YAML数据已读取并理解? | [✅/❌] |
+| P3_boundary_context.yaml 存在且有效? | [✅/❌] |
+| 所有TB-xxx边界已识别并分类? | [✅/❌] |
+| 所有DFD元素已映射到边界区域? | [✅/❌] |
+| 所有跨边界流有安全控制记录? | [✅/❌] |
+| 边界图 (ASCII) 已包含? | [✅/❌] |
+| boundary_findings 存在 (即使为空)? | [✅/❌] |
+| Hook验证通过 (exit 0)? | [✅/❌] |
+
+⛔ COMPLETION GATE
+- 所有检查通过? [YES/NO]
+- 可以进入P4? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ⛔ 任何检查失败 → 修复并重新验证，直到全部通过
 
@@ -159,13 +204,13 @@ Phase 3 CANNOT complete until:
 
 ```bash
 # Step 1: Get P2 summary for DFD overview
-python scripts/phase_data.py --query --phase 2 --summary --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 2 --summary --root .
 
 # Step 2: Get detailed DFD elements (REQUIRED for boundary mapping)
-python scripts/phase_data.py --query --phase 2 --type dfd --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 2 --type dfd --root .
 
 # Step 3: Get data flows (REQUIRED for cross-boundary analysis)
-python scripts/phase_data.py --query --phase 2 --type flows --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 2 --type flows --root .
 ```
 
 **Or read YAML directly**:

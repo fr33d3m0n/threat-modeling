@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 4: Security Design Review
 
@@ -10,42 +10,61 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
 
-### ① THINKING (理解阶段) - 在任何规划前完成
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🧠 THINKING - Phase 4 Entry Gate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Purpose**: 深度理解后再行动，防止基于不完整理解的仓促行动。
 
-在开始P4分析前，必须明确回答以下问题：
+**⚠️ 你必须输出以下格式的 THINKING 结果：**
 
-```yaml
-thinking_checkpoint:
-  core_problem: "评估项目在16个安全域的设计成熟度，识别安全控制缺口"
-  what_i_know:
-    - "P1模块总数: [从P1 YAML读取 module_inventory.summary.total_modules]"
-    - "P2数据流总数: [从P2 YAML读取 data_flow_traces.summary.total_flows]"
-    - "P2数据存储数: [从P2 YAML读取 data_store_inventory.summary.total_data_stores]"
-    - "P3边界数量: [从P3 YAML读取 boundary_context.boundaries 长度]"
-    - "Tech stack: [从P1 YAML读取 project_context.tech_stack]"
-  what_i_dont_know:
-    - "[需要通过代码审查确认的安全控制]"
-    - "[需要KB查询确认的最佳实践]"
-  what_could_go_wrong:
-    - "域评估不完整 (16个域未全部覆盖)"
-    - "Gap与Module/Flow的追溯链缺失"
-    - "扩展域触发检测遗漏"
+```
+🧠 THINKING - P4 Entry Gate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 CORE PROBLEM
+评估项目在16个安全域的设计成熟度，识别安全控制缺口
+
+📊 UPSTREAM DATA (从 P1-P3 YAML 读取)
+| 指标 | 值 | 来源 |
+|------|-----|------|
+| P1模块总数 | {实际值} | P1_project_context.yaml → module_inventory.summary.total_modules |
+| P2数据流总数 | {实际值} | P2_dfd_elements.yaml → data_flow_traces.summary.total_flows |
+| P2数据存储数 | {实际值} | P2_dfd_elements.yaml → data_store_inventory.summary.total_data_stores |
+| P3边界数量 | {实际值} | P3_boundary_context.yaml → boundary_context.boundaries 长度 |
+| Tech stack | {实际值} | P1_project_context.yaml → project_context.tech_stack |
+
+❓ UNKNOWNS
+- 需要通过代码审查确认的安全控制
+- 需要KB查询确认的最佳实践
+
+⚠️ RISKS
+- 域评估不完整 (16个域未全部覆盖)
+- Gap与Module/Flow的追溯链缺失
+- 扩展域触发检测遗漏
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⛔ STOP CHECK
+- P1 YAML 已读取? [YES/NO]
+- P2 YAML 已读取? [YES/NO]
+- P3 YAML 已读取? [YES/NO]
+- 上游数据完整? [YES/NO]
+- 可以继续PLANNING? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果 `what_i_know` 中任何数值未从YAML读取 → 先读取数据再继续
+⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取上游数据再继续
 
-### ② PLANNING (规划阶段) - 理解确认后
-
-**Purpose**: 分解为可验证的子任务，确保完整覆盖。
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 📋 PLANNING - Sub-task Decomposition
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Step 1: 读取上游数据** (BLOCKING - 必须执行)
 ```bash
 # 读取P1-P3 YAML数据 (选择其一)
-python scripts/phase_data.py --aggregate --phases 1,2,3 --format summary --root {PROJECT_ROOT}
+python scripts/phase_data.py --aggregate --phases 1,2,3 --format summary --root .
 
 # 或直接读取
 cat .phase_working/{SESSION_ID}/data/P1_project_context.yaml
@@ -54,23 +73,37 @@ cat .phase_working/{SESSION_ID}/data/P3_boundary_context.yaml
 ```
 ⛔ 如果任何文件不存在或无效 → STOP并返回完成上游Phase
 
-**Step 2: 分解子任务** (建议3-7个)
+**Step 2: 输出子任务表格** (MANDATORY)
+
+**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+
 ```
-- T1: 读取P1-P3数据，提取模块/流/边界清单
-- T2: 评估10个核心安全域 (AUTHN→DATA)
-- T3: 检测扩展域触发条件 (ext-11→ext-16)
-- T4: 评估已触发的扩展域
-- T5: 生成Gap清单 (GAP-xxx)
-- T6: 写入P4_security_gaps.yaml
-- T7: 写入P4-SECURITY-REVIEW.md
+📋 PLANNING - P4 Sub-tasks
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| # | 子任务 | 预期输出 |
+|---|--------|----------|
+| T1 | 读取P1-P3数据，提取模块/流/边界清单 | 数据结构 |
+| T2 | 评估10个核心安全域 (AUTHN→DATA) | 域评估矩阵 |
+| T3 | 检测扩展域触发条件 (ext-11→ext-16) | 触发检测 |
+| T4 | 评估已触发的扩展域 | 扩展域评估 |
+| T5 | 生成Gap清单 (GAP-xxx) | Gap清单 |
+| T6 | 写入P4_security_gaps.yaml | PRIMARY输出 |
+| T7 | 写入P4-SECURITY-REVIEW.md | SECONDARY输出 |
+
+⛔ PLANNING CHECK
+- 子任务已分解? [YES/NO]
+- 准备创建 TaskCreate? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
-```
-⚠️ 在开始任何实施前，TaskList必须显示所有子任务！
-```
 
-### ③ EXECUTION LOOP (执行阶段)
+⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### ⚡ EXECUTION LOOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
@@ -83,17 +116,31 @@ For each sub-task:
 1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P4_security_gaps.yaml`
 2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P4-SECURITY-REVIEW.md`
 
-### ④ REFLECTION (反思阶段) - 完成前必须确认
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🔍 REFLECTION - Completion Verification
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Before marking Phase 4 complete, verify ALL:
+**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
 
-- [ ] 所有子任务已完成？(TaskList check)
-- [ ] P4_security_gaps.yaml 存在且有效？
-- [ ] design_matrix 包含全部16个域？
-- [ ] 每个Gap有唯一ID (GAP-xxx)？
-- [ ] coverage_verification 显示100%覆盖？
-- [ ] Hook验证通过 (exit 0)？
-- [ ] input_ref 字段指向 P3_boundary_context.yaml？
+```
+🔍 REFLECTION - P4 Completion Check
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| 检查项 | 状态 |
+|--------|------|
+| 所有子任务已完成? (TaskList check) | [✅/❌] |
+| P4_security_gaps.yaml 存在且有效? | [✅/❌] |
+| design_matrix 包含全部16个域? | [✅/❌] |
+| 每个Gap有唯一ID (GAP-xxx)? | [✅/❌] |
+| coverage_verification 显示100%覆盖? | [✅/❌] |
+| input_ref 字段指向 P3_boundary_context.yaml? | [✅/❌] |
+| Hook验证通过 (exit 0)? | [✅/❌] |
+
+⛔ COMPLETION GATE
+- 所有检查通过? [YES/NO]
+- 可以进入P5? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ⛔ 任何检查失败 → 修复并重新验证，直到全部通过
 
@@ -476,16 +523,16 @@ domain_coverage_verification:
 
 ```bash
 # Step 1: Get aggregate summary from P1-P3
-python scripts/phase_data.py --aggregate --phases 1,2,3 --format summary --root {PROJECT_ROOT}
+python scripts/phase_data.py --aggregate --phases 1,2,3 --format summary --root .
 
 # Step 2: Get P1 modules for coverage tracking
-python scripts/phase_data.py --query --phase 1 --type modules --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 1 --type modules --root .
 
 # Step 3: Get P2 DFD elements for security mapping
-python scripts/phase_data.py --query --phase 2 --type dfd --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 2 --type dfd --root .
 
 # Step 4: Get P3 boundaries for gap context
-python scripts/phase_data.py --query --phase 3 --summary --root {PROJECT_ROOT}
+python scripts/phase_data.py --query --phase 3 --summary --root .
 ```
 
 **Or read YAML directly**:

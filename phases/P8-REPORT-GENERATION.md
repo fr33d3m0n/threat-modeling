@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201b) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 8: Report Generation
 
@@ -10,41 +10,59 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
 
-### ① THINKING (理解阶段) - 在任何规划前完成
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🧠 THINKING - Phase 8 Entry Gate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Purpose**: 聚合所有P1-P7数据，生成完整报告，不截断不总结。
 
-在开始P8分析前，必须明确回答以下问题：
+**⚠️ 你必须输出以下格式的 THINKING 结果：**
 
-```yaml
-thinking_checkpoint:
-  core_problem: "合成8份报告，必须完整包含P6 POC和P7缓解措施代码"
-  what_i_know:
-    - "P1模块/入口点数: [从P1 YAML读取]"
-    - "P2 DFD元素数: [从P2 YAML读取]"
-    - "P3边界数: [从P3 YAML读取]"
-    - "P4 Gap数: [从P4 YAML读取]"
-    - "P5威胁数: [从P5 YAML读取]"
-    - "P6 VR数: [从P6 YAML读取]"
-    - "P6 POC数: [从P6 YAML读取 poc_details 长度]"
-    - "P6 AC数: [从P6 YAML读取 attack_chains 长度]"
-    - "P7 MIT数: [从P7 YAML读取 mitigations 长度]"
-  what_i_dont_know:
-    - "[合规框架映射细节]"
-  what_could_go_wrong:
-    - "8份报告未全部生成"
-    - "P6 POC被截断或总结"
-    - "P7缓解代码被省略"
-    - "攻击链图缺失"
+```
+🧠 THINKING - P8 Entry Gate
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📌 CORE PROBLEM
+合成8份报告，必须完整包含P6 POC和P7缓解措施代码
+
+📊 UPSTREAM DATA (从 P1-P7 YAML 读取)
+| 指标 | 值 | 来源 |
+|------|-----|------|
+| P1模块/入口点数 | {实际值} | P1_project_context.yaml |
+| P2 DFD元素数 | {实际值} | P2_dfd_elements.yaml |
+| P3边界数 | {实际值} | P3_boundary_context.yaml |
+| P4 Gap数 | {实际值} | P4_security_gaps.yaml |
+| P5威胁数 | {实际值} | P5_threat_inventory.yaml |
+| P6 VR数 | {实际值} | P6_validated_risks.yaml |
+| P6 POC数 | {实际值} | P6_validated_risks.yaml → poc_details 长度 |
+| P6 AC数 | {实际值} | P6_validated_risks.yaml → attack_chains 长度 |
+| P7 MIT数 | {实际值} | P7_mitigation_plan.yaml → mitigations 长度 |
+
+❓ UNKNOWNS
+- 合规框架映射细节
+
+⚠️ RISKS
+- 8份报告未全部生成
+- P6 POC被截断或总结
+- P7缓解代码被省略
+- 攻击链图缺失
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⛔ STOP CHECK
+- P1-P7 全部YAML已读取? [YES/NO]
+- 所有数据计数已记录? [YES/NO]
+- 上游数据完整? [YES/NO]
+- 可以继续PLANNING? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果任何Phase数据未从YAML读取 → 先读取所有Phase数据再继续
+⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取所有Phase数据再继续
 
-### ② PLANNING (规划阶段) - 理解确认后
-
-**Purpose**: 分解为可验证的子任务，确保8份报告完整生成。
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 📋 PLANNING - Sub-task Decomposition
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Step 1: 读取ALL P1-P7数据** (BLOCKING - 必须执行)
 ```bash
@@ -59,23 +77,37 @@ cat .phase_working/{SESSION_ID}/data/P7_mitigation_plan.yaml
 ```
 ⛔ 如果任何上游YAML不存在或无效 → STOP并返回完成上游Phase
 
-**Step 2: 分解子任务** (建议3-7个)
+**Step 2: 输出子任务表格** (MANDATORY)
+
+**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+
 ```
-- T1: 读取全部P1-P7 YAML数据
-- T2: 生成主报告 {PROJECT}-RISK-ASSESSMENT-REPORT.md (9节)
-- T3: 生成RISK-INVENTORY.md (P6完整内容)
-- T4: 生成MITIGATION-MEASURES.md (P7完整代码)
-- T5: 生成PENETRATION-TEST-PLAN.md (POC→TC映射)
-- T6: 生成其他4份报告 (ARCHITECTURE, DFD, COMPLIANCE, ATTACK-PATH)
-- T7: 复制Phase报告，写入P8_report_manifest.yaml
+📋 PLANNING - P8 Sub-tasks
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| # | 子任务 | 预期输出 |
+|---|--------|----------|
+| T1 | 读取全部P1-P7 YAML数据 | 数据聚合 |
+| T2 | 生成主报告 {PROJECT}-RISK-ASSESSMENT-REPORT.md | 主报告 (9节) |
+| T3 | 生成RISK-INVENTORY.md | P6完整内容 |
+| T4 | 生成MITIGATION-MEASURES.md | P7完整代码 |
+| T5 | 生成PENETRATION-TEST-PLAN.md | POC→TC映射 |
+| T6 | 生成其他4份报告 | ARCHITECTURE, DFD, COMPLIANCE, ATTACK-PATH |
+| T7 | 复制Phase报告，写入manifest | P8_report_manifest.yaml |
+
+⛔ PLANNING CHECK
+- 子任务已分解? [YES/NO]
+- 准备创建 TaskCreate? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
-```
-⚠️ 在开始任何实施前，TaskList必须显示所有子任务！
-```
 
-### ③ EXECUTION LOOP (执行阶段)
+⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### ⚡ EXECUTION LOOP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
@@ -95,26 +127,39 @@ For each sub-task:
 - ❌ 总结POC代码
 - ❌ 截断攻击链
 
-### ④ REFLECTION (反思阶段) - 完成前必须确认
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### 🔍 REFLECTION - Completion Verification
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Before marking Phase 8 complete, verify ALL:
+**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
 
-- [ ] ALL P1-P7 YAML数据已读取？
-- [ ] P8_report_manifest.yaml 存在且有效？
-- [ ] 8份报告全部生成在Risk_Assessment_Report/？
-  - [ ] {PROJECT}-RISK-ASSESSMENT-REPORT.md (主报告9节)
-  - [ ] {PROJECT}-RISK-INVENTORY.md
-  - [ ] {PROJECT}-MITIGATION-MEASURES.md
-  - [ ] {PROJECT}-PENETRATION-TEST-PLAN.md
-  - [ ] {PROJECT}-ARCHITECTURE-ANALYSIS.md
-  - [ ] {PROJECT}-DFD-DIAGRAM.md
-  - [ ] {PROJECT}-COMPLIANCE-REPORT.md
-  - [ ] {PROJECT}-ATTACK-PATH-VALIDATION.md
-- [ ] 主报告§5包含完整P6 POC代码？
-- [ ] 主报告§6包含完整攻击链ASCII图？
-- [ ] 主报告§8包含完整P7缓解代码？
-- [ ] Phase报告已复制到报告目录？
-- [ ] Hook验证通过 (exit 0)？
+```
+🔍 REFLECTION - P8 Completion Check
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+| 检查项 | 状态 |
+|--------|------|
+| ALL P1-P7 YAML数据已读取? | [✅/❌] |
+| P8_report_manifest.yaml 存在且有效? | [✅/❌] |
+| {PROJECT}-RISK-ASSESSMENT-REPORT.md (主报告9节)? | [✅/❌] |
+| {PROJECT}-RISK-INVENTORY.md 生成? | [✅/❌] |
+| {PROJECT}-MITIGATION-MEASURES.md 生成? | [✅/❌] |
+| {PROJECT}-PENETRATION-TEST-PLAN.md 生成? | [✅/❌] |
+| {PROJECT}-ARCHITECTURE-ANALYSIS.md 生成? | [✅/❌] |
+| {PROJECT}-DFD-DIAGRAM.md 生成? | [✅/❌] |
+| {PROJECT}-COMPLIANCE-REPORT.md 生成? | [✅/❌] |
+| {PROJECT}-ATTACK-PATH-VALIDATION.md 生成? | [✅/❌] |
+| 主报告§5包含完整P6 POC代码? | [✅/❌] |
+| 主报告§6包含完整攻击链ASCII图? | [✅/❌] |
+| 主报告§8包含完整P7缓解代码? | [✅/❌] |
+| Phase报告已复制到报告目录? | [✅/❌] |
+| Hook验证通过 (exit 0)? | [✅/❌] |
+
+⛔ COMPLETION GATE
+- 所有检查通过? [YES/NO]
+- 威胁建模分析完成? [YES/NO]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ⛔ 任何检查失败 → 修复并重新验证，直到全部通过
 
