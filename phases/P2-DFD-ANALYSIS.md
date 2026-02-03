@@ -170,7 +170,7 @@ python scripts/phase_data.py --p2-validate-coverage --root .
 │  1. DATA FILE (PRIMARY - Write First!)                              │
 │     Path: .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml     │
 │     Purpose: Structured data for P3 to read                         │
-│     Format: Valid YAML with schema_version: "3.0.0 (20260201a)"                   │
+│     Format: Valid YAML with schema_version: "3.0.2 (20260204a)"                   │
 │                                                                      │
 │  2. REPORT FILE (SECONDARY - Write After Data!)                     │
 │     Path: .phase_working/{SESSION_ID}/reports/P2-DFD-ANALYSIS.md    │
@@ -342,7 +342,7 @@ P2 uses a two-track analysis approach:
 **Output**: `P2_traversal_tasks.yaml`
 
 ```yaml:P2_traversal_tasks
-schema_version: "3.0.0 (20260201a)"
+schema_version: "3.0.2 (20260204a)"
 session_id: "OPEN-WEBUI-20260130_143022"
 generated_at: "2026-01-30T14:30:22Z"
 
@@ -434,7 +434,7 @@ Output required:
 > **ID Numbering Convention**: Sub-agents use offset sequences (100+, 200+, etc.) to avoid ID conflicts during parallel analysis. The merge step (P2.T.2) normalizes all IDs to standard `{Entity}-{Seq:03d}` format.
 
 ```yaml:P2_traverse_001
-schema_version: "3.0.0 (20260201a)"
+schema_version: "3.0.2 (20260204a)"
 task_id: TT-001
 target_id: M-001
 analyzed_at: "2026-01-30T14:35:00Z"
@@ -478,7 +478,7 @@ coverage_metrics:
 **Output**: `P2_full_traversal.yaml`
 
 ```yaml:P2_full_traversal
-schema_version: "3.0.0 (20260201a)"
+schema_version: "3.0.2 (20260204a)"
 session_id: "OPEN-WEBUI-20260130_143022"
 merged_at: "2026-01-30T15:00:00Z"
 
@@ -528,7 +528,7 @@ else:
 **Output**: `P2_coverage_report.yaml`
 
 ```yaml:P2_coverage_report
-schema_version: "3.0.0 (20260201a)"
+schema_version: "3.0.2 (20260204a)"
 session_id: "OPEN-WEBUI-20260130_143022"
 validated_at: "2026-01-30T15:10:00Z"
 
@@ -588,7 +588,7 @@ validation_result:
 | `unknown` | Unknown root cause | High | Manual investigation required |
 
 ```yaml:P2_gap_tasks
-schema_version: "3.0.0 (20260201a)"
+schema_version: "3.0.2 (20260204a)"
 analyzed_at: "2026-01-30T15:15:00Z"
 
 gaps_identified:

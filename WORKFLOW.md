@@ -2,7 +2,7 @@
 
 # WORKFLOW.md - Orchestration Contracts
 
-**Version**: 3.0.1 (20260203a)
+**Version**: 3.0.2 (20260204a)
 **Purpose**: Phase orchestration, **structured data contracts**, validation gates, **FSM-enforced execution**
 
 > **Cross-References**:
@@ -100,13 +100,13 @@ mkdir -p ".phase_working/${SESSION_ID}/reports"
 
 ```yaml
 # .phase_working/{SESSION_ID}/_session_meta.yaml
-schema_version: "3.0.1 (20260203a)"
+schema_version: "3.0.2 (20260204a)"
 session_id: "{PROJECT}_{YYYYMMDD_HHMMSS}"
 project_name: "PROJECT-NAME"
 project_path: "/absolute/path"
 started_at: "ISO8601"
 language: "en"                    # en|zh|ja|ko
-skill_version: "3.0.1 (20260203a)"
+skill_version: "3.0.2 (20260204a)"
 current_state: "P1"               # FSM current state
 
 phases:
@@ -207,7 +207,7 @@ FOR each phase N in [1..8]:
 ### Common Header (All Phases)
 
 ```yaml
-schema_version: "3.0.1 (20260203a)"
+schema_version: "3.0.2 (20260204a)"
 phase: {N}
 generated_at: "ISO8601"
 input_ref: "P{N-1}_*.yaml"  # Traceability (except P1)

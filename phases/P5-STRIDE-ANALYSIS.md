@@ -177,7 +177,7 @@ $SKILL_PATH/kb --cwe CWE-287               # Specific CWE details
 │  1. DATA FILE (PRIMARY - Write First!)                              │
 │     Path: .phase_working/{SESSION_ID}/data/P5_threat_inventory.yaml │
 │     Purpose: Structured threat data for P6 to read                  │
-│     Format: Valid YAML with schema_version: "3.0.0 (20260201a)"                   │
+│     Format: Valid YAML with schema_version: "3.0.2 (20260204a)"                   │
 │                                                                      │
 │  2. REPORT FILE (SECONDARY - Write After Data!)                     │
 │     Path: .phase_working/{SESSION_ID}/reports/P5-STRIDE-THREATS.md  │

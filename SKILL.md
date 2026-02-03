@@ -29,7 +29,7 @@ hooks:
 
 > **Note**: All relative paths in this skill are relative to `SKILL_PATH` (the directory containing this SKILL.md file).
 
-# Threat Modeling Skill v3.0.1 (20260203a)
+# Threat Modeling Skill v3.0.2 (20260204a)
 
 AI-native automated software risk analysis skill. LLM-driven, Code-First approach for comprehensive security risk assessment, threat modeling, security testing, penetration testing, and compliance checking.
 
@@ -37,7 +37,7 @@ AI-native automated software risk analysis skill. LLM-driven, Code-First approac
 
 ```
 ════════════════════════════════════════════════════════════════════════════════
-  🛡️ Threat Modeling Skill v3.0.1 (20260203a)
+  🛡️ Threat Modeling Skill v3.0.2 (20260204a)
 ════════════════════════════════════════════════════════════════════════════════
 ```
 
@@ -67,8 +67,8 @@ vX.Y.Z (YYYYMMDDx)
 
 ### Current Version
 
-- **Base Version**: `3.0.1` (frozen until user approval)
-- **Date Version**: `20260202a` (auto-updates allowed)
+- **Base Version**: `3.0.2` (frozen until user approval)
+- **Date Version**: `20260204a` (auto-updates allowed)
 
 ## Command Line Flags
 
@@ -260,13 +260,13 @@ FOR each phase N in [1..8]:
 
 ```yaml
 # .phase_working/{SESSION_ID}/_session_meta.yaml
-schema_version: "3.0.1 (20260203a)"
+schema_version: "3.0.2 (20260204a)"
 session_id: "OPEN-WEBUI_20260130_143022"  # {PROJECT}_{YYYYMMDD_HHMMSS}
 project_name: "OPEN-WEBUI"
 project_path: "/path/to/project"
 started_at: "ISO8601 timestamp"
 language: "en"
-skill_version: "3.0.1 (20260203a)"
+skill_version: "3.0.2 (20260204a)"
 
 phases:
   P1:

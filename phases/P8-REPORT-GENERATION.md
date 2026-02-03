@@ -221,7 +221,7 @@ Phase 8 CANNOT complete until:
 # P8_report_manifest.yaml Schema Definition
 session_id: "{SESSION_ID}"
 timestamp: "ISO8601"
-version: "3.0.0 (20260201a)"
+version: "3.0.2 (20260204a)"
 
 generation_summary:
   total_reports: 8
@@ -364,7 +364,7 @@ Create all 8 mandatory reports in `Risk_Assessment_Report/`
 # {PROJECT} Risk Assessment Report
 
 **Generated**: {timestamp}
-**Skill Version**: 3.0.0
+**Skill Version**: 3.0.2
 **Assessment Scope**: {project_path}
 
 ---

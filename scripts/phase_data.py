@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
+# Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
 
 """
 Phase Data Manager for STRIDE Threat Modeling Workflow.
@@ -64,8 +64,8 @@ import yaml
 # Configuration
 # ============================================================================
 
-SCHEMA_VERSION = "3.0.0"
-SESSION_SCHEMA_VERSION = "3.0.0"  # Version for session management
+SCHEMA_VERSION = "3.0.2"
+SESSION_SCHEMA_VERSION = "3.0.2"  # Version for session management
 
 # Standard YAML block names per phase (from WORKFLOW.md v2.2.2)
 # NOTE: l1_coverage is EMBEDDED inside data_flows block, not extracted separately
@@ -1806,7 +1806,7 @@ def validate_p1_checklist(project_root: str) -> Dict:
     Validation Gates (from design doc):
     - BLOCKING: All checklist items have status in [COMPLETED, NOT_APPLICABLE]
     - BLOCKING: No items with scanned: false
-    - BLOCKING: schema_version must be "3.0.0" (P1-GAP-12)
+    - BLOCKING: schema_version must be "3.0.2" (P1-GAP-12)
     - WARNING: Sum of counts matches entry_point_inventory length
     """
     phase_data = load_phase_data(1, project_root)
@@ -1827,7 +1827,7 @@ def validate_p1_checklist(project_root: str) -> Dict:
             "gate": "schema_version",
             "message": f"Invalid schema_version: '{schema_version}'. Expected: '{SCHEMA_VERSION}'",
             "action_required": "FIX",
-            "hint": "Ensure P1_project_context.yaml has 'schema_version: \"3.0.0\"' at the top",
+            "hint": "Ensure P1_project_context.yaml has 'schema_version: \"3.0.2\"' at the top",
         }
 
     blocks = phase_data.get("blocks", {})

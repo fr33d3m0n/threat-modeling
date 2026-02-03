@@ -175,7 +175,7 @@ $SKILL_PATH/kb --asvs-level L2                  # ASVS requirements
 │  1. DATA FILE (PRIMARY - Write First!)                              │
 │     Path: .phase_working/{SESSION_ID}/data/P7_mitigation_plan.yaml  │
 │     Purpose: Structured mitigation data for P8 to read              │
-│     Format: Valid YAML with schema_version: "3.0.0 (20260201a)"                   │
+│     Format: Valid YAML with schema_version: "3.0.2 (20260204a)"                   │
 │                                                                      │
 │  2. REPORT FILE (SECONDARY - Write After Data!)                     │
 │     Path: .phase_working/{SESSION_ID}/reports/P7-MITIGATION-PLAN.md │

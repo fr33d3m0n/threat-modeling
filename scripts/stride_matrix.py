@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
+# Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
 
 """
 STRIDE per Interaction Matrix Calculator.

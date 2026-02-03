@@ -159,7 +159,7 @@ For each sub-task:
 │  1. DATA FILE (PRIMARY - Write First!)                              │
 │     Path: .phase_working/{SESSION_ID}/data/P3_boundary_context.yaml │
 │     Purpose: Structured data for P4 to read                         │
-│     Format: Valid YAML with schema_version: "3.0.0 (20260201a)"                   │
+│     Format: Valid YAML with schema_version: "3.0.2 (20260204a)"                   │
 │                                                                      │
 │  2. REPORT FILE (SECONDARY - Write After Data!)                     │
 │     Path: .phase_working/{SESSION_ID}/reports/P3-TRUST-BOUNDARY.md  │

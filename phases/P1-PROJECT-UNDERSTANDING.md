@@ -166,7 +166,7 @@ python $SKILL_PATH/scripts/phase_data.py --validate --phase 1 --root .
 │  1. DATA FILE (PRIMARY - Write First!)                              │
 │     Path: .phase_working/{SESSION_ID}/data/P1_project_context.yaml  │
 │     Purpose: Structured data for P2 to read                         │
-│     Format: Valid YAML with schema_version: "3.0.0 (20260201a)"                   │
+│     Format: Valid YAML with schema_version: "3.0.2 (20260204a)"                   │
 │                                                                      │
 │  2. REPORT FILE (SECONDARY - Write After Data!)                     │
 │     Path: .phase_working/{SESSION_ID}/reports/P1-PROJECT-UNDER...md │
@@ -472,7 +472,7 @@ When enhanced tools successfully execute:
 **Output**: `yaml:doc_analysis`
 
 ```yaml:doc_analysis
-schema_version: "3.0.0 (20260201a)"
+schema_version: "3.0.2 (20260204a)"
 phase: 1
 sub_phase: "P1.1"
 analyzed_at: "ISO8601"
@@ -750,7 +750,7 @@ python $SKILL_PATH/scripts/phase_data.py --p1-source-alignment --root .
 ### Output: P1_source_alignment.yaml
 
 ```yaml
-schema_version: "3.0.0 (20260201a)"
+schema_version: "3.0.2 (20260204a)"
 overall_alignment_score: 0.82
 alignment_by_category:
   entry_points:

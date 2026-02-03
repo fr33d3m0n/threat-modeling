@@ -1,7 +1,7 @@
-# Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
+# Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
 
 # Data Model Contract
-# Version: 3.0.0 (20260201a)
+# Version: 3.0.2 (20260204a)
 # Purpose: Define all entity schemas and relationships for threat modeling
 
 # =============================================================================
@@ -2343,7 +2343,7 @@ KBQueryContract:
   # KB Usage Logging Template
   # ============================================================
   usage_log_template:
-    schema_version: "3.0.0 (20260201a)"
+    schema_version: "3.0.2 (20260204a)"
     phase: "P{N}"
     kb_available: true
     queries_made:

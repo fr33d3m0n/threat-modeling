@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
+# Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
 
 """
 Module Discovery Script for STRIDE Threat Modeling (P1 Phase).
@@ -1798,7 +1798,7 @@ def run_p1_discovery(
             entry_types_discovered.add("rest_api")  # Default for standard routes
 
     return {
-        "schema_version": "3.0.0",
+        "schema_version": "3.0.2",
         "discovery_timestamp": datetime.now().isoformat(),
         "enhanced_tools": enhanced_tools,
         "layer1_deterministic": {

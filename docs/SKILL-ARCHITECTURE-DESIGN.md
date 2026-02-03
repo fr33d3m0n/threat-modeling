@@ -1,12 +1,12 @@
-<!-- Threat Modeling Skill | Version 3.0.1 (20260203a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # STRIDE Threat Modeling System Architecture Analysis
 
-> **Version**: 3.0.1
-> **Date**: 2026-02-03
+> **Version**: 3.0.2
+> **Date**: 2026-02-04
 > **Purpose**: Comprehensive system architecture analysis with diagrams, module relationships, and formal workflow specification
 
-> **Note (v3.0.1)**: Architecture refactored for clarity and determinism:
+> **Note (v3.0.2)**: Architecture refactored for clarity and determinism:
 > - SKILL.md: "WHAT & WHY" (静态契约) - ~4K tokens target
 > - WORKFLOW.md: "HOW & WHEN" (动态协议) - ~4K tokens target
 > - FSM formalization for 8-phase workflow
@@ -14,7 +14,7 @@
 
 ---
 
-## 0. File Responsibility Matrix (v3.0.1)
+## 0. File Responsibility Matrix (v3.0.2)
 
 ### SKILL.md - "WHAT & WHY" (Static Contract)
 
@@ -1057,7 +1057,7 @@ Property L2: Error Recoverability
 
 ---
 
-## 9. Core Objectives Alignment (v3.0.0)
+## 9. Core Objectives Alignment (v3.0.2)
 
 | Objective | Pre-Optimization | Post-Optimization |
 |-----------|------------------|-------------------|
@@ -1068,5 +1068,5 @@ Property L2: Error Recoverability
 
 ---
 
-**Document Version**: 3.0.0
-**Last Updated**: 2026-02-03
+**Document Version**: 3.0.2
+**Last Updated**: 2026-02-04
