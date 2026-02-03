@@ -6,9 +6,10 @@ AI-native automated software risk analysis skill. LLM-driven, Code-First approac
 
 ## What's New in v3.0.2
 
-- **English Localization**: All phase instructions translated to English for better LLM compatibility
-- **Extended Trigger Words**: Added security analysis, security audit, security check
-- **Architecture Optimization**: FSM formalization with 26.4% token reduction
+- Major system architecture refactoring, improved security analysis depth and path coverage
+- Backported SM2 state machine from next-gen AI-Native penetration testing system named "Cobweb" for problem-solving in depth
+- Added multi-version task history and precise structured phase outputs for CI/CD integration
+- Optimized context engineering and data disclosure, ~35% token reduction
 
 See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
