@@ -1,3 +1,5 @@
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+
 ---
 description: Data & storage security (DB isolation, TLS, least privilege, RLS/CLS, backups, auditing)
 languages:

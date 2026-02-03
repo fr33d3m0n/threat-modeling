@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
+
 """
 Unified Security Knowledge Base Query Tool for STRIDE Threat Modeling.
 
@@ -1418,7 +1420,7 @@ class UnifiedKnowledgeBase:
         """
         Query a CVE by ID with full details including CWE mappings.
 
-        Requires: security_kb_extension.sqlite or legacy security_kb_v2.sqlite
+        Requires: security_kb_extension.sqlite or security_kb.sqlite
 
         Args:
             cve_id: CVE identifier (e.g., "CVE-2021-44228")

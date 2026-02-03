@@ -1,3 +1,5 @@
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+
 ---
 description: Authentication, MFA, and Session Management (passwords, MFA, OAuth/OIDC, SAML, sessions, cookies)
 languages:

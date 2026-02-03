@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
+
 # =============================================================================
 # STRIDE Threat Modeling - Phase End Protocol Hook
 # =============================================================================
@@ -160,6 +162,77 @@ PHASE_DATA_SCRIPT=$(find_phase_data_script) || {
 }
 
 log_debug "Using phase_data.py: $PHASE_DATA_SCRIPT"
+
+# =============================================================================
+# Entry Gate Validation (Data Chain Integrity)
+# =============================================================================
+# For phases 2-8, verify that the upstream YAML data file exists
+# This is an indirect check - if upstream YAML doesn't exist, the phase
+# should not have been executed (Entry Gate violation)
+
+validate_entry_gate() {
+    local phase=$1
+    local project_root=$2
+    local session_dir
+
+    # Find the session directory (most recent in .phase_working/)
+    local phase_working_dir="${project_root}/Risk_Assessment_Report/.phase_working"
+
+    if [[ ! -d "$phase_working_dir" ]]; then
+        log_debug "No .phase_working directory found, skipping entry gate check"
+        return 0
+    fi
+
+    # Find session directory (looking for data/ subdirectory)
+    session_dir=$(find "$phase_working_dir" -maxdepth 2 -type d -name "data" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || echo "")
+
+    if [[ -z "$session_dir" || ! -d "$session_dir/data" ]]; then
+        log_debug "No session data directory found, skipping entry gate check"
+        return 0
+    fi
+
+    local data_dir="${session_dir}/data"
+
+    # Phase 2+ requires upstream YAML
+    if [[ $phase -ge 2 ]]; then
+        local upstream_phase=$((phase - 1))
+        local upstream_yaml
+
+        case $upstream_phase in
+            1) upstream_yaml="${data_dir}/P1_project_context.yaml" ;;
+            2) upstream_yaml="${data_dir}/P2_dfd_elements.yaml" ;;
+            3) upstream_yaml="${data_dir}/P3_boundary_context.yaml" ;;
+            4) upstream_yaml="${data_dir}/P4_security_gaps.yaml" ;;
+            5) upstream_yaml="${data_dir}/P5_threat_inventory.yaml" ;;
+            6) upstream_yaml="${data_dir}/P6_validated_risks.yaml" ;;
+            7) upstream_yaml="${data_dir}/P7_mitigation_plan.yaml" ;;
+        esac
+
+        if [[ -n "$upstream_yaml" && ! -f "$upstream_yaml" ]]; then
+            log_error "ENTRY GATE VIOLATION: Phase $phase requires P${upstream_phase} YAML but file not found: $upstream_yaml"
+            echo "ENTRY_GATE_VIOLATION"
+            return 1
+        fi
+
+        log_debug "Entry gate passed: P${upstream_phase} YAML exists at $upstream_yaml"
+    fi
+
+    return 0
+}
+
+# Run entry gate validation
+ENTRY_GATE_RESULT=$(validate_entry_gate "$PHASE_NUM" "$PROJECT_ROOT")
+if [[ "$ENTRY_GATE_RESULT" == "ENTRY_GATE_VIOLATION" ]]; then
+    cat <<EOF
+{
+    "hookSpecificOutput": {
+        "hookEventName": "PostToolUse",
+        "additionalContext": "⛔ ENTRY GATE VIOLATION: Phase $PHASE_NUM was executed but upstream Phase $((PHASE_NUM-1)) YAML data file is missing. This indicates Phase Isolation Protocol was bypassed. Please complete Phase $((PHASE_NUM-1)) first and ensure YAML data is written before proceeding."
+    }
+}
+EOF
+    exit 0
+fi
 
 # =============================================================================
 # Execute Phase End Protocol

@@ -1,3 +1,5 @@
+<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+
 # Top 10 Automotive Security Vulnerabilities
 
 This document outlines common security vulnerabilities found in automotive security and provides examples of how attackers can exploit these vulnerabilities.

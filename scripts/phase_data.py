@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause
+
 """
 Phase Data Manager for STRIDE Threat Modeling Workflow.
 
@@ -62,8 +64,8 @@ import yaml
 # Configuration
 # ============================================================================
 
-SCHEMA_VERSION = "2.2.2"
-SESSION_SCHEMA_VERSION = "2.2.2"  # Version for session management
+SCHEMA_VERSION = "3.0.0"
+SESSION_SCHEMA_VERSION = "3.0.0"  # Version for session management
 
 # Standard YAML block names per phase (from WORKFLOW.md v2.2.2)
 # NOTE: l1_coverage is EMBEDDED inside data_flows block, not extracted separately
@@ -167,15 +169,68 @@ ID_PATTERNS = {
     'forbidden_mitigation': re.compile(r'^M-\d{3}$'),         # M-001 collision with Module
 }
 
-# Security design domains for P4 validation (16 domains per SKILL.md)
+# Security design domains for P4 validation (16 domains per P4-SECURITY-DESIGN-REVIEW.md)
+# Core Domains (01-10): AUTHN, AUTHZ, INPUT, OUTPUT, CLIENT, CRYPTO, LOG, ERROR, API, DATA
+# Extended Domains (ext-11 to ext-16): INFRA, SUPPLY, AI, MOBILE, CLOUD, AGENT
 SECURITY_DOMAINS = [
-    "AUTHN", "AUTHZ", "INPUT", "OUTPUT", "CRYPTO", "LOGGING",
-    "ERROR", "API", "DATA", "CONFIG", "INFRA", "SUPPLY",
-    "AI", "MOBILE", "CLOUD", "AGENTIC"
+    # Core domains (01-10)
+    "AUTHN", "AUTHZ", "INPUT", "OUTPUT", "CLIENT",
+    "CRYPTO", "LOG", "ERROR", "API", "DATA",
+    # Extended domains (ext-11 to ext-16)
+    "INFRA", "SUPPLY", "AI", "MOBILE", "CLOUD", "AGENT"
 ]
 
 # STRIDE categories for threat validation
 STRIDE_CATEGORIES = ['S', 'T', 'R', 'I', 'D', 'E']
+
+# STRIDE per Element Applicability Matrix
+# Defines which STRIDE categories apply to each DFD element type
+STRIDE_PER_ELEMENT = {
+    "Process": ["S", "T", "R", "I", "D", "E"],  # All six categories
+    "DataStore": ["T", "R", "I", "D"],          # Tampering, Repudiation, Info Disclosure, DoS
+    "DataFlow": ["T", "I", "D"],                # Tampering, Info Disclosure, DoS
+    "ExternalInteractor": ["S", "R"],           # Spoofing, Repudiation (as source)
+}
+
+# STRIDE per Interaction Matrix (Source → Target)
+# Defines applicable STRIDE based on interaction type
+STRIDE_PER_INTERACTION = {
+    # (Source Type, Target Type) → Applicable STRIDE categories
+    ("ExternalInteractor", "Process"): {
+        "target": ["S", "T", "R", "I", "D", "E"],  # Full STRIDE on target
+        "source": ["S", "R"],                      # External can spoof/repudiate
+        "flow": ["T", "I", "D"],                   # Data in transit
+    },
+    ("ExternalInteractor", "DataStore"): {
+        "target": ["T", "R", "I", "D"],
+        "source": ["S", "R"],
+        "flow": ["T", "I", "D"],
+    },
+    ("Process", "Process"): {
+        "target": ["T", "R", "I", "D", "E"],
+        "source": [],                              # Internal process, no spoofing
+        "flow": ["T", "I", "D"],
+    },
+    ("Process", "DataStore"): {
+        "target": ["T", "R", "I", "D"],
+        "source": [],
+        "flow": ["T", "I", "D"],
+    },
+    ("DataStore", "Process"): {
+        "target": ["T", "I"],                     # Data poisoning, info leakage
+        "source": [],
+        "flow": ["T", "I"],
+    },
+}
+
+# Trust boundary severity multipliers
+BOUNDARY_SEVERITY_MULTIPLIERS = {
+    "Internet_DMZ": 2.0,        # Public to DMZ
+    "DMZ_Internal": 1.5,        # DMZ to internal network
+    "Internal_Database": 1.8,   # Internal to data tier
+    "SameTrustZone": 1.0,       # No boundary crossing
+    "default": 1.2,             # Unknown boundary type
+}
 
 # Final reports that should contain VR entries (for CP3 validation)
 FINAL_REPORTS = [
@@ -184,6 +239,71 @@ FINAL_REPORTS = [
     'MITIGATION-MEASURES',
     'PENETRATION-TEST-PLAN',
 ]
+
+
+# ============================================================================
+# Phase State Machine (YAML-First Enforcement)
+# ============================================================================
+# Enforces the principle: "YAML is data, Markdown is presentation"
+# Reports MUST NOT be generated from LLM memory - they MUST read YAML data first
+
+# Phase workflow states (per phase)
+PHASE_STATES = {
+    "pending": "Phase not started",
+    "yaml_in_progress": "YAML data generation in progress",
+    "yaml_completed": "YAML data file written and validated",
+    "report_started": "Report generation started (YAML read required)",
+    "report_completed": "Report generated from YAML data",
+}
+
+# Required YAML files per phase (these MUST exist before report generation)
+PHASE_YAML_FILES = {
+    1: ["P1_project_context.yaml"],
+    2: ["P2_dfd_elements.yaml"],
+    3: ["P3_boundary_context.yaml"],
+    4: ["P4_security_gaps.yaml"],
+    5: ["P5_threat_inventory.yaml"],
+    6: ["P6_validated_risks.yaml"],
+    7: ["P7_mitigation_plan.yaml"],
+    # P8 aggregates from P1-P7, no primary YAML
+}
+
+# Required Markdown reports per phase (generated FROM YAML)
+PHASE_REPORT_FILES = {
+    1: ["P1-PROJECT-UNDERSTANDING.md"],
+    2: ["P2-DFD-ANALYSIS.md"],
+    3: ["P3-TRUST-BOUNDARY.md"],
+    4: ["P4-SECURITY-REVIEW.md"],
+    5: ["P5-STRIDE-THREATS.md"],
+    6: ["P6-RISK-VALIDATION.md"],
+    7: ["P7-MITIGATION-PLAN.md"],
+    # P8 generates final reports
+}
+
+# Minimum required fields per phase YAML (for completeness validation)
+YAML_REQUIRED_FIELDS = {
+    1: {
+        "P1_project_context.yaml": ["module_inventory", "entry_point_inventory"],
+    },
+    2: {
+        "P2_dfd_elements.yaml": ["dfd_elements", "data_flows"],
+    },
+    3: {
+        "P3_boundary_context.yaml": ["trust_boundaries"],
+    },
+    4: {
+        "P4_security_gaps.yaml": ["security_gaps"],
+    },
+    5: {
+        "P5_threat_inventory.yaml": ["threat_inventory"],
+    },
+    6: {
+        "P6_validated_risks.yaml": ["validated_risks"],
+    },
+    7: {
+        "P7_mitigation_plan.yaml": ["mitigation_plan"],
+    },
+}
 
 
 # ============================================================================
@@ -221,8 +341,13 @@ def get_phase_data_dir(project_root: str, session_id: Optional[str] = None) -> P
     if current_session_dir:
         return current_session_dir / "data"
 
-    # Fallback to legacy structure
-    return phase_working / "phase_data"
+    # Fallback to legacy structure (phase_data/) - deprecated, use data/ for new sessions
+    # NOTE: This fallback exists only for backward compatibility with pre-3.0 sessions
+    legacy_path = phase_working / "phase_data"
+    if legacy_path.exists():
+        return legacy_path
+    # For new sessions without SESSION_ID, still use data/ subdirectory naming convention
+    return phase_working / "data"
 
 
 def get_current_session_dir(project_root: str) -> Optional[Path]:
@@ -303,13 +428,22 @@ def ensure_directories(project_root: str, session_id: Optional[str] = None) -> D
                 "phase_data": data_dir,
             }
         else:
-            # Fallback to legacy
-            phase_data = phase_working / "phase_data"
-            phase_data.mkdir(parents=True, exist_ok=True)
-            return {
-                "phase_working": phase_working,
-                "phase_data": phase_data,
-            }
+            # Fallback: check if legacy phase_data/ exists, otherwise use data/
+            legacy_data = phase_working / "phase_data"
+            if legacy_data.exists():
+                # Legacy backward compatibility
+                return {
+                    "phase_working": phase_working,
+                    "phase_data": legacy_data,
+                }
+            else:
+                # New default: use data/ subdirectory
+                phase_data = phase_working / "data"
+                phase_data.mkdir(parents=True, exist_ok=True)
+                return {
+                    "phase_working": phase_working,
+                    "phase_data": phase_data,
+                }
 
 
 # ============================================================================
@@ -1423,22 +1557,42 @@ def load_phase_data(
     Returns:
         Phase data dict, or None if not found
     """
+    # P3-FIX-01: Use correct file names per phase (from SKILL.md)
+    PHASE_FILE_NAMES = {
+        1: "P1_project_context.yaml",
+        2: "P2_dfd_elements.yaml",  # Or P2_final_aggregated.yaml
+        3: "P3_boundary_context.yaml",
+        4: "P4_security_gaps.yaml",
+        5: "P5_threat_inventory.yaml",
+        6: "P6_validated_risks.yaml",
+        7: "P7_mitigation_plan.yaml",
+        8: "P8_report_manifest.yaml",
+    }
+
     # Get appropriate data directory
     data_dir = get_phase_data_dir(project_root, session_id)
-    phase_file = data_dir / f"phase{phase}.yaml"
+
+    # Try phase-specific file first
+    phase_filename = PHASE_FILE_NAMES.get(phase, f"phase{phase}.yaml")
+    phase_file = data_dir / phase_filename
 
     if not phase_file.exists():
-        # If no session-specific file found and no session_id specified,
-        # try legacy location as fallback
-        if not session_id:
-            legacy_file = get_phase_working_dir(project_root) / "phase_data" / f"phase{phase}.yaml"
-            if legacy_file.exists():
-                try:
-                    with open(legacy_file, "r", encoding="utf-8") as f:
-                        return yaml.safe_load(f)
-                except (yaml.YAMLError, IOError):
-                    pass
-        return None
+        # Try legacy phase{N}.yaml format
+        legacy_phase_file = data_dir / f"phase{phase}.yaml"
+        if legacy_phase_file.exists():
+            phase_file = legacy_phase_file
+        else:
+            # If no session-specific file found and no session_id specified,
+            # try legacy location as fallback
+            if not session_id:
+                legacy_file = get_phase_working_dir(project_root) / "phase_data" / f"phase{phase}.yaml"
+                if legacy_file.exists():
+                    try:
+                        with open(legacy_file, "r", encoding="utf-8") as f:
+                            return yaml.safe_load(f)
+                    except (yaml.YAMLError, IOError):
+                        pass
+            return None
 
     try:
         with open(phase_file, "r", encoding="utf-8") as f:
@@ -1652,6 +1806,7 @@ def validate_p1_checklist(project_root: str) -> Dict:
     Validation Gates (from design doc):
     - BLOCKING: All checklist items have status in [COMPLETED, NOT_APPLICABLE]
     - BLOCKING: No items with scanned: false
+    - BLOCKING: schema_version must be "3.0.0" (P1-GAP-12)
     - WARNING: Sum of counts matches entry_point_inventory length
     """
     phase_data = load_phase_data(1, project_root)
@@ -1663,9 +1818,46 @@ def validate_p1_checklist(project_root: str) -> Dict:
             "message": "Phase 1 data not found. Run --extract first.",
         }
 
+    # P1-GAP-12: Validate schema_version
+    schema_version = phase_data.get("schema_version", "")
+    if schema_version != SCHEMA_VERSION:
+        return {
+            "status": "blocking",
+            "phase": 1,
+            "gate": "schema_version",
+            "message": f"Invalid schema_version: '{schema_version}'. Expected: '{SCHEMA_VERSION}'",
+            "action_required": "FIX",
+            "hint": "Ensure P1_project_context.yaml has 'schema_version: \"3.0.0\"' at the top",
+        }
+
     blocks = phase_data.get("blocks", {})
     checklist = blocks.get("discovery_checklist", {})
     entry_points = blocks.get("entry_point_inventory", {})
+
+    # P1-GAP-NEW-09: Validate project_context block (BLOCKING per spec line 41)
+    project_context = blocks.get("project_context", phase_data.get("project_context", {}))
+    if not project_context:
+        return {
+            "status": "blocking",
+            "phase": 1,
+            "gate": "project_context",
+            "message": "Missing project_context block",
+            "action_required": "FIX",
+            "hint": "P1 output must include project_context with project_type and tech_stack",
+        }
+
+    # Validate required fields in project_context
+    project_type = project_context.get("project_type", "")
+    tech_stack = project_context.get("tech_stack", {})
+    if not project_type:
+        return {
+            "status": "blocking",
+            "phase": 1,
+            "gate": "project_context.project_type",
+            "message": "Missing project_type in project_context",
+            "action_required": "FIX",
+            "hint": "project_context must include project_type (e.g., 'web_application', 'api_service', 'microservices')",
+        }
 
     if not checklist:
         return {
@@ -1727,6 +1919,98 @@ def validate_p1_checklist(project_root: str) -> Dict:
             "issue": "Entry point count mismatch",
             "checklist_count": total_from_checklist,
             "inventory_count": total_from_inventory,
+            "severity": "WARNING",
+        })
+
+    # P1-GAP-04: Validate Entry Point ID format (EP-{TYPE}-{NNN})
+    ep_id_pattern = re.compile(r'^EP-(API|UI|SYS|HID|WS|GQL|MQ|CRON|FILE|DBG|INT)-\d{3}$')
+    seen_ep_ids = set()
+    ep_id_issues = []
+
+    if isinstance(entry_points, dict):
+        for key in ["api_entries", "ui_entries", "system_entries", "hidden_entries"]:
+            items = entry_points.get(key, [])
+            if isinstance(items, list):
+                for item in items:
+                    if isinstance(item, dict):
+                        ep_id = item.get("id", "")
+                        # Check format
+                        if ep_id and not ep_id_pattern.match(ep_id):
+                            ep_id_issues.append({
+                                "id": ep_id,
+                                "issue": "Invalid format",
+                                "expected": "EP-{TYPE}-{NNN} where TYPE is API|UI|SYS|HID|WS|GQL|MQ|CRON|FILE|DBG|INT",
+                            })
+                        # Check uniqueness
+                        if ep_id in seen_ep_ids:
+                            blocking_issues.append({
+                                "id": ep_id,
+                                "issue": "Duplicate Entry Point ID",
+                                "severity": "BLOCKING",
+                            })
+                        else:
+                            seen_ep_ids.add(ep_id)
+
+    if ep_id_issues:
+        warnings.append({
+            "issue": "Entry Point ID format warnings",
+            "count": len(ep_id_issues),
+            "details": ep_id_issues[:10],  # Limit to first 10
+            "severity": "WARNING",
+        })
+
+    # P1-GAP-NEW-05: Validate coverage_confidence block
+    coverage_confidence = blocks.get("coverage_confidence", phase_data.get("coverage_confidence", {}))
+    if not coverage_confidence:
+        warnings.append({
+            "type": "missing_coverage_confidence",
+            "issue": "Missing coverage_confidence block",
+            "hint": "P1 output should include coverage_confidence with overall_confidence",
+            "severity": "WARNING",
+        })
+    else:
+        overall_conf = coverage_confidence.get("overall_confidence", -1)
+        if not isinstance(overall_conf, (int, float)) or overall_conf < 0 or overall_conf > 1:
+            warnings.append({
+                "type": "invalid_coverage_confidence",
+                "issue": f"Invalid overall_confidence value: {overall_conf}",
+                "expected": "Float between 0.0 and 1.0",
+                "severity": "WARNING",
+            })
+        elif overall_conf < 0.70:
+            warnings.append({
+                "type": "low_coverage_confidence",
+                "issue": f"Low coverage confidence: {overall_conf:.2f}",
+                "recommendation": "Review uncertainty sources before proceeding",
+                "severity": "WARNING",
+            })
+
+    # P1-GAP-NEW-06: Validate module_inventory security_level
+    module_inventory = blocks.get("module_inventory", {})
+    modules_list = module_inventory.get("modules", []) if isinstance(module_inventory, dict) else []
+    modules_without_security_level = []
+
+    for module in modules_list:
+        if isinstance(module, dict):
+            mid = module.get("id", module.get("name", "unknown"))
+            security_level = module.get("security_level", "")
+            if not security_level:
+                modules_without_security_level.append(mid)
+            elif security_level not in ["HIGH", "MEDIUM", "LOW", "CRITICAL"]:
+                warnings.append({
+                    "type": "invalid_security_level",
+                    "module_id": mid,
+                    "issue": f"Invalid security_level: {security_level}",
+                    "expected": ["HIGH", "MEDIUM", "LOW", "CRITICAL"],
+                    "severity": "WARNING",
+                })
+
+    if modules_without_security_level:
+        warnings.append({
+            "type": "missing_security_level",
+            "issue": f"{len(modules_without_security_level)} modules missing security_level",
+            "modules": modules_without_security_level[:10],  # Limit to first 10
+            "hint": "Each module should have security_level: HIGH|MEDIUM|LOW|CRITICAL",
             "severity": "WARNING",
         })
 
@@ -2131,6 +2415,30 @@ def validate_p4_security_design(project_root: str) -> Dict:
             ],
         }
 
+    # P4 Coverage Verification: Check P1 module + P2 dataflow coverage
+    # This is called at P4 phase boundary to ensure complete traceability
+    coverage_result = verify_p4_coverage(project_root)
+    coverage_warnings = []
+    coverage_blockers = []
+
+    if coverage_result.get("status") == "FAIL":
+        for blocker in coverage_result.get("blockers", []):
+            coverage_blockers.append({
+                "type": "coverage_gap",
+                "issue": blocker,
+                "severity": "WARNING",  # Coverage gaps are warnings, not blockers at P4
+            })
+    elif coverage_result.get("status") == "WARN":
+        for warning in coverage_result.get("warnings", []):
+            coverage_warnings.append({
+                "type": "coverage_warning",
+                "issue": warning,
+                "severity": "WARNING",
+            })
+
+    warnings.extend(coverage_warnings)
+    warnings.extend(coverage_blockers)
+
     return {
         "status": "passed",
         "phase": 4,
@@ -2141,6 +2449,11 @@ def validate_p4_security_design(project_root: str) -> Dict:
         "domains_covered": list(gap_domains),
         "matrix_coverage": f"{len(assessed_domains)}/{len(SECURITY_DOMAINS)}",
         "warnings": warnings,
+        "coverage_verification": {
+            "p1_module_coverage": coverage_result.get("p1_module_coverage", {}),
+            "p2_dataflow_coverage": coverage_result.get("p2_dataflow_coverage", {}),
+            "overall_coverage_percentage": coverage_result.get("overall_coverage_percentage", 0),
+        },
         "message": f"Phase 4 validation PASSED - {len(gaps_list)} security gaps documented",
     }
 
@@ -2290,6 +2603,33 @@ def validate_p5_threat_inventory(project_root: str) -> Dict:
             ],
         }
 
+    # P5 Element Coverage Verification: Check P2 DFD element coverage
+    # This is called at P5 phase boundary to ensure all elements have STRIDE analysis
+    element_coverage = verify_p5_element_coverage(project_root)
+    coverage_warnings = []
+
+    if element_coverage.get("status") in ["FAIL", "WARN"]:
+        uncovered = element_coverage.get("uncovered_elements", [])
+        partial = element_coverage.get("partial_stride_elements", [])
+
+        if uncovered:
+            coverage_warnings.append({
+                "type": "element_coverage_gap",
+                "issue": f"{len(uncovered)} P2 DFD elements have no STRIDE threats",
+                "uncovered_elements": [e.get("element_id") for e in uncovered[:5]],
+                "severity": "WARNING",
+            })
+
+        if partial:
+            coverage_warnings.append({
+                "type": "partial_stride_coverage",
+                "issue": f"{len(partial)} elements have incomplete STRIDE coverage",
+                "partial_elements": [e.get("element_id") for e in partial[:5]],
+                "severity": "WARNING",
+            })
+
+    warnings.extend(coverage_warnings)
+
     return {
         "status": "passed",
         "phase": 5,
@@ -2298,6 +2638,11 @@ def validate_p5_threat_inventory(project_root: str) -> Dict:
         "threat_count": actual_count,
         "stride_distribution": stride_counts,
         "warnings": warnings,
+        "element_coverage_verification": {
+            "overall_coverage_percentage": element_coverage.get("overall_coverage_percentage", 0),
+            "stride_completeness": element_coverage.get("stride_completeness", 0),
+            "element_coverage": element_coverage.get("element_coverage", {}),
+        },
         "message": f"Phase 5 validation PASSED - {actual_count} threats documented",
     }
 
@@ -2451,6 +2796,48 @@ def validate_p6_validated_risks(project_root: str) -> Dict:
             ],
         }
 
+    # P6 Findings Coverage Verification: Check P1-P5 findings coverage + count conservation
+    # This is called at P6 phase boundary to ensure complete traceability
+    findings_coverage = verify_p6_findings_coverage(project_root)
+    coverage_blockers = []
+    coverage_warnings = []
+
+    if findings_coverage.get("status") == "FAIL":
+        for blocker in findings_coverage.get("blockers", []):
+            coverage_blockers.append({
+                "type": "findings_coverage_gap",
+                "issue": blocker,
+                "severity": "BLOCKING",
+            })
+        blocking_issues.extend(coverage_blockers)
+    elif findings_coverage.get("status") == "WARN":
+        for warning in findings_coverage.get("warnings", []):
+            coverage_warnings.append({
+                "type": "findings_coverage_warning",
+                "issue": warning,
+                "severity": "WARNING",
+            })
+
+    warnings.extend(coverage_warnings)
+
+    # Re-check for blocking issues after coverage check
+    if blocking_issues:
+        return {
+            "status": "blocking",
+            "phase": 6,
+            "validation": "validated_risks",
+            "passed": False,
+            "risk_count": len(risk_details),
+            "blocking_issues": blocking_issues,
+            "warnings": warnings,
+            "message": "Phase 6 validation FAILED - validated risk issues found",
+            "options": [
+                "[1] FIX - Correct risk definitions",
+                "[2] ACCEPT - Acknowledge limitations and continue",
+                "[3] ABORT - Terminate session",
+            ],
+        }
+
     return {
         "status": "passed",
         "phase": 6,
@@ -2460,6 +2847,12 @@ def validate_p6_validated_risks(project_root: str) -> Dict:
         "vr_ids": vr_ids,
         "threat_ref_count": len(set(all_threat_refs)),
         "warnings": warnings,
+        "findings_coverage_verification": {
+            "p4_gaps_coverage": findings_coverage.get("p4_gaps_coverage", {}),
+            "p5_threats_coverage": findings_coverage.get("p5_threats_coverage", {}),
+            "count_conservation": findings_coverage.get("count_conservation", {}),
+            "overall_coverage_percentage": findings_coverage.get("overall_coverage_percentage", 0),
+        },
         "message": f"Phase 6 validation PASSED - {len(risk_details)} validated risks documented",
     }
 
@@ -2746,12 +3139,44 @@ def _validate_p8_reports(project_root: str) -> Dict:
             ],
         }
 
+    # P8 Attack Path Coverage Verification: Check pentest covers P6 attack paths
+    # This is called at P8 phase boundary to ensure complete test coverage
+    attack_coverage = verify_p8_attack_coverage(project_root)
+    coverage_warnings = []
+
+    if attack_coverage.get("status") in ["FAIL", "WARN"]:
+        ap_uncovered = attack_coverage.get("attack_paths", {}).get("uncovered_paths", [])
+        ac_uncovered = attack_coverage.get("attack_chains", {}).get("uncovered_chains", [])
+
+        if ap_uncovered:
+            coverage_warnings.append({
+                "type": "attack_path_coverage_gap",
+                "issue": f"{len(ap_uncovered)} P6 attack paths have no test cases",
+                "uncovered_paths": ap_uncovered[:5],
+                "severity": "WARNING",
+            })
+
+        if ac_uncovered:
+            coverage_warnings.append({
+                "type": "attack_chain_coverage_gap",
+                "issue": f"{len(ac_uncovered)} P6 attack chains have no test scenarios",
+                "uncovered_chains": ac_uncovered[:5],
+                "severity": "WARNING",
+            })
+
     return {
         "status": "passed",
         "phase": 8,
         "validation": "reports",
         "passed": True,
         "found_reports": found_reports,
+        "warnings": coverage_warnings,
+        "attack_coverage_verification": {
+            "attack_paths": attack_coverage.get("attack_paths", {}),
+            "attack_chains": attack_coverage.get("attack_chains", {}),
+            "validated_risks": attack_coverage.get("validated_risks", {}),
+            "overall_coverage_percentage": attack_coverage.get("overall_coverage_percentage", 0),
+        },
         "message": f"Phase 8 validation PASSED - all {len(required_reports)} reports generated",
     }
 
@@ -3667,6 +4092,1040 @@ def validate_workflow_complete(project_root: str) -> Dict:
 
 
 # ============================================================================
+# End-to-End Coverage Verification Functions
+# ============================================================================
+# These functions implement end-to-end data traceability verification:
+# - P4 must cover P1 modules + P2 data flows
+# - P5 must cover ALL P2 DFD elements with STRIDE analysis
+# - P6 must cover ALL P1-P5 findings with count conservation
+# - P8 penetration test must cover P6 attack paths/chains
+# ============================================================================
+
+def verify_p4_coverage(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    Verify P4 Security Design Review coverage of P1 modules and P2 data flows.
+
+    Formula: ∀ M-xxx ∈ P1 → ∃ GAP ∈ P4 : references(M-xxx)
+             ∀ DF-xxx ∈ P2 → ∃ GAP ∈ P4 : references(DF-xxx)
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with verification status, coverage metrics, and uncovered items
+    """
+    result = {
+        "verification": "p4_coverage",
+        "status": "UNKNOWN",
+        "p1_module_coverage": {},
+        "p2_dataflow_coverage": {},
+        "overall_coverage_percentage": 0.0,
+        "uncovered_modules": [],
+        "uncovered_dataflows": [],
+        "blockers": [],
+        "warnings": [],
+    }
+
+    try:
+        # Load P1, P2, P4 data
+        p1_data = load_phase_data(1, project_root, session_id)
+        p2_data = load_phase_data(2, project_root, session_id)
+        p4_data = load_phase_data(4, project_root, session_id)
+
+        if not p1_data:
+            result["status"] = "ERROR"
+            result["blockers"].append("P1 data not found")
+            return result
+
+        if not p2_data:
+            result["status"] = "ERROR"
+            result["blockers"].append("P2 data not found")
+            return result
+
+        if not p4_data:
+            result["status"] = "ERROR"
+            result["blockers"].append("P4 data not found")
+            return result
+
+        # Extract P1 modules
+        p1_blocks = p1_data.get("blocks", {})
+        module_inventory = p1_blocks.get("module_inventory", {})
+        modules = module_inventory.get("modules", [])
+        if isinstance(modules, dict):
+            modules = list(modules.values())
+
+        p1_module_ids = set()
+        for module in modules:
+            if isinstance(module, dict):
+                mod_id = module.get("id", module.get("path", ""))
+                if mod_id:
+                    p1_module_ids.add(mod_id)
+
+        # Extract P2 data flows
+        p2_blocks = p2_data.get("blocks", {})
+        dfd_elements = p2_blocks.get("dfd_elements", {})
+        data_flows_block = p2_blocks.get("data_flows", {})
+
+        p2_dataflow_ids = set()
+
+        # From dfd_elements
+        elements = dfd_elements.get("elements", [])
+        if isinstance(elements, list):
+            for elem in elements:
+                if isinstance(elem, dict) and elem.get("type") == "DataFlow":
+                    df_id = elem.get("id", "")
+                    if df_id:
+                        p2_dataflow_ids.add(df_id)
+
+        # From data_flows block
+        flows = data_flows_block.get("flows", [])
+        if isinstance(flows, list):
+            for flow in flows:
+                if isinstance(flow, dict):
+                    df_id = flow.get("id", "")
+                    if df_id:
+                        p2_dataflow_ids.add(df_id)
+
+        # Extract P4 security gaps and their references
+        p4_blocks = p4_data.get("blocks", {})
+        security_gaps = p4_blocks.get("security_gaps", {})
+        gaps = security_gaps.get("gaps", [])
+        if isinstance(gaps, dict):
+            gaps = list(gaps.values())
+
+        # Collect all module and dataflow references from P4 gaps
+        p4_module_refs = set()
+        p4_dataflow_refs = set()
+
+        for gap in gaps:
+            if not isinstance(gap, dict):
+                continue
+
+            # Check affected_modules, module_refs, or location fields
+            affected_modules = gap.get("affected_modules", [])
+            if isinstance(affected_modules, list):
+                p4_module_refs.update(affected_modules)
+            elif isinstance(affected_modules, str):
+                p4_module_refs.add(affected_modules)
+
+            module_refs = gap.get("module_refs", gap.get("modules", []))
+            if isinstance(module_refs, list):
+                p4_module_refs.update(module_refs)
+            elif isinstance(module_refs, str):
+                p4_module_refs.add(module_refs)
+
+            location = gap.get("location", "")
+            if location and isinstance(location, str):
+                # Extract M-xxx patterns from location
+                for match in re.findall(r'M-\d{3}', location):
+                    p4_module_refs.add(match)
+
+            # Check dataflow references
+            dataflow_refs = gap.get("dataflow_refs", gap.get("data_flows", []))
+            if isinstance(dataflow_refs, list):
+                p4_dataflow_refs.update(dataflow_refs)
+            elif isinstance(dataflow_refs, str):
+                p4_dataflow_refs.add(dataflow_refs)
+
+            # Extract DF-xxx patterns from description or location
+            description = gap.get("description", "")
+            for match in re.findall(r'DF-\d{3}', str(description) + str(location)):
+                p4_dataflow_refs.add(match)
+
+        # Calculate module coverage
+        covered_modules = p1_module_ids.intersection(p4_module_refs)
+        uncovered_modules = p1_module_ids - p4_module_refs
+        module_coverage_pct = (
+            len(covered_modules) / len(p1_module_ids) * 100
+            if p1_module_ids else 100.0
+        )
+
+        result["p1_module_coverage"] = {
+            "total_modules": len(p1_module_ids),
+            "modules_in_p4": len(covered_modules),
+            "coverage_percentage": round(module_coverage_pct, 2),
+            "status": "PASS" if module_coverage_pct >= 100 else "FAIL",
+        }
+        result["uncovered_modules"] = sorted(list(uncovered_modules))
+
+        # Calculate dataflow coverage
+        covered_dataflows = p2_dataflow_ids.intersection(p4_dataflow_refs)
+        uncovered_dataflows = p2_dataflow_ids - p4_dataflow_refs
+        dataflow_coverage_pct = (
+            len(covered_dataflows) / len(p2_dataflow_ids) * 100
+            if p2_dataflow_ids else 100.0
+        )
+
+        result["p2_dataflow_coverage"] = {
+            "total_dataflows": len(p2_dataflow_ids),
+            "dataflows_in_p4": len(covered_dataflows),
+            "coverage_percentage": round(dataflow_coverage_pct, 2),
+            "status": "PASS" if dataflow_coverage_pct >= 100 else "FAIL",
+        }
+        result["uncovered_dataflows"] = sorted(list(uncovered_dataflows))
+
+        # Overall coverage
+        overall_pct = (module_coverage_pct + dataflow_coverage_pct) / 2
+        result["overall_coverage_percentage"] = round(overall_pct, 2)
+
+        # Determine status
+        if uncovered_modules:
+            result["blockers"].append(
+                f"{len(uncovered_modules)} P1 modules not covered in P4"
+            )
+        if uncovered_dataflows:
+            result["warnings"].append(
+                f"{len(uncovered_dataflows)} P2 data flows not covered in P4"
+            )
+
+        if result["blockers"]:
+            result["status"] = "FAIL"
+        elif result["warnings"]:
+            result["status"] = "WARN"
+        else:
+            result["status"] = "PASS"
+
+        result["checked_at"] = datetime.now().isoformat()
+
+    except Exception as e:
+        result["status"] = "ERROR"
+        result["error"] = str(e)
+
+    return result
+
+
+def verify_p5_element_coverage(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    Verify P5 STRIDE analysis coverage of ALL P2 DFD elements.
+
+    Formula: ∀ element ∈ P2 → ∃ T-xxx ∈ P5 : STRIDE_covers(element)
+
+    Each DFD element type has applicable STRIDE categories:
+    - Process: S, T, R, I, D, E (all six)
+    - DataStore: T, R, I, D
+    - DataFlow: T, I, D
+    - ExternalInteractor (as source): S, R
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with verification status, element coverage, and STRIDE completeness
+    """
+    result = {
+        "verification": "p5_element_coverage",
+        "status": "UNKNOWN",
+        "element_coverage": {
+            "processes": {},
+            "data_stores": {},
+            "data_flows": {},
+            "external_interactors": {},
+        },
+        "stride_completeness": 0.0,
+        "overall_coverage_percentage": 0.0,
+        "uncovered_elements": [],
+        "partial_stride_elements": [],
+        "blockers": [],
+        "warnings": [],
+    }
+
+    # STRIDE applicability matrix per element type (STRIDE per Interaction)
+    STRIDE_APPLICABILITY = {
+        "Process": ["S", "T", "R", "I", "D", "E"],
+        "DataStore": ["T", "R", "I", "D"],
+        "DataFlow": ["T", "I", "D"],
+        "ExternalInteractor": ["S", "R"],
+    }
+
+    try:
+        # Load P2 and P5 data
+        p2_data = load_phase_data(2, project_root, session_id)
+        p5_data = load_phase_data(5, project_root, session_id)
+
+        if not p2_data:
+            result["status"] = "ERROR"
+            result["blockers"].append("P2 data not found")
+            return result
+
+        if not p5_data:
+            result["status"] = "ERROR"
+            result["blockers"].append("P5 data not found")
+            return result
+
+        # Extract P2 DFD elements by type
+        p2_blocks = p2_data.get("blocks", {})
+        dfd_elements = p2_blocks.get("dfd_elements", {})
+        elements = dfd_elements.get("elements", [])
+
+        # Categorize elements by type
+        elements_by_type = {
+            "Process": [],
+            "DataStore": [],
+            "DataFlow": [],
+            "ExternalInteractor": [],
+        }
+
+        if isinstance(elements, list):
+            for elem in elements:
+                if isinstance(elem, dict):
+                    elem_type = elem.get("type", "unknown")
+                    elem_id = elem.get("id", "")
+                    if elem_type in elements_by_type and elem_id:
+                        elements_by_type[elem_type].append(elem_id)
+
+        # Also check data_flows block for additional DF-xxx IDs
+        data_flows_block = p2_blocks.get("data_flows", {})
+        flows = data_flows_block.get("flows", [])
+        if isinstance(flows, list):
+            for flow in flows:
+                if isinstance(flow, dict):
+                    df_id = flow.get("id", "")
+                    if df_id and df_id not in elements_by_type["DataFlow"]:
+                        elements_by_type["DataFlow"].append(df_id)
+
+        # Extract P5 threats and map to elements
+        p5_blocks = p5_data.get("blocks", {})
+        threat_inventory = p5_blocks.get("threat_inventory", {})
+        threats = threat_inventory.get("threats", [])
+        if isinstance(threats, dict):
+            threats = list(threats.values())
+
+        # Build element → STRIDE coverage map
+        # Threat ID format: T-{STRIDE}-{ElementType}-{ElementSeq}-{ThreatSeq}
+        # e.g., T-S-P-001-001 = Spoofing threat for Process P-001
+        element_stride_coverage = {}  # elem_id → set of STRIDE letters covered
+
+        for threat in threats:
+            if not isinstance(threat, dict):
+                continue
+
+            threat_id = threat.get("id", "") or threat.get("threat_id", "")
+            target_element = threat.get("target_element", "") or threat.get("element_id", "")
+
+            # Parse threat ID to extract STRIDE category and element reference
+            # Format: T-{S}-{ElementType}-{Seq}-{Seq} or T-{S}-{ElementID}-{Seq}
+            if threat_id and threat_id.startswith("T-"):
+                parts = threat_id.split("-")
+                if len(parts) >= 3:
+                    stride_letter = parts[1]
+                    if stride_letter in STRIDE_CATEGORIES:
+                        # Try to extract element ID from threat ID or target_element
+                        elem_id = target_element
+                        if not elem_id and len(parts) >= 4:
+                            # Reconstruct element ID from parts
+                            # T-S-P-001-001 → P-001
+                            elem_type_abbrev = parts[2]
+                            elem_seq = parts[3] if len(parts) > 3 else "001"
+                            elem_id = f"{elem_type_abbrev}-{elem_seq}"
+
+                        if elem_id:
+                            if elem_id not in element_stride_coverage:
+                                element_stride_coverage[elem_id] = set()
+                            element_stride_coverage[elem_id].add(stride_letter)
+
+            # Also check element_refs or target fields
+            element_refs = threat.get("element_refs", [])
+            if isinstance(element_refs, list):
+                for ref in element_refs:
+                    if ref and threat_id.startswith("T-") and len(threat_id.split("-")) >= 2:
+                        stride_letter = threat_id.split("-")[1]
+                        if stride_letter in STRIDE_CATEGORIES:
+                            if ref not in element_stride_coverage:
+                                element_stride_coverage[ref] = set()
+                            element_stride_coverage[ref].add(stride_letter)
+
+        # Calculate coverage per element type
+        total_applicable_categories = 0
+        total_covered_categories = 0
+        uncovered_elements = []
+        partial_stride_elements = []
+
+        type_mapping = {
+            "Process": ("processes", "P-"),
+            "DataStore": ("data_stores", "DS-"),
+            "DataFlow": ("data_flows", "DF-"),
+            "ExternalInteractor": ("external_interactors", "EI-"),
+        }
+
+        for elem_type, (result_key, id_prefix) in type_mapping.items():
+            type_elements = elements_by_type[elem_type]
+            applicable_stride = set(STRIDE_APPLICABILITY.get(elem_type, []))
+            elements_with_threats = 0
+            stride_coverage_map = {}
+
+            for elem_id in type_elements:
+                covered_stride = element_stride_coverage.get(elem_id, set())
+
+                # Also check with ID prefix variations
+                if not covered_stride:
+                    for key in element_stride_coverage:
+                        if key.startswith(id_prefix) or elem_id in key:
+                            covered_stride = element_stride_coverage[key]
+                            break
+
+                stride_coverage_map[elem_id] = {
+                    s: (s in covered_stride) for s in STRIDE_CATEGORIES
+                }
+
+                applicable_for_elem = applicable_stride.intersection(set(STRIDE_CATEGORIES))
+                covered_for_elem = covered_stride.intersection(applicable_for_elem)
+
+                total_applicable_categories += len(applicable_for_elem)
+                total_covered_categories += len(covered_for_elem)
+
+                if covered_stride:
+                    elements_with_threats += 1
+                    if covered_for_elem != applicable_for_elem:
+                        missing = applicable_for_elem - covered_for_elem
+                        partial_stride_elements.append({
+                            "element_id": elem_id,
+                            "type": elem_type,
+                            "missing_stride": sorted(list(missing)),
+                        })
+                else:
+                    uncovered_elements.append({
+                        "element_id": elem_id,
+                        "type": elem_type,
+                        "applicable_stride": sorted(list(applicable_stride)),
+                    })
+
+            coverage_pct = (
+                elements_with_threats / len(type_elements) * 100
+                if type_elements else 100.0
+            )
+
+            result["element_coverage"][result_key] = {
+                "total_from_p2": len(type_elements),
+                "elements_with_threats": elements_with_threats,
+                "coverage_percentage": round(coverage_pct, 2),
+                "uncovered_elements": [e for e in uncovered_elements if e["type"] == elem_type],
+                "stride_coverage": stride_coverage_map,
+            }
+
+        # Calculate STRIDE completeness
+        stride_completeness = (
+            total_covered_categories / total_applicable_categories
+            if total_applicable_categories else 1.0
+        )
+        result["stride_completeness"] = round(stride_completeness, 4)
+
+        # Overall coverage percentage
+        total_elements = sum(len(elements_by_type[t]) for t in elements_by_type)
+        covered_elements = total_elements - len(uncovered_elements)
+        overall_coverage = (
+            covered_elements / total_elements * 100 if total_elements else 100.0
+        )
+        result["overall_coverage_percentage"] = round(overall_coverage, 2)
+
+        result["uncovered_elements"] = uncovered_elements
+        result["partial_stride_elements"] = partial_stride_elements
+
+        # Determine status
+        if uncovered_elements:
+            result["blockers"].append(
+                f"{len(uncovered_elements)} P2 elements have no STRIDE threats"
+            )
+        if partial_stride_elements:
+            result["warnings"].append(
+                f"{len(partial_stride_elements)} elements have incomplete STRIDE coverage"
+            )
+
+        if result["blockers"]:
+            result["status"] = "FAIL"
+        elif result["warnings"]:
+            result["status"] = "WARN"
+        else:
+            result["status"] = "PASS"
+
+        result["checked_at"] = datetime.now().isoformat()
+
+    except Exception as e:
+        result["status"] = "ERROR"
+        result["error"] = str(e)
+
+    return result
+
+
+def verify_p6_findings_coverage(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    Verify P6 Risk Validation coverage of ALL P1-P5 findings.
+
+    Formula: ∀ finding ∈ P1-P5 → ∃ ref ∈ P6
+    Count Conservation: P5.total = P6.verified + P6.theoretical + P6.pending + P6.excluded
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with verification status, findings coverage, and count conservation check
+    """
+    result = {
+        "verification": "p6_findings_coverage",
+        "status": "UNKNOWN",
+        "p1_findings_coverage": {},
+        "p2_findings_coverage": {},
+        "p3_findings_coverage": {},
+        "p4_gaps_coverage": {},
+        "p5_threats_coverage": {},
+        "count_conservation": {},
+        "overall_coverage_percentage": 0.0,
+        "excluded_findings": [],
+        "blockers": [],
+        "warnings": [],
+    }
+
+    try:
+        # Load all phase data
+        p1_data = load_phase_data(1, project_root, session_id)
+        p2_data = load_phase_data(2, project_root, session_id)
+        p3_data = load_phase_data(3, project_root, session_id)
+        p4_data = load_phase_data(4, project_root, session_id)
+        p5_data = load_phase_data(5, project_root, session_id)
+        p6_data = load_phase_data(6, project_root, session_id)
+
+        if not p6_data:
+            result["status"] = "ERROR"
+            result["blockers"].append("P6 data not found")
+            return result
+
+        # Extract P6 validated risks and their references
+        p6_blocks = p6_data.get("blocks", {})
+        validated_risks = p6_blocks.get("validated_risks", {})
+        # Support both "risks" and "risk_details" keys for compatibility
+        risks = validated_risks.get("risks", [])
+        if not risks:
+            risks = validated_risks.get("risk_details", [])
+        if isinstance(risks, dict):
+            risks = list(risks.values())
+
+        # Collect all references from P6 VRs
+        p6_gap_refs = set()
+        p6_threat_refs = set()
+        p6_finding_refs = set()  # General finding refs (F-Px-xxx)
+        p6_element_refs = set()
+
+        for risk in risks:
+            if not isinstance(risk, dict):
+                continue
+
+            # Threat references
+            threat_refs = risk.get("threat_refs", risk.get("threats", []))
+            if isinstance(threat_refs, list):
+                p6_threat_refs.update(threat_refs)
+            elif isinstance(threat_refs, str):
+                p6_threat_refs.add(threat_refs)
+
+            # Gap references
+            gap_refs = risk.get("gap_refs", risk.get("gaps", []))
+            if isinstance(gap_refs, list):
+                p6_gap_refs.update(gap_refs)
+            elif isinstance(gap_refs, str):
+                p6_gap_refs.add(gap_refs)
+
+            # Finding references
+            finding_refs = risk.get("finding_refs", risk.get("findings", []))
+            if isinstance(finding_refs, list):
+                p6_finding_refs.update(finding_refs)
+            elif isinstance(finding_refs, str):
+                p6_finding_refs.add(finding_refs)
+
+            # Element references
+            element_refs = risk.get("element_refs", [])
+            if isinstance(element_refs, list):
+                p6_element_refs.update(element_refs)
+
+        # Extract excluded findings from P6 (support both key names)
+        excluded = validated_risks.get("excluded_findings", [])
+        if not excluded:
+            excluded = validated_risks.get("excluded_threats", [])
+        if isinstance(excluded, list):
+            for item in excluded:
+                if isinstance(item, dict):
+                    result["excluded_findings"].append(item)
+                    # Also add to threat refs for count conservation
+                    threat_id = item.get("threat_id", item.get("id", ""))
+                    if threat_id:
+                        p6_threat_refs.add(threat_id)
+                elif isinstance(item, str):
+                    result["excluded_findings"].append({"id": item})
+                    p6_threat_refs.add(item)
+
+        excluded_ids = set()
+        for item in result["excluded_findings"]:
+            if isinstance(item, dict):
+                excluded_ids.add(item.get("id", item.get("threat_id", "")))
+            elif isinstance(item, str):
+                excluded_ids.add(item)
+
+        # Check P4 gap coverage
+        if p4_data:
+            p4_blocks = p4_data.get("blocks", {})
+            security_gaps = p4_blocks.get("security_gaps", {})
+            gaps = security_gaps.get("gaps", [])
+            if isinstance(gaps, dict):
+                gaps = list(gaps.values())
+
+            p4_gap_ids = set()
+            for gap in gaps:
+                if isinstance(gap, dict):
+                    gap_id = gap.get("id", "")
+                    if gap_id:
+                        p4_gap_ids.add(gap_id)
+
+            covered_gaps = p4_gap_ids.intersection(p6_gap_refs.union(excluded_ids))
+            uncovered_gaps = p4_gap_ids - p6_gap_refs - excluded_ids
+            gap_coverage_pct = (
+                len(covered_gaps) / len(p4_gap_ids) * 100 if p4_gap_ids else 100.0
+            )
+
+            result["p4_gaps_coverage"] = {
+                "total_gaps": len(p4_gap_ids),
+                "gaps_in_vr_refs": len(p4_gap_ids.intersection(p6_gap_refs)),
+                "gaps_excluded": len(p4_gap_ids.intersection(excluded_ids)),
+                "coverage_percentage": round(gap_coverage_pct, 2),
+                "uncovered_gaps": sorted(list(uncovered_gaps)),
+                "status": "PASS" if gap_coverage_pct >= 100 else "FAIL",
+            }
+
+        # Check P5 threat coverage (with count conservation)
+        if p5_data:
+            p5_total, p5_threats = extract_threat_ids_from_phase_data(p5_data)
+
+            # Get counts by status from P6
+            verified_count = 0
+            theoretical_count = 0
+            pending_count = 0
+
+            for risk in risks:
+                if isinstance(risk, dict):
+                    # Support both top-level and nested validation status
+                    status = risk.get("validation_status", "")
+                    if not status:
+                        validation = risk.get("validation", {})
+                        if isinstance(validation, dict):
+                            status = validation.get("status", "")
+                    status = status.lower() if status else ""
+
+                    threat_refs = risk.get("threat_refs", [])
+                    if isinstance(threat_refs, list):
+                        ref_count = len(threat_refs)
+                    else:
+                        ref_count = 1 if threat_refs else 0
+
+                    if status in ["verified", "confirmed", "exploitable"]:
+                        verified_count += ref_count
+                    elif status in ["theoretical", "potential", "possible"]:
+                        theoretical_count += ref_count
+                    elif status in ["pending", "needs_investigation"]:
+                        pending_count += ref_count
+
+            excluded_threat_count = len([
+                e for e in result["excluded_findings"]
+                if isinstance(e, dict) and (
+                    e.get("source_phase") == "P5" or
+                    str(e.get("id", e.get("threat_id", ""))).startswith("T-")
+                )
+            ])
+
+            total_accounted = verified_count + theoretical_count + pending_count + excluded_threat_count
+            conservation_check = (total_accounted == p5_total) if p5_total > 0 else True
+
+            result["p5_threats_coverage"] = {
+                "total_threats": p5_total,
+                "verified": verified_count,
+                "theoretical": theoretical_count,
+                "pending": pending_count,
+                "excluded": excluded_threat_count,
+                "total_accounted": total_accounted,
+                "conservation_formula": f"{verified_count} + {theoretical_count} + {pending_count} + {excluded_threat_count} = {total_accounted}",
+                "conservation_check": conservation_check,
+                "coverage_percentage": round(len(p6_threat_refs) / p5_total * 100 if p5_total else 100.0, 2),
+                "status": "PASS" if conservation_check else "FAIL",
+            }
+
+            result["count_conservation"] = {
+                "p5_total": p5_total,
+                "p6_accounted": total_accounted,
+                "formula_valid": conservation_check,
+                "delta": total_accounted - p5_total,
+            }
+
+            if not conservation_check:
+                result["blockers"].append(
+                    f"Count conservation failed: P5={p5_total}, accounted={total_accounted}, delta={total_accounted - p5_total}"
+                )
+
+        # Calculate overall coverage
+        coverage_values = []
+        for key in ["p4_gaps_coverage", "p5_threats_coverage"]:
+            if key in result and isinstance(result[key], dict):
+                pct = result[key].get("coverage_percentage", 0)
+                coverage_values.append(pct)
+
+        overall_pct = sum(coverage_values) / len(coverage_values) if coverage_values else 0
+        result["overall_coverage_percentage"] = round(overall_pct, 2)
+
+        # Determine status
+        if result["blockers"]:
+            result["status"] = "FAIL"
+        elif result["warnings"]:
+            result["status"] = "WARN"
+        else:
+            result["status"] = "PASS"
+
+        result["checked_at"] = datetime.now().isoformat()
+
+    except Exception as e:
+        result["status"] = "ERROR"
+        result["error"] = str(e)
+
+    return result
+
+
+def verify_p8_attack_coverage(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    Verify P8 Penetration Test Plan coverage of P6 attack paths and chains.
+
+    Formula: ∀ AP-xxx ∈ P6 → ∃ TC-xxx ∈ P8 : tests(AP-xxx)
+             ∀ AC-xxx ∈ P6 → ∃ scenario ∈ P8 : covers(AC-xxx)
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with verification status, attack path coverage, and test case mapping
+    """
+    result = {
+        "verification": "p8_attack_coverage",
+        "status": "UNKNOWN",
+        "attack_paths": {
+            "total_from_p6": 0,
+            "paths_with_test_cases": 0,
+            "coverage_percentage": 0.0,
+            "path_test_mapping": {},
+            "uncovered_paths": [],
+            "deferred_paths": [],
+        },
+        "attack_chains": {
+            "total_from_p6": 0,
+            "chains_with_scenarios": 0,
+            "coverage_percentage": 0.0,
+            "chain_scenario_mapping": {},
+            "uncovered_chains": [],
+        },
+        "validated_risks": {
+            "total_from_p6": 0,
+            "risks_with_tests": 0,
+            "coverage_percentage": 0.0,
+            "risk_test_mapping": {},
+        },
+        "overall_coverage_percentage": 0.0,
+        "blockers": [],
+        "warnings": [],
+    }
+
+    try:
+        # Load P6 and P8 data
+        p6_data = load_phase_data(6, project_root, session_id)
+        p8_data = load_phase_data(8, project_root, session_id)
+
+        if not p6_data:
+            result["status"] = "ERROR"
+            result["blockers"].append("P6 data not found")
+            return result
+
+        if not p8_data:
+            result["status"] = "ERROR"
+            result["blockers"].append("P8 data not found")
+            return result
+
+        # Extract P6 attack paths
+        p6_blocks = p6_data.get("blocks", {})
+        attack_paths_block = p6_blocks.get("attack_paths", {})
+        attack_paths = attack_paths_block.get("paths", [])
+        if isinstance(attack_paths, dict):
+            attack_paths = list(attack_paths.values())
+
+        p6_attack_path_ids = set()
+        for path in attack_paths:
+            if isinstance(path, dict):
+                path_id = path.get("id", path.get("path_id", ""))
+                if path_id:
+                    p6_attack_path_ids.add(path_id)
+
+        # Extract P6 attack chains
+        attack_chains_block = p6_blocks.get("attack_chains", {})
+        attack_chains = attack_chains_block.get("chains", [])
+        if isinstance(attack_chains, dict):
+            attack_chains = list(attack_chains.values())
+
+        p6_attack_chain_ids = set()
+        for chain in attack_chains:
+            if isinstance(chain, dict):
+                chain_id = chain.get("id", chain.get("chain_id", ""))
+                if chain_id:
+                    p6_attack_chain_ids.add(chain_id)
+
+        # Extract P6 validated risks (for VR → TC mapping)
+        validated_risks = p6_blocks.get("validated_risks", {})
+        risks = validated_risks.get("risks", [])
+        if isinstance(risks, dict):
+            risks = list(risks.values())
+
+        p6_vr_ids = set()
+        for risk in risks:
+            if isinstance(risk, dict):
+                vr_id = risk.get("id", "")
+                if vr_id:
+                    p6_vr_ids.add(vr_id)
+
+        # Extract P8 test cases and their attack path mappings
+        p8_blocks = p8_data.get("blocks", {})
+
+        # Try multiple potential block names for test cases
+        test_plan = p8_blocks.get("penetration_test_plan", {})
+        if not test_plan:
+            test_plan = p8_blocks.get("test_cases", {})
+        if not test_plan:
+            test_plan = p8_blocks.get("attack_path_coverage", {})
+
+        test_cases = test_plan.get("test_cases", [])
+        if isinstance(test_cases, dict):
+            test_cases = list(test_cases.values())
+
+        # Build mappings
+        path_test_mapping = {}  # AP-xxx → [TC-xxx, ...]
+        chain_scenario_mapping = {}  # AC-xxx → scenario description
+        vr_test_mapping = {}  # VR-xxx → [TC-xxx, ...]
+        deferred_paths = []
+
+        for tc in test_cases:
+            if not isinstance(tc, dict):
+                continue
+
+            tc_id = tc.get("id", tc.get("test_case_id", ""))
+
+            # Map to attack paths
+            attack_path_refs = tc.get("attack_path", tc.get("attack_path_refs", []))
+            if isinstance(attack_path_refs, str):
+                attack_path_refs = [attack_path_refs]
+            for ap_ref in attack_path_refs:
+                if ap_ref:
+                    if ap_ref not in path_test_mapping:
+                        path_test_mapping[ap_ref] = []
+                    if tc_id:
+                        path_test_mapping[ap_ref].append(tc_id)
+
+            # Map to risks
+            risk_refs = tc.get("risk", tc.get("risk_refs", tc.get("vr_refs", [])))
+            if isinstance(risk_refs, str):
+                risk_refs = [risk_refs]
+            for vr_ref in risk_refs:
+                if vr_ref:
+                    if vr_ref not in vr_test_mapping:
+                        vr_test_mapping[vr_ref] = []
+                    if tc_id:
+                        vr_test_mapping[vr_ref].append(tc_id)
+
+        # Check for deferred paths in P8
+        deferred_section = test_plan.get("deferred_paths", [])
+        if isinstance(deferred_section, list):
+            for item in deferred_section:
+                if isinstance(item, dict):
+                    deferred_paths.append(item)
+                    path_id = item.get("path_id", "")
+                    if path_id:
+                        path_test_mapping[path_id] = ["DEFERRED"]
+
+        # Check attack chain scenarios
+        chain_scenarios = test_plan.get("attack_chain_scenarios", test_plan.get("scenarios", []))
+        if isinstance(chain_scenarios, dict):
+            chain_scenario_mapping = chain_scenarios
+        elif isinstance(chain_scenarios, list):
+            for scenario in chain_scenarios:
+                if isinstance(scenario, dict):
+                    chain_id = scenario.get("chain_id", scenario.get("attack_chain", ""))
+                    description = scenario.get("description", scenario.get("scenario", ""))
+                    if chain_id:
+                        chain_scenario_mapping[chain_id] = description
+
+        # Calculate attack path coverage
+        covered_paths = set(path_test_mapping.keys()).intersection(p6_attack_path_ids)
+        uncovered_paths = p6_attack_path_ids - set(path_test_mapping.keys())
+        path_coverage_pct = (
+            len(covered_paths) / len(p6_attack_path_ids) * 100
+            if p6_attack_path_ids else 100.0
+        )
+
+        result["attack_paths"] = {
+            "total_from_p6": len(p6_attack_path_ids),
+            "paths_with_test_cases": len(covered_paths),
+            "coverage_percentage": round(path_coverage_pct, 2),
+            "path_test_mapping": path_test_mapping,
+            "uncovered_paths": sorted(list(uncovered_paths)),
+            "deferred_paths": deferred_paths,
+        }
+
+        # Calculate attack chain coverage
+        covered_chains = set(chain_scenario_mapping.keys()).intersection(p6_attack_chain_ids)
+        uncovered_chains = p6_attack_chain_ids - set(chain_scenario_mapping.keys())
+        chain_coverage_pct = (
+            len(covered_chains) / len(p6_attack_chain_ids) * 100
+            if p6_attack_chain_ids else 100.0
+        )
+
+        result["attack_chains"] = {
+            "total_from_p6": len(p6_attack_chain_ids),
+            "chains_with_scenarios": len(covered_chains),
+            "coverage_percentage": round(chain_coverage_pct, 2),
+            "chain_scenario_mapping": chain_scenario_mapping,
+            "uncovered_chains": sorted(list(uncovered_chains)),
+        }
+
+        # Calculate VR coverage
+        covered_vrs = set(vr_test_mapping.keys()).intersection(p6_vr_ids)
+        vr_coverage_pct = (
+            len(covered_vrs) / len(p6_vr_ids) * 100
+            if p6_vr_ids else 100.0
+        )
+
+        result["validated_risks"] = {
+            "total_from_p6": len(p6_vr_ids),
+            "risks_with_tests": len(covered_vrs),
+            "coverage_percentage": round(vr_coverage_pct, 2),
+            "risk_test_mapping": vr_test_mapping,
+        }
+
+        # Overall coverage
+        overall_pct = (path_coverage_pct + chain_coverage_pct + vr_coverage_pct) / 3
+        result["overall_coverage_percentage"] = round(overall_pct, 2)
+
+        # Determine status
+        if uncovered_paths:
+            result["warnings"].append(
+                f"{len(uncovered_paths)} P6 attack paths have no test cases"
+            )
+        if uncovered_chains:
+            result["warnings"].append(
+                f"{len(uncovered_chains)} P6 attack chains have no test scenarios"
+            )
+
+        # Critical/High VRs without tests are blockers
+        critical_vrs_untested = [vr for vr in p6_vr_ids - covered_vrs]
+        if critical_vrs_untested:
+            result["warnings"].append(
+                f"{len(critical_vrs_untested)} P6 validated risks have no test cases"
+            )
+
+        if result["blockers"]:
+            result["status"] = "FAIL"
+        elif result["warnings"]:
+            result["status"] = "WARN"
+        else:
+            result["status"] = "PASS"
+
+        result["checked_at"] = datetime.now().isoformat()
+
+    except Exception as e:
+        result["status"] = "ERROR"
+        result["error"] = str(e)
+
+    return result
+
+
+def verify_all_coverage(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    Execute all coverage verification checks.
+
+    Runs:
+    - verify_p4_coverage (P4 covers P1 modules + P2 data flows)
+    - verify_p5_element_coverage (P5 STRIDE covers P2 DFD elements)
+    - verify_p6_findings_coverage (P6 covers P1-P5 findings)
+    - verify_p8_attack_coverage (P8 pentest covers P6 attack paths)
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with all verification results and overall status
+    """
+    results = {
+        "verification": "all_coverage",
+        "overall_status": "UNKNOWN",
+        "verifications": {},
+        "summary": {
+            "total_checks": 4,
+            "passed": 0,
+            "failed": 0,
+            "warnings": 0,
+            "errors": 0,
+        },
+        "blockers": [],
+        "warnings": [],
+    }
+
+    # Run all verifications
+    checks = [
+        ("p4_coverage", verify_p4_coverage),
+        ("p5_element_coverage", verify_p5_element_coverage),
+        ("p6_findings_coverage", verify_p6_findings_coverage),
+        ("p8_attack_coverage", verify_p8_attack_coverage),
+    ]
+
+    for check_name, check_func in checks:
+        try:
+            check_result = check_func(project_root, session_id)
+            results["verifications"][check_name] = check_result
+
+            status = check_result.get("status", "UNKNOWN")
+            if status == "PASS":
+                results["summary"]["passed"] += 1
+            elif status == "FAIL":
+                results["summary"]["failed"] += 1
+                results["blockers"].extend(check_result.get("blockers", []))
+            elif status == "WARN":
+                results["summary"]["warnings"] += 1
+                results["warnings"].extend(check_result.get("warnings", []))
+            elif status == "ERROR":
+                results["summary"]["errors"] += 1
+                error = check_result.get("error", "Unknown error")
+                results["blockers"].append(f"{check_name}: {error}")
+
+        except Exception as e:
+            results["verifications"][check_name] = {
+                "status": "ERROR",
+                "error": str(e),
+            }
+            results["summary"]["errors"] += 1
+            results["blockers"].append(f"{check_name}: {str(e)}")
+
+    # Determine overall status
+    if results["summary"]["failed"] > 0 or results["summary"]["errors"] > 0:
+        results["overall_status"] = "FAIL"
+        results["message"] = (
+            f"Coverage verification FAILED: {results['summary']['failed']} failed, "
+            f"{results['summary']['errors']} errors"
+        )
+    elif results["summary"]["warnings"] > 0:
+        results["overall_status"] = "WARN"
+        results["message"] = (
+            f"Coverage verification passed with {results['summary']['warnings']} warning(s)"
+        )
+    else:
+        results["overall_status"] = "PASS"
+        results["message"] = "All coverage verifications PASSED"
+
+    results["checked_at"] = datetime.now().isoformat()
+
+    return results
+
+
+# ============================================================================
 # Phase End Protocol
 # ============================================================================
 
@@ -4115,6 +5574,1507 @@ def phase_end_protocol(
 
 
 # ============================================================================
+# P2 Full Traversal Enhancement Functions
+# ============================================================================
+
+def p2_extract_traversal_tasks(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    P2.0: Extract traversal tasks from P1 data for sub-agent dispatch.
+
+    Reads P1_project_context.yaml and generates P2_traversal_tasks.yaml
+    with tasks for analyzing each module and entry point.
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with extraction result and task summary
+    """
+    result = {
+        "command": "p2_extract_tasks",
+        "status": "error",
+        "tasks_generated": 0,
+        "output_file": None,
+    }
+
+    try:
+        # Get data directory
+        data_dir = get_phase_data_dir(project_root, session_id)
+        if not data_dir.exists():
+            result["error"] = f"Data directory not found: {data_dir}"
+            return result
+
+        # Read P1 data
+        p1_file = data_dir / "P1_project_context.yaml"
+        if not p1_file.exists():
+            result["error"] = f"P1 data file not found: {p1_file}"
+            return result
+
+        with open(p1_file, "r", encoding="utf-8") as f:
+            p1_data = yaml.safe_load(f)
+
+        if not p1_data:
+            result["error"] = "P1 data file is empty"
+            return result
+
+        # Extract modules and entry points
+        modules = p1_data.get("module_inventory", {}).get("modules", [])
+
+        # P1-DATA-01 FIX: Handle P1's categorized entry point structure
+        # P1 outputs: api_entries[], ui_entries[], system_entries[], hidden_entries[]
+        # P2 needs: flat entry_points[] list
+        entry_point_inventory = p1_data.get("entry_point_inventory", {})
+        entry_points = []
+
+        # Collect from all categorized entry point lists (P1 structure)
+        ENTRY_POINT_CATEGORIES = ["api_entries", "ui_entries", "system_entries", "hidden_entries"]
+        for category in ENTRY_POINT_CATEGORIES:
+            category_entries = entry_point_inventory.get(category, [])
+            if isinstance(category_entries, list):
+                for ep in category_entries:
+                    if isinstance(ep, dict):
+                        # Add source category for traceability
+                        ep["_source_category"] = category
+                        entry_points.append(ep)
+
+        # Fallback: check for flat entry_points[] if categorized structure not found
+        if not entry_points:
+            entry_points = entry_point_inventory.get("entry_points", [])
+
+        # Also check alternative top-level keys
+        if not modules:
+            modules = p1_data.get("modules", [])
+        if not entry_points:
+            entry_points = p1_data.get("entry_points", [])
+
+        # Generate traversal tasks
+        traversal_tasks = []
+        task_seq = 1
+
+        # Module analysis tasks
+        for module in modules:
+            module_id = module.get("id", f"M-{task_seq:03d}")
+            module_name = module.get("name", module.get("path", "Unknown"))
+            priority = "high" if module.get("security_relevant", False) else "medium"
+
+            traversal_tasks.append({
+                "task_id": f"TT-{task_seq:03d}",
+                "type": "module_analysis",
+                "target_id": module_id,
+                "target_name": module_name,
+                "priority": priority,
+                "estimated_complexity": _estimate_complexity(module),
+                "status": "pending",
+            })
+            task_seq += 1
+
+        # Entry point analysis tasks
+        for ep in entry_points:
+            ep_id = ep.get("id", f"EP-{task_seq:03d}")
+            ep_name = ep.get("path", ep.get("name", "Unknown"))
+            # Entry points from external interfaces are higher priority
+            priority = "high" if ep.get("layer", "L1") == "L1" else "medium"
+
+            traversal_tasks.append({
+                "task_id": f"TT-{task_seq:03d}",
+                "type": "entry_point_analysis",
+                "target_id": ep_id,
+                "target_name": ep_name,
+                "priority": priority,
+                "estimated_complexity": _estimate_complexity(ep),
+                "status": "pending",
+            })
+            task_seq += 1
+
+        # Create output structure
+        now = datetime.now().isoformat()
+        output_data = {
+            "schema_version": SCHEMA_VERSION,
+            "session_id": session_id or "default",
+            "generated_at": now,
+            "source_p1": {
+                "total_modules": len(modules),
+                "total_entry_points": len(entry_points),
+                "total_high_risk_paths": sum(1 for t in traversal_tasks if t["priority"] == "high"),
+            },
+            "traversal_tasks": traversal_tasks,
+            "task_summary": {
+                "total_tasks": len(traversal_tasks),
+                "by_type": {
+                    "module_analysis": sum(1 for t in traversal_tasks if t["type"] == "module_analysis"),
+                    "entry_point_analysis": sum(1 for t in traversal_tasks if t["type"] == "entry_point_analysis"),
+                },
+                "by_priority": {
+                    "high": sum(1 for t in traversal_tasks if t["priority"] == "high"),
+                    "medium": sum(1 for t in traversal_tasks if t["priority"] == "medium"),
+                    "low": sum(1 for t in traversal_tasks if t["priority"] == "low"),
+                },
+            },
+        }
+
+        # Write output file
+        output_file = data_dir / "P2_traversal_tasks.yaml"
+        with open(output_file, "w", encoding="utf-8") as f:
+            yaml.dump(output_data, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+        result["status"] = "success"
+        result["tasks_generated"] = len(traversal_tasks)
+        result["output_file"] = str(output_file)
+        result["task_summary"] = output_data["task_summary"]
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    return result
+
+
+def _estimate_complexity(item: Dict) -> int:
+    """Estimate task complexity (1-5) based on item properties."""
+    complexity = 2  # Base complexity
+
+    # Increase for security-relevant items
+    if item.get("security_relevant", False):
+        complexity += 1
+
+    # Increase for multiple entry points
+    entry_points = item.get("entry_points", [])
+    if len(entry_points) > 5:
+        complexity += 1
+    elif len(entry_points) > 2:
+        complexity += 1
+
+    # Increase for external-facing interfaces
+    if item.get("layer") == "L1":
+        complexity += 1
+
+    return min(complexity, 5)
+
+
+def p2_merge_traversal_results(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    P2.T.2: Merge all P2_traverse_{NNN}.yaml files into P2_full_traversal.yaml.
+
+    Collects all sub-agent outputs, deduplicates elements, and creates
+    a unified traversal result.
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with merge result and statistics
+    """
+    result = {
+        "command": "p2_merge_traversal",
+        "status": "error",
+        "source_files": [],
+        "merged_counts": {},
+        "output_file": None,
+    }
+
+    try:
+        # Get data directory
+        data_dir = get_phase_data_dir(project_root, session_id)
+        if not data_dir.exists():
+            result["error"] = f"Data directory not found: {data_dir}"
+            return result
+
+        # Find all P2_traverse_*.yaml files
+        traverse_files = list(data_dir.glob("P2_traverse_*.yaml"))
+        if not traverse_files:
+            result["error"] = "No P2_traverse_*.yaml files found"
+            return result
+
+        result["source_files"] = [str(f) for f in traverse_files]
+
+        # Collect all elements
+        all_interfaces = []
+        all_data_flows = []
+        all_call_flows = []
+        all_data_stores = []
+        deduplication_log = []
+
+        for tf in traverse_files:
+            with open(tf, "r", encoding="utf-8") as f:
+                data = yaml.safe_load(f)
+
+            if not data:
+                continue
+
+            discovered = data.get("discovered_elements", {})
+
+            # Collect elements (will deduplicate later)
+            all_interfaces.extend(discovered.get("interfaces", []))
+            all_data_flows.extend(discovered.get("data_flows", []))
+            all_call_flows.extend(discovered.get("call_flows", []))
+            all_data_stores.extend(discovered.get("data_stores", []))
+
+        # Deduplicate elements by ID
+        interfaces, dup_log = _deduplicate_elements(all_interfaces, "interfaces")
+        deduplication_log.extend(dup_log)
+
+        data_flows, dup_log = _deduplicate_elements(all_data_flows, "data_flows")
+        deduplication_log.extend(dup_log)
+
+        call_flows, dup_log = _deduplicate_elements(all_call_flows, "call_flows")
+        deduplication_log.extend(dup_log)
+
+        data_stores, dup_log = _deduplicate_elements(all_data_stores, "data_stores")
+        deduplication_log.extend(dup_log)
+
+        # Create output structure
+        now = datetime.now().isoformat()
+        output_data = {
+            "schema_version": SCHEMA_VERSION,
+            "session_id": session_id or "default",
+            "merged_at": now,
+            "source_files": [f.name for f in traverse_files],
+            "merged_elements": {
+                "interfaces": interfaces,
+                "data_flows": data_flows,
+                "call_flows": call_flows,
+                "data_stores": data_stores,
+            },
+            "deduplication_log": deduplication_log,
+            "aggregate_metrics": {
+                "total_interfaces": len(interfaces),
+                "total_data_flows": len(data_flows),
+                "total_call_flows": len(call_flows),
+                "total_data_stores": len(data_stores),
+            },
+        }
+
+        # Write output file
+        output_file = data_dir / "P2_full_traversal.yaml"
+        with open(output_file, "w", encoding="utf-8") as f:
+            yaml.dump(output_data, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+        result["status"] = "success"
+        result["merged_counts"] = output_data["aggregate_metrics"]
+        result["output_file"] = str(output_file)
+        result["deduplication_count"] = len(deduplication_log)
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    return result
+
+
+def _deduplicate_elements(elements: List[Dict], element_type: str) -> Tuple[List[Dict], List[Dict]]:
+    """
+    Deduplicate elements by ID, keeping the most complete version.
+
+    Returns:
+        Tuple of (deduplicated_list, deduplication_log)
+    """
+    seen = {}
+    log = []
+
+    for elem in elements:
+        elem_id = elem.get("id")
+        if not elem_id:
+            continue
+
+        if elem_id in seen:
+            # Keep the version with more fields
+            existing = seen[elem_id]
+            if len(elem) > len(existing):
+                log.append({
+                    "original_id": elem_id,
+                    "action": "replaced",
+                    "reason": f"New version has more fields ({len(elem)} vs {len(existing)})",
+                    "element_type": element_type,
+                })
+                seen[elem_id] = elem
+            else:
+                log.append({
+                    "original_id": elem_id,
+                    "action": "kept_existing",
+                    "reason": "Duplicate found, kept existing version",
+                    "element_type": element_type,
+                })
+        else:
+            seen[elem_id] = elem
+
+    return list(seen.values()), log
+
+
+def p2_validate_coverage(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    P2.T.3: Validate 100% coverage and generate coverage report.
+
+    Compares traversal results against P1 enumeration to ensure
+    all modules and entry points have been analyzed.
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with coverage validation result
+    """
+    result = {
+        "command": "p2_validate_coverage",
+        "status": "error",
+        "coverage_metrics": {},
+        "overall_status": "UNKNOWN",
+        "output_file": None,
+    }
+
+    try:
+        # Get data directory
+        data_dir = get_phase_data_dir(project_root, session_id)
+        if not data_dir.exists():
+            result["error"] = f"Data directory not found: {data_dir}"
+            return result
+
+        # Read P1 data for totals
+        p1_file = data_dir / "P1_project_context.yaml"
+        if not p1_file.exists():
+            result["error"] = f"P1 data file not found: {p1_file}"
+            return result
+
+        with open(p1_file, "r", encoding="utf-8") as f:
+            p1_data = yaml.safe_load(f)
+
+        # Read traversal tasks for expected counts
+        tasks_file = data_dir / "P2_traversal_tasks.yaml"
+        if not tasks_file.exists():
+            result["error"] = f"Traversal tasks file not found. Run --p2-extract-tasks first."
+            return result
+
+        with open(tasks_file, "r", encoding="utf-8") as f:
+            tasks_data = yaml.safe_load(f)
+
+        # Read merged traversal results
+        traversal_file = data_dir / "P2_full_traversal.yaml"
+        if not traversal_file.exists():
+            result["error"] = f"Full traversal file not found. Run --p2-merge-traversal first."
+            return result
+
+        with open(traversal_file, "r", encoding="utf-8") as f:
+            traversal_data = yaml.safe_load(f)
+
+        # Also read dfd_elements if exists (from P2.5)
+        dfd_file = data_dir / "P2_dfd_elements.yaml"
+        dfd_data = None
+        if dfd_file.exists():
+            with open(dfd_file, "r", encoding="utf-8") as f:
+                dfd_data = yaml.safe_load(f)
+
+        # Calculate coverage metrics
+        source_p1 = tasks_data.get("source_p1", {})
+        total_modules = source_p1.get("total_modules", 0)
+        total_entry_points = source_p1.get("total_entry_points", 0)
+
+        merged = traversal_data.get("merged_elements", {})
+        traversed_interfaces = len(merged.get("interfaces", []))
+        traversed_data_flows = len(merged.get("data_flows", []))
+        traversed_call_flows = len(merged.get("call_flows", []))
+        traversed_data_stores = len(merged.get("data_stores", []))
+
+        # Check which tasks were completed
+        tasks = tasks_data.get("traversal_tasks", [])
+        completed_modules = sum(1 for t in tasks
+                               if t["type"] == "module_analysis" and t.get("status") == "completed")
+        completed_entry_points = sum(1 for t in tasks
+                                    if t["type"] == "entry_point_analysis" and t.get("status") == "completed")
+
+        # P2-FIX-03: Use actual task completion status, not optimistic estimates
+        # Count tasks by analyzing merged traversal results more precisely
+        if merged:
+            # Count unique module IDs from discovered elements
+            discovered_module_ids = set()
+            for element_list in merged.values():
+                if isinstance(element_list, list):
+                    for elem in element_list:
+                        if isinstance(elem, dict) and elem.get("module_id"):
+                            discovered_module_ids.add(elem["module_id"])
+
+            # Update completion counts based on actual discovery
+            if discovered_module_ids:
+                completed_modules = min(len(discovered_module_ids), total_modules)
+
+            # For entry points, check if we have corresponding data flows
+            discovered_ep_ids = set()
+            for flow in merged.get("data_flows", []):
+                if isinstance(flow, dict) and flow.get("entry_point_id"):
+                    discovered_ep_ids.add(flow["entry_point_id"])
+            if discovered_ep_ids:
+                completed_entry_points = min(len(discovered_ep_ids), total_entry_points)
+
+        # Build coverage metrics
+        coverage_metrics = {
+            "modules": {
+                "analyzed": completed_modules,
+                "total": total_modules,
+                "coverage": completed_modules / total_modules if total_modules > 0 else 1.0,
+                "status": "PASS" if completed_modules >= total_modules else "FAIL",
+            },
+            "entry_points": {
+                "analyzed": completed_entry_points,
+                "total": total_entry_points,
+                "coverage": completed_entry_points / total_entry_points if total_entry_points > 0 else 1.0,
+                "status": "PASS" if completed_entry_points >= total_entry_points else "FAIL",
+            },
+            # P2-FIX-03: Interface coverage should compare against total entry points
+            # since each entry point should have at least one data flow traced
+            "interfaces": {
+                "with_data_flow": traversed_interfaces,
+                "total": max(total_entry_points, traversed_interfaces),  # At minimum, discovered count
+                "coverage": (
+                    traversed_interfaces / total_entry_points
+                    if total_entry_points > 0
+                    else (1.0 if traversed_interfaces > 0 else 0.0)
+                ),
+                "status": "PASS" if traversed_interfaces >= total_entry_points else "FAIL",
+            },
+            # P2-FIX-03: Data stores coverage - count actual vs discovered
+            "data_stores": {
+                "with_access_pattern": traversed_data_stores,
+                "total": max(1, traversed_data_stores),  # At minimum 1 expected
+                "coverage": 1.0 if traversed_data_stores > 0 else 0.0,
+                "status": "PASS" if traversed_data_stores > 0 else "FAIL",
+            },
+        }
+
+        # Determine overall status
+        all_pass = all(m["status"] == "PASS" for m in coverage_metrics.values())
+        overall_status = "PASS" if all_pass else "FAIL"
+
+        # Check iteration count from existing coverage report
+        existing_report = data_dir / "P2_coverage_report.yaml"
+        current_iteration = 1
+        if existing_report.exists():
+            with open(existing_report, "r", encoding="utf-8") as f:
+                existing = yaml.safe_load(f)
+            current_iteration = existing.get("iteration", 0) + 1
+
+        max_iterations = 3
+
+        # P2-GAP-03 fix: Task-based gap identification (identify SPECIFIC uncovered items)
+        gaps = []
+        uncovered_modules = []
+        uncovered_entry_points = []
+
+        # Get P1 module inventory
+        p1_modules = p1_data.get("module_inventory", {}).get("modules", [])
+        p1_entry_points = []
+        ep_inventory = p1_data.get("entry_point_inventory", {})
+        for key in ["api_entries", "ui_entries", "system_entries", "hidden_entries"]:
+            p1_entry_points.extend(ep_inventory.get(key, []))
+
+        # Get covered items from traversal
+        covered_module_ids = set()
+        covered_ep_ids = set()
+
+        # From traversal data - check target_id, module_id, and target (backward compatibility)
+        for task in tasks:
+            if task.get("status") == "completed":
+                if task["type"] == "module_analysis":
+                    mod_id = task.get("target_id") or task.get("module_id") or task.get("target", "")
+                    if mod_id:
+                        covered_module_ids.add(mod_id)
+                elif task["type"] == "entry_point_analysis":
+                    ep_id = task.get("target_id") or task.get("entry_point_id") or task.get("target", "")
+                    if ep_id:
+                        covered_ep_ids.add(ep_id)
+
+        # From merged elements (more reliable)
+        for interface in merged.get("interfaces", []):
+            if interface.get("module_id"):
+                covered_module_ids.add(interface["module_id"])
+            if interface.get("entry_point_id"):
+                covered_ep_ids.add(interface["entry_point_id"])
+
+        # Identify specific uncovered items
+        for module in p1_modules:
+            mod_id = module.get("id", module.get("path", ""))
+            if mod_id and mod_id not in covered_module_ids:
+                uncovered_modules.append({
+                    "id": mod_id,
+                    "name": module.get("name", "Unknown"),
+                    "path": module.get("path", ""),
+                    "security_level": module.get("security_level", "MEDIUM"),
+                })
+
+        for ep in p1_entry_points:
+            ep_id = ep.get("id", "")
+            if ep_id and ep_id not in covered_ep_ids:
+                uncovered_entry_points.append({
+                    "id": ep_id,
+                    "path": ep.get("path", ""),
+                    "type": ep.get("type", "unknown"),
+                    "module": ep.get("module", ""),
+                })
+
+        # Update coverage metrics with actual counts
+        coverage_metrics["modules"]["analyzed"] = len(covered_module_ids)
+        coverage_metrics["modules"]["coverage"] = len(covered_module_ids) / total_modules if total_modules > 0 else 1.0
+        coverage_metrics["modules"]["status"] = "PASS" if len(covered_module_ids) >= total_modules else "FAIL"
+
+        coverage_metrics["entry_points"]["analyzed"] = len(covered_ep_ids)
+        coverage_metrics["entry_points"]["coverage"] = len(covered_ep_ids) / total_entry_points if total_entry_points > 0 else 1.0
+        coverage_metrics["entry_points"]["status"] = "PASS" if len(covered_ep_ids) >= total_entry_points else "FAIL"
+
+        # Build detailed gaps
+        if uncovered_modules:
+            gaps.append({
+                "gap_type": "uncovered_module",
+                "count": len(uncovered_modules),
+                "reason": "Modules not covered by traversal",
+                "items": uncovered_modules[:20],  # Limit to first 20
+                "truncated": len(uncovered_modules) > 20,
+            })
+        if uncovered_entry_points:
+            gaps.append({
+                "gap_type": "uncovered_entry_point",
+                "count": len(uncovered_entry_points),
+                "reason": "Entry points not covered by traversal",
+                "items": uncovered_entry_points[:20],  # Limit to first 20
+                "truncated": len(uncovered_entry_points) > 20,
+            })
+
+        # Check if should halt
+        if current_iteration > max_iterations and overall_status != "PASS":
+            overall_status = "HALTED"
+
+        # Calculate overall coverage percentage (average of all metrics, converted to %)
+        # P2-FIX-02: Add top-level coverage_percentage for p2_final_aggregate compatibility
+        all_coverage_values = [
+            m.get("coverage", 0) for m in coverage_metrics.values() if isinstance(m, dict)
+        ]
+        overall_coverage_pct = (
+            sum(all_coverage_values) / len(all_coverage_values) * 100
+            if all_coverage_values else 0
+        )
+
+        # Build output
+        now = datetime.now().isoformat()
+        output_data = {
+            "schema_version": SCHEMA_VERSION,
+            "session_id": session_id or "default",
+            "validated_at": now,
+            "coverage_percentage": round(overall_coverage_pct, 2),  # P2-FIX-02: Top-level key
+            "coverage_metrics": coverage_metrics,
+            "overall_status": overall_status,
+            # P2-GAP-04: Use both 'iteration' and 'iteration_number' for backward compatibility
+            "iteration": current_iteration,
+            "iteration_number": current_iteration,  # Explicit iteration_number field
+            "max_iterations": max_iterations,
+            "gaps": gaps,
+            "validation_result": {
+                "ready_for_phase_3": overall_status == "PASS",
+                "blocking_issues": [g["gap_type"] for g in gaps] if gaps else [],
+                "warnings": [],
+            },
+        }
+
+        # Write output file
+        output_file = data_dir / "P2_coverage_report.yaml"
+        with open(output_file, "w", encoding="utf-8") as f:
+            yaml.dump(output_data, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+        result["status"] = "success"
+        result["coverage_metrics"] = coverage_metrics
+        result["overall_status"] = overall_status
+        # P2-GAP-04: Include both iteration and iteration_number in result
+        result["iteration"] = current_iteration
+        result["iteration_number"] = current_iteration
+        result["output_file"] = str(output_file)
+        result["ready_for_phase_3"] = output_data["validation_result"]["ready_for_phase_3"]
+
+        if overall_status == "HALTED":
+            result["halt_reason"] = f"Coverage threshold not met after {max_iterations} iterations"
+            result["user_decision_required"] = True
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    return result
+
+
+# P2-GAP-06: Root cause categories for gap analysis
+GAP_ROOT_CAUSES = {
+    "timeout": {
+        "description": "Sub-agent timeout during analysis",
+        "severity": "medium",
+        "remediation": "Retry with increased timeout or split into smaller tasks",
+    },
+    "code_complexity": {
+        "description": "Code too complex for automated analysis",
+        "severity": "high",
+        "remediation": "Manual review required or simplify target scope",
+    },
+    "missing_handler": {
+        "description": "Route/endpoint handler not found in code",
+        "severity": "medium",
+        "remediation": "Check if handler exists in different file or is dynamically generated",
+    },
+    "dynamic_routing": {
+        "description": "Routes are dynamically generated at runtime",
+        "severity": "low",
+        "remediation": "Trace runtime behavior or document as dynamic endpoint",
+    },
+    "external_dependency": {
+        "description": "Module depends on external service not in codebase",
+        "severity": "low",
+        "remediation": "Document as external boundary in DFD",
+    },
+    "incomplete_traversal": {
+        "description": "Traversal started but not completed",
+        "severity": "medium",
+        "remediation": "Resume from last checkpoint or retry",
+    },
+    "unknown": {
+        "description": "Unknown root cause",
+        "severity": "high",
+        "remediation": "Manual investigation required",
+    },
+}
+
+
+def _classify_gap_root_cause(gap: Dict, task: Optional[Dict] = None) -> str:
+    """
+    P2-GAP-06: Classify the root cause of a coverage gap.
+
+    Args:
+        gap: Gap information from coverage validation
+        task: Optional task information that may contain failure details
+
+    Returns:
+        Root cause category key
+    """
+    gap_type = gap.get("gap_type", "")
+    items = gap.get("items", [])
+
+    # Check task status for clues
+    if task:
+        status = task.get("status", "")
+        error = task.get("error", "")
+
+        if "timeout" in error.lower():
+            return "timeout"
+        if "complex" in error.lower() or "too large" in error.lower():
+            return "code_complexity"
+        if status == "in_progress":
+            return "incomplete_traversal"
+
+    # Analyze gap items for patterns
+    for item in items[:5]:  # Check first 5 items
+        path = item.get("path", "")
+        name = item.get("name", "")
+
+        # Dynamic routing indicators
+        if any(kw in path.lower() for kw in ["dynamic", "wildcard", "[", ":"]):
+            return "dynamic_routing"
+
+        # External dependency indicators
+        if any(kw in name.lower() for kw in ["external", "third_party", "sdk", "client"]):
+            return "external_dependency"
+
+        # Missing handler indicators
+        if gap_type == "uncovered_entry_point":
+            return "missing_handler"
+
+    # Default classification based on gap type
+    if gap_type == "uncovered_module":
+        return "code_complexity"
+    elif gap_type == "uncovered_entry_point":
+        return "missing_handler"
+
+    return "unknown"
+
+
+def p2_gap_analysis(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    P2.T.3: Identify gaps and generate remediation tasks.
+
+    Called when coverage < 100% to create supplemental traversal tasks.
+
+    Enhanced with P2-GAP-06: Root cause analysis for gaps.
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with gap analysis, root causes, and remediation tasks
+    """
+    result = {
+        "command": "p2_gap_analysis",
+        "status": "error",
+        "gaps_identified": [],
+        "gap_root_causes": {},  # P2-GAP-06: Root cause summary
+        "remediation_tasks": [],
+        "output_file": None,
+    }
+
+    try:
+        # Get data directory
+        data_dir = get_phase_data_dir(project_root, session_id)
+        if not data_dir.exists():
+            result["error"] = f"Data directory not found: {data_dir}"
+            return result
+
+        # Read coverage report
+        coverage_file = data_dir / "P2_coverage_report.yaml"
+        if not coverage_file.exists():
+            result["error"] = "Coverage report not found. Run --p2-validate-coverage first."
+            return result
+
+        with open(coverage_file, "r", encoding="utf-8") as f:
+            coverage_data = yaml.safe_load(f)
+
+        # Read original traversal tasks
+        tasks_file = data_dir / "P2_traversal_tasks.yaml"
+        if not tasks_file.exists():
+            result["error"] = "Traversal tasks file not found."
+            return result
+
+        with open(tasks_file, "r", encoding="utf-8") as f:
+            tasks_data = yaml.safe_load(f)
+
+        # Read P1 data for module/entry point details
+        p1_file = data_dir / "P1_project_context.yaml"
+        with open(p1_file, "r", encoding="utf-8") as f:
+            p1_data = yaml.safe_load(f)
+
+        # Identify gaps
+        gaps = coverage_data.get("gaps", [])
+        coverage_metrics = coverage_data.get("coverage_metrics", {})
+        # P2-GAP-04: Use consistent iteration_number field name
+        iteration = coverage_data.get("iteration", coverage_data.get("iteration_number", 1))
+
+        # Find incomplete tasks and build task lookup
+        original_tasks = tasks_data.get("traversal_tasks", [])
+        incomplete_tasks = [t for t in original_tasks if t.get("status") != "completed"]
+        task_lookup = {t.get("target_id", ""): t for t in original_tasks}
+
+        # P2-GAP-06: Analyze root causes for all gaps
+        root_cause_summary = {}
+        for gap in gaps:
+            # Find related task if any
+            items = gap.get("items", [])
+            for item in items[:5]:
+                item_id = item.get("id", "")
+                related_task = task_lookup.get(item_id)
+
+                # Classify root cause
+                root_cause = _classify_gap_root_cause(gap, related_task)
+                item["root_cause"] = root_cause
+                item["root_cause_details"] = GAP_ROOT_CAUSES.get(root_cause, GAP_ROOT_CAUSES["unknown"])
+
+                # Aggregate root causes
+                if root_cause not in root_cause_summary:
+                    root_cause_summary[root_cause] = {
+                        "count": 0,
+                        "items": [],
+                        **GAP_ROOT_CAUSES.get(root_cause, GAP_ROOT_CAUSES["unknown"]),
+                    }
+                root_cause_summary[root_cause]["count"] += 1
+                root_cause_summary[root_cause]["items"].append(item_id)
+
+        # Generate remediation tasks with enhanced root cause info
+        remediation_tasks = []
+        gap_seq = 1
+
+        for gap in gaps:
+            gap_type = gap.get("gap_type", "unknown")
+            items = gap.get("items", [])
+
+            # P2-GAP-06: Enhanced remediation task generation based on root cause
+            for item in items:
+                item_id = item.get("id", "")
+                root_cause = item.get("root_cause", "unknown")
+                root_cause_info = GAP_ROOT_CAUSES.get(root_cause, GAP_ROOT_CAUSES["unknown"])
+
+                # Determine task type based on gap type
+                if gap_type == "uncovered_module":
+                    task_type = "module_analysis"
+                elif gap_type == "uncovered_entry_point":
+                    task_type = "entry_point_analysis"
+                else:
+                    task_type = "general_analysis"
+
+                # Adjust priority based on root cause severity
+                severity = root_cause_info.get("severity", "medium")
+                priority = {"high": "critical", "medium": "high", "low": "medium"}.get(severity, "medium")
+
+                remediation_tasks.append({
+                    "task_id": f"TT-GAP-{gap_seq:03d}",
+                    "type": task_type,
+                    "target_id": item_id,
+                    "target_name": item.get("name", item.get("path", "Unknown")),
+                    "priority": priority,
+                    "status": "pending",
+                    "iteration_number": iteration + 1,  # P2-GAP-04: Consistent field name
+                    "root_cause": root_cause,
+                    "remediation_hint": root_cause_info.get("remediation", ""),
+                    "reason": f"Gap remediation: {root_cause_info.get('description', 'Unknown cause')}",
+                })
+                gap_seq += 1
+
+        # Build output
+        now = datetime.now().isoformat()
+        output_data = {
+            "schema_version": SCHEMA_VERSION,
+            "session_id": session_id or "default",
+            "analyzed_at": now,
+            "gaps_identified": gaps,
+            "root_cause_summary": root_cause_summary,  # P2-GAP-06: Root cause analysis
+            "remediation_tasks": remediation_tasks,
+            "iteration_status": {
+                "current": iteration,
+                "iteration_number": iteration,  # P2-GAP-04: Explicit iteration_number
+                "max": 3,
+                "next_action": "dispatch_gap_tasks" if remediation_tasks else "manual_review",
+            },
+        }
+
+        # Write output file
+        output_file = data_dir / "P2_gap_tasks.yaml"
+        with open(output_file, "w", encoding="utf-8") as f:
+            yaml.dump(output_data, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+        result["status"] = "success"
+        result["gaps_identified"] = gaps
+        result["gap_root_causes"] = root_cause_summary
+        result["remediation_tasks"] = remediation_tasks
+        result["remediation_count"] = len(remediation_tasks)
+        result["output_file"] = str(output_file)
+        result["iteration_number"] = iteration + 1  # P2-GAP-04: Consistent field name
+
+        if iteration >= 3:
+            result["warning"] = "This is the final iteration. If gaps persist, workflow will halt."
+            result["halt_recommended"] = True
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    return result
+
+
+# ============================================================================
+# P2 Final Aggregation (P2-GAP-01 fix)
+# ============================================================================
+
+def p2_final_aggregation(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    P2.F: Final aggregation of Critical Track + Full Traversal Track outputs.
+
+    This function merges:
+    - P2_dfd_elements.yaml (Critical Track output from P2.1-P2.5)
+    - P2_full_traversal.yaml (Full Traversal Track output)
+    - P2_coverage_report.yaml (Coverage validation)
+
+    Produces the final P2 output that passes to P3.
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with aggregated P2 results
+    """
+    result = {
+        "command": "p2_final_aggregation",
+        "status": "error",
+        "aggregation_complete": False,
+    }
+
+    try:
+        data_dir = get_phase_data_dir(project_root, session_id)
+        if not data_dir.exists():
+            result["error"] = f"Data directory not found: {data_dir}"
+            return result
+
+        # Load all P2 source files
+        sources = {}
+        source_files = {
+            "critical_track": data_dir / "P2_dfd_elements.yaml",
+            "traversal_results": data_dir / "P2_full_traversal.yaml",
+            "coverage_report": data_dir / "P2_coverage_report.yaml",
+        }
+
+        for source_name, source_file in source_files.items():
+            if source_file.exists():
+                with open(source_file, "r", encoding="utf-8") as f:
+                    sources[source_name] = yaml.safe_load(f)
+
+        # Validate minimum sources
+        if "critical_track" not in sources:
+            result["error"] = "P2_dfd_elements.yaml not found. Complete Critical Track (P2.1-P2.5) first."
+            return result
+
+        # Aggregate data flows
+        critical_data = sources.get("critical_track", {})
+        traversal_data = sources.get("traversal_results", {})
+        coverage_data = sources.get("coverage_report", {})
+
+        # Merge DFD elements
+        aggregated_elements = {
+            "external_interactors": [],
+            "processes": [],
+            "data_stores": [],
+            "data_flows": [],
+            "trust_boundaries": [],
+        }
+
+        # Add from critical track
+        for element_type in aggregated_elements.keys():
+            critical_elements = critical_data.get(element_type, [])
+            if isinstance(critical_elements, list):
+                for elem in critical_elements:
+                    elem["source"] = "critical_track"
+                    aggregated_elements[element_type].append(elem)
+
+        # Add from traversal results (deduplicate by ID)
+        traversal_elements = traversal_data.get("discovered_elements", {})
+        for element_type in aggregated_elements.keys():
+            existing_ids = {e.get("id") for e in aggregated_elements[element_type]}
+            trav_elements = traversal_elements.get(element_type, [])
+            if isinstance(trav_elements, list):
+                for elem in trav_elements:
+                    if elem.get("id") not in existing_ids:
+                        elem["source"] = "traversal_track"
+                        aggregated_elements[element_type].append(elem)
+
+        # Calculate final coverage
+        final_coverage = coverage_data.get("coverage_percentage", 0)
+        if not coverage_data:
+            # Estimate coverage from sources
+            total_modules = critical_data.get("module_count", 0)
+            analyzed_modules = len(set(
+                e.get("module_id") for elements in aggregated_elements.values()
+                for e in elements if e.get("module_id")
+            ))
+            final_coverage = (analyzed_modules / total_modules * 100) if total_modules > 0 else 0
+
+        # Build aggregated output
+        now = datetime.now().isoformat()
+        aggregated_output = {
+            "schema_version": SCHEMA_VERSION,
+            "session_id": session_id or "default",
+            "aggregated_at": now,
+            "sources_merged": list(sources.keys()),
+            "elements": aggregated_elements,
+            "element_counts": {
+                element_type: len(elements)
+                for element_type, elements in aggregated_elements.items()
+            },
+            "coverage": {
+                "final_percentage": round(final_coverage, 2),
+                "is_complete": final_coverage >= 100,
+                "critical_track_contribution": sum(
+                    1 for elements in aggregated_elements.values()
+                    for e in elements if e.get("source") == "critical_track"
+                ),
+                "traversal_track_contribution": sum(
+                    1 for elements in aggregated_elements.values()
+                    for e in elements if e.get("source") == "traversal_track"
+                ),
+            },
+            "iteration_history": traversal_data.get("iteration_history", []),
+            "ready_for_p3": final_coverage >= 100,
+        }
+
+        # Write final aggregated file
+        output_file = data_dir / "P2_final_aggregated.yaml"
+        with open(output_file, "w", encoding="utf-8") as f:
+            yaml.dump(aggregated_output, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+        result["status"] = "success"
+        result["aggregation_complete"] = True
+        result["output_file"] = str(output_file)
+        result["element_counts"] = aggregated_output["element_counts"]
+        result["final_coverage"] = aggregated_output["coverage"]["final_percentage"]
+        result["ready_for_p3"] = aggregated_output["ready_for_p3"]
+
+        if not aggregated_output["ready_for_p3"]:
+            result["warning"] = f"Coverage is {final_coverage:.1f}%. Need 100% before proceeding to P3."
+            result["next_action"] = "p2_gap_analysis"
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    return result
+
+
+# ============================================================================
+# P2 Gap Task Dispatch (P2-GAP-02 fix)
+# ============================================================================
+
+def p2_dispatch_gap_tasks(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    P2.T.4: Dispatch gap remediation tasks for uncovered modules/entry points.
+
+    This function reads P2_gap_tasks.yaml and creates actionable task assignments
+    for Claude to analyze the uncovered components.
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with dispatched tasks and next action
+    """
+    result = {
+        "command": "p2_dispatch_gap_tasks",
+        "status": "error",
+        "tasks_dispatched": 0,
+        "dispatched_tasks": [],
+    }
+
+    try:
+        data_dir = get_phase_data_dir(project_root, session_id)
+        if not data_dir.exists():
+            result["error"] = f"Data directory not found: {data_dir}"
+            return result
+
+        # Load gap analysis results
+        gap_file = data_dir / "P2_gap_tasks.yaml"
+        if not gap_file.exists():
+            result["error"] = "P2_gap_tasks.yaml not found. Run --p2-gap-analysis first."
+            return result
+
+        with open(gap_file, "r", encoding="utf-8") as f:
+            gap_data = yaml.safe_load(f)
+
+        remediation_tasks = gap_data.get("remediation_tasks", [])
+        iteration_status = gap_data.get("iteration_status", {})
+        current_iteration = iteration_status.get("current", 1)
+
+        if not remediation_tasks:
+            result["status"] = "success"
+            result["message"] = "No gap tasks to dispatch. Coverage is complete."
+            result["next_action"] = "p2_final_aggregation"
+            return result
+
+        # Check iteration limit
+        if current_iteration > 3:
+            result["status"] = "error"
+            result["error"] = "Maximum iterations (3) exceeded. Manual intervention required."
+            result["unresolved_tasks"] = remediation_tasks
+            return result
+
+        # Dispatch tasks with priority ordering
+        # Priority: uncovered_module > uncovered_entry_point > incomplete_data_flow
+        priority_order = {
+            "uncovered_module": 1,
+            "uncovered_entry_point": 2,
+            "incomplete_data_flow": 3,
+        }
+
+        sorted_tasks = sorted(
+            remediation_tasks,
+            key=lambda t: priority_order.get(t.get("type", ""), 99)
+        )
+
+        dispatched = []
+        for task in sorted_tasks:
+            dispatch_item = {
+                "task_id": task.get("id", f"TASK-{len(dispatched)+1}"),
+                "type": task.get("type"),
+                "target": task.get("target"),
+                "priority": priority_order.get(task.get("type", ""), 99),
+                "iteration": current_iteration,
+                "instructions": _generate_task_instructions(task),
+                "expected_output": _get_expected_output_format(task),
+            }
+            dispatched.append(dispatch_item)
+
+        # Write dispatched tasks
+        dispatch_output = {
+            "schema_version": SCHEMA_VERSION,
+            "session_id": session_id or "default",
+            "dispatched_at": datetime.now().isoformat(),
+            "iteration": current_iteration,
+            "tasks": dispatched,
+            "total_tasks": len(dispatched),
+            "next_action": "execute_tasks_then_merge",
+        }
+
+        output_file = data_dir / "P2_dispatched_tasks.yaml"
+        with open(output_file, "w", encoding="utf-8") as f:
+            yaml.dump(dispatch_output, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+        result["status"] = "success"
+        result["tasks_dispatched"] = len(dispatched)
+        result["dispatched_tasks"] = dispatched
+        result["output_file"] = str(output_file)
+        result["iteration"] = current_iteration
+        result["next_action"] = "Claude should analyze each task and update P2_full_traversal.yaml"
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    return result
+
+
+def _generate_task_instructions(task: Dict) -> str:
+    """Generate human-readable instructions for a gap task."""
+    task_type = task.get("type", "unknown")
+    target = task.get("target", "unknown")
+
+    if task_type == "uncovered_module":
+        return f"""Analyze module '{target}':
+1. Read all source files in the module directory
+2. Identify all entry points (API endpoints, handlers, etc.)
+3. Trace data flows within the module
+4. Document data stores accessed
+5. Identify trust boundary crossings
+Output: Add discovered elements to P2_full_traversal.yaml"""
+
+    elif task_type == "uncovered_entry_point":
+        return f"""Analyze entry point '{target}':
+1. Locate the entry point handler
+2. Trace the data flow from input to output
+3. Identify all processes and data stores involved
+4. Document any external system interactions
+Output: Add data flow to P2_full_traversal.yaml"""
+
+    elif task_type == "incomplete_data_flow":
+        return f"""Complete data flow for '{target}':
+1. Find the incomplete data flow
+2. Trace to termination (data store, external system, or response)
+3. Document all intermediate processes
+Output: Update the data flow in P2_full_traversal.yaml"""
+
+    else:
+        return f"Analyze '{target}' and document findings"
+
+
+def _get_expected_output_format(task: Dict) -> Dict:
+    """Get expected output format for a gap task."""
+    task_type = task.get("type", "unknown")
+
+    if task_type == "uncovered_module":
+        return {
+            "processes": [{"id": "P-xxx", "name": "...", "module_id": "..."}],
+            "data_flows": [{"id": "DF-xxx", "source": "...", "target": "..."}],
+            "data_stores": [{"id": "DS-xxx", "name": "...", "type": "..."}],
+        }
+    elif task_type == "uncovered_entry_point":
+        return {
+            "data_flows": [{"id": "DF-xxx", "source": "EI-xxx", "target": "P-xxx"}],
+        }
+    elif task_type == "incomplete_data_flow":
+        return {
+            "updated_data_flow": {"id": "DF-xxx", "complete": True, "termination": "..."},
+        }
+    else:
+        return {"elements": []}
+
+
+# ============================================================================
+# P1.1 Conditional Execution Check (P1-GAP-05 fix)
+# ============================================================================
+
+def p1_check_doc_analysis_required(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    P1.1: Check if documentation analysis is required based on quality_grade.
+
+    Decision Gate:
+    - quality_grade == "none" (score < 10): Skip P1.1
+    - quality_grade == "low" (score 10-39): Execute P1.1 (README only)
+    - quality_grade == "medium" (score 40-69): Execute P1.1 (standard)
+    - quality_grade == "high" (score >= 70): Execute P1.1 (full)
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with decision and reasoning
+    """
+    result = {
+        "command": "p1_check_doc_analysis",
+        "status": "success",
+        "p1_1_required": False,
+        "quality_grade": "none",
+        "quality_score": 0,
+        "analysis_scope": None,
+        "reasoning": None,
+    }
+
+    try:
+        # Get data directory
+        data_dir = get_phase_data_dir(project_root, session_id)
+
+        # Check for P1_static_discovery.yaml which contains documentation analysis
+        static_discovery_file = data_dir / "P1_static_discovery.yaml"
+        if not static_discovery_file.exists():
+            result["error"] = "P1_static_discovery.yaml not found. Run module_discovery.py --p1-discovery first."
+            result["status"] = "error"
+            return result
+
+        with open(static_discovery_file, "r", encoding="utf-8") as f:
+            static_data = yaml.safe_load(f)
+
+        # Extract documentation quality info
+        documentation = static_data.get("documentation", {})
+        quality_grade = documentation.get("quality_grade", "none")
+        quality_score = documentation.get("quality_score", 0)
+
+        result["quality_grade"] = quality_grade
+        result["quality_score"] = quality_score
+
+        # Decision logic
+        if quality_grade == "none" or quality_score < 10:
+            result["p1_1_required"] = False
+            result["analysis_scope"] = None
+            result["reasoning"] = "Documentation quality is too low (score < 10). Skip P1.1 and proceed to P1.2."
+        elif quality_grade == "low" or quality_score < 40:
+            result["p1_1_required"] = True
+            result["analysis_scope"] = "readme_only"
+            result["reasoning"] = "Low documentation quality (score 10-39). Execute P1.1 with README focus only."
+        elif quality_grade == "medium" or quality_score < 70:
+            result["p1_1_required"] = True
+            result["analysis_scope"] = "standard"
+            result["reasoning"] = "Medium documentation quality (score 40-69). Execute P1.1 with standard scope."
+        else:
+            result["p1_1_required"] = True
+            result["analysis_scope"] = "full"
+            result["reasoning"] = "High documentation quality (score >= 70). Execute P1.1 with full scope."
+
+        # Add doc priority list if analysis required
+        if result["p1_1_required"]:
+            result["doc_priority_order"] = documentation.get("doc_priority_order", [])[:10]
+
+    except Exception as e:
+        result["status"] = "error"
+        result["error"] = str(e)
+
+    return result
+
+
+# ============================================================================
+# P1 Three-Source Alignment
+# ============================================================================
+
+def p1_source_alignment(project_root: str, session_id: Optional[str] = None) -> Dict:
+    """
+    P1.4: Validate three-source alignment for P1 discovery.
+
+    Compares three sources:
+      - Source A: Static Discovery (P1_static_discovery.yaml from module_discovery.py --p1-discovery)
+      - Source B: Doc Inventory (documentation from module_discovery.py --doc-analysis)
+      - Source C: LLM Synthesis (P1_project_context.yaml)
+
+    Generates alignment report with:
+      - Items found in all three sources (high confidence)
+      - Items found in only two sources (medium confidence, review required)
+      - Items found in only one source (low confidence, investigation required)
+
+    Args:
+        project_root: Project root directory
+        session_id: Optional session ID
+
+    Returns:
+        Dict with alignment analysis and coverage confidence
+    """
+    result = {
+        "command": "p1_source_alignment",
+        "status": "error",
+        "alignment_score": 0.0,
+        "sources_found": [],
+        "alignment_report": None,
+    }
+
+    try:
+        # Get data directory
+        data_dir = get_phase_data_dir(project_root, session_id)
+        if not data_dir.exists():
+            result["error"] = f"Data directory not found: {data_dir}"
+            return result
+
+        # Source A: P1_static_discovery.yaml (from module_discovery.py --p1-discovery --output-yaml)
+        static_discovery_file = data_dir / "P1_static_discovery.yaml"
+        static_data = None
+        if static_discovery_file.exists():
+            with open(static_discovery_file, "r", encoding="utf-8") as f:
+                static_data = yaml.safe_load(f)
+            result["sources_found"].append("static_discovery")
+
+        # Source B: Extract doc info from P1_project_context.yaml documentation section
+        # or from P1_doc_inventory.yaml if separate
+        doc_inventory_file = data_dir / "P1_doc_inventory.yaml"
+        doc_data = None
+        if doc_inventory_file.exists():
+            with open(doc_inventory_file, "r", encoding="utf-8") as f:
+                doc_data = yaml.safe_load(f)
+            result["sources_found"].append("doc_inventory")
+
+        # Source C: P1_project_context.yaml (LLM synthesis)
+        p1_file = data_dir / "P1_project_context.yaml"
+        llm_data = None
+        if p1_file.exists():
+            with open(p1_file, "r", encoding="utf-8") as f:
+                llm_data = yaml.safe_load(f)
+            result["sources_found"].append("llm_synthesis")
+
+        # Check minimum sources
+        sources_count = len(result["sources_found"])
+        if sources_count < 2:
+            result["error"] = f"Insufficient sources for alignment. Found: {result['sources_found']}. Need at least 2."
+            result["recommendation"] = "Run module_discovery.py --p1-discovery --output-yaml first"
+            return result
+
+        # Extract comparable items from each source
+        alignment_items = {
+            "entry_points": {"source_a": set(), "source_b": set(), "source_c": set()},
+            "modules": {"source_a": set(), "source_b": set(), "source_c": set()},
+            "frameworks": {"source_a": set(), "source_b": set(), "source_c": set()},
+            "api_routes": {"source_a": set(), "source_b": set(), "source_c": set()},
+        }
+
+        # Extract from Source A (static discovery)
+        if static_data:
+            p1_discovery = static_data.get("p1_discovery", static_data)
+
+            # Extract routes
+            layer1_routes = p1_discovery.get("layer1_deterministic", {}).get("routes", {})
+            for route in layer1_routes.get("discoveries", []):
+                alignment_items["api_routes"]["source_a"].add(route.get("path", ""))
+
+            # Extract frameworks
+            summary = p1_discovery.get("summary", {})
+            for fw in summary.get("frameworks_detected", []):
+                alignment_items["frameworks"]["source_a"].add(fw)
+
+            # Extract directories as module indicators
+            layer2_dirs = p1_discovery.get("layer2_heuristic", {}).get("directories", {})
+            for disc in layer2_dirs.get("discoveries", []):
+                alignment_items["modules"]["source_a"].add(disc.get("directory", ""))
+
+        # Extract from Source B (doc inventory)
+        if doc_data:
+            doc_info = doc_data.get("documentation", doc_data)
+
+            # Extract API docs
+            api_docs = doc_info.get("files", {}).get("api_docs", [])
+            for api_doc in api_docs:
+                if isinstance(api_doc, str):
+                    alignment_items["api_routes"]["source_b"].add(api_doc)
+
+        # Extract from Source C (LLM synthesis)
+        if llm_data:
+            # Entry points
+            ep_inventory = llm_data.get("entry_point_inventory", {})
+            for ep in ep_inventory.get("entry_points", []):
+                ep_path = ep.get("path", ep.get("name", ""))
+                if ep_path:
+                    alignment_items["entry_points"]["source_c"].add(ep_path)
+
+            # Modules
+            mod_inventory = llm_data.get("module_inventory", {})
+            for mod in mod_inventory.get("modules", []):
+                mod_path = mod.get("path", mod.get("name", ""))
+                if mod_path:
+                    alignment_items["modules"]["source_c"].add(mod_path)
+
+            # Frameworks from tech stack
+            tech_stack = llm_data.get("tech_stack", {})
+            frameworks = tech_stack.get("frameworks", [])
+            for fw in frameworks:
+                if isinstance(fw, str):
+                    alignment_items["frameworks"]["source_c"].add(fw)
+                elif isinstance(fw, dict):
+                    alignment_items["frameworks"]["source_c"].add(fw.get("name", ""))
+
+        # Calculate alignment for each category
+        alignment_analysis = {}
+        total_score = 0.0
+        category_count = 0
+
+        for category, sources in alignment_items.items():
+            a = sources["source_a"]
+            b = sources["source_b"]
+            c = sources["source_c"]
+
+            # Union of all items
+            all_items = a | b | c
+            if not all_items:
+                continue
+
+            # Items in all three
+            in_all_three = a & b & c
+            # Items in exactly two
+            in_two_ab = (a & b) - c
+            in_two_ac = (a & c) - b
+            in_two_bc = (b & c) - a
+            in_two = in_two_ab | in_two_ac | in_two_bc
+            # Items in only one
+            only_a = a - b - c
+            only_b = b - a - c
+            only_c = c - a - b
+
+            # Calculate category score
+            # 3-source items: 1.0, 2-source items: 0.7, 1-source items: 0.3
+            if all_items:
+                weighted_score = (
+                    len(in_all_three) * 1.0 +
+                    len(in_two) * 0.7 +
+                    len(only_a | only_b | only_c) * 0.3
+                ) / len(all_items)
+            else:
+                weighted_score = 0.0
+
+            total_score += weighted_score
+            category_count += 1
+
+            alignment_analysis[category] = {
+                "total_items": len(all_items),
+                "in_all_three_sources": list(in_all_three)[:20],
+                "in_two_sources": list(in_two)[:20],
+                "only_in_static": list(only_a)[:10],
+                "only_in_docs": list(only_b)[:10],
+                "only_in_llm": list(only_c)[:10],
+                "category_score": round(weighted_score, 3),
+                "needs_review": len(only_a) + len(only_b) + len(only_c) > 0,
+            }
+
+        # Overall alignment score
+        overall_score = total_score / category_count if category_count > 0 else 0.0
+
+        # Build alignment report
+        now = datetime.now().isoformat()
+        alignment_report = {
+            "schema_version": SCHEMA_VERSION,
+            "session_id": session_id or "default",
+            "analyzed_at": now,
+            "sources_analyzed": result["sources_found"],
+            "overall_alignment_score": round(overall_score, 3),
+            "alignment_by_category": alignment_analysis,
+            "recommendation": (
+                "HIGH_CONFIDENCE" if overall_score >= 0.85
+                else "MEDIUM_CONFIDENCE_REVIEW_RECOMMENDED" if overall_score >= 0.70
+                else "LOW_CONFIDENCE_INVESTIGATION_REQUIRED"
+            ),
+        }
+
+        # Write alignment report
+        output_file = data_dir / "P1_source_alignment.yaml"
+        with open(output_file, "w", encoding="utf-8") as f:
+            yaml.dump(alignment_report, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+        result["status"] = "success"
+        result["alignment_score"] = round(overall_score, 3)
+        result["alignment_report"] = alignment_report
+        result["output_file"] = str(output_file)
+
+        if overall_score < 0.70:
+            result["warning"] = "Low alignment score. Review single-source items before proceeding."
+
+    except Exception as e:
+        result["error"] = str(e)
+
+    return result
+
+
+# ============================================================================
 # Main CLI
 # ============================================================================
 
@@ -4172,6 +7132,15 @@ Examples:
 
     # Cross-phase aggregation
     python phase_data.py --aggregate --phases 1,2,5 --format summary --root /path/to/project
+
+    # P2 Full Traversal Enhancement
+    python phase_data.py --p2-extract-tasks --root /path/to/project
+    python phase_data.py --p2-merge-traversal --root /path/to/project
+    python phase_data.py --p2-validate-coverage --root /path/to/project
+    python phase_data.py --p2-gap-analysis --root /path/to/project
+
+    # P1 Three-Source Alignment
+    python phase_data.py --p1-source-alignment --root /path/to/project
         """
     )
 
@@ -4266,6 +7235,79 @@ Examples:
         "--phase-end",
         action="store_true",
         help="Execute Phase End Protocol: extract + validate + summary for phase handoff"
+    )
+
+    # P2 Full Traversal Commands
+    mode_group.add_argument(
+        "--p2-extract-tasks",
+        action="store_true",
+        help="P2.0: Extract traversal tasks from P1 data for sub-agent dispatch"
+    )
+    mode_group.add_argument(
+        "--p2-merge-traversal",
+        action="store_true",
+        help="P2.T.2: Merge all P2_traverse_{NNN}.yaml files into P2_full_traversal.yaml"
+    )
+    mode_group.add_argument(
+        "--p2-validate-coverage",
+        action="store_true",
+        help="P2.T.3: Validate 100%% coverage and generate coverage report"
+    )
+    mode_group.add_argument(
+        "--p2-gap-analysis",
+        action="store_true",
+        help="P2.T.3: Identify gaps and generate remediation tasks (called when coverage < 100%%)"
+    )
+    mode_group.add_argument(
+        "--p2-final-aggregation",
+        action="store_true",
+        help="P2.F: Final aggregation of Critical Track + Full Traversal Track outputs"
+    )
+    mode_group.add_argument(
+        "--p2-dispatch-gap-tasks",
+        action="store_true",
+        help="P2.T.3b: Dispatch gap remediation tasks to sub-agents"
+    )
+
+    # P1 Source Alignment Command
+    mode_group.add_argument(
+        "--p1-source-alignment",
+        action="store_true",
+        help="P1.4: Validate three-source alignment (Static Discovery, Doc Inventory, LLM Synthesis)"
+    )
+
+    # P1.1 Conditional Execution Check (P1-GAP-05 fix)
+    mode_group.add_argument(
+        "--p1-check-doc-analysis",
+        action="store_true",
+        help="P1.1: Check if documentation analysis is required based on quality_grade"
+    )
+
+    # End-to-End Coverage Verification Commands
+    mode_group.add_argument(
+        "--verify-p4-coverage",
+        action="store_true",
+        help="Verify P4 coverage of P1 modules and P2 data flows"
+    )
+    mode_group.add_argument(
+        "--verify-p5-coverage",
+        action="store_true",
+        help="Verify P5 STRIDE coverage of ALL P2 DFD elements"
+    )
+    mode_group.add_argument(
+        "--verify-p6-coverage",
+        action="store_true",
+        help="Verify P6 coverage of ALL P1-P5 findings with count conservation"
+    )
+    mode_group.add_argument(
+        "--verify-p8-coverage",
+        action="store_true",
+        help="Verify P8 penetration test coverage of P6 attack paths/chains"
+    )
+    mode_group.add_argument(
+        "--verify-all-coverage",
+        action="store_true",
+        help="Execute all end-to-end coverage verifications"
     )
 
     # Common arguments
@@ -4478,6 +7520,47 @@ Examples:
             markdown_file=args.file,
             session_id=args.session_id
         )
+
+    # P2 Full Traversal Commands
+    elif args.p2_extract_tasks:
+        result = p2_extract_traversal_tasks(args.root, session_id=args.session_id)
+
+    elif args.p2_merge_traversal:
+        result = p2_merge_traversal_results(args.root, session_id=args.session_id)
+
+    elif args.p2_validate_coverage:
+        result = p2_validate_coverage(args.root, session_id=args.session_id)
+
+    elif args.p2_gap_analysis:
+        result = p2_gap_analysis(args.root, session_id=args.session_id)
+
+    elif args.p2_final_aggregation:
+        result = p2_final_aggregation(args.root, session_id=args.session_id)
+
+    elif args.p2_dispatch_gap_tasks:
+        result = p2_dispatch_gap_tasks(args.root, session_id=args.session_id)
+
+    elif args.p1_source_alignment:
+        result = p1_source_alignment(args.root, session_id=args.session_id)
+
+    elif args.p1_check_doc_analysis:
+        result = p1_check_doc_analysis_required(args.root, session_id=args.session_id)
+
+    # End-to-End Coverage Verification Commands
+    elif args.verify_p4_coverage:
+        result = verify_p4_coverage(args.root, session_id=args.session_id)
+
+    elif args.verify_p5_coverage:
+        result = verify_p5_element_coverage(args.root, session_id=args.session_id)
+
+    elif args.verify_p6_coverage:
+        result = verify_p6_findings_coverage(args.root, session_id=args.session_id)
+
+    elif args.verify_p8_coverage:
+        result = verify_p8_attack_coverage(args.root, session_id=args.session_id)
+
+    elif args.verify_all_coverage:
+        result = verify_all_coverage(args.root, session_id=args.session_id)
 
     # Output JSON
     if result:
