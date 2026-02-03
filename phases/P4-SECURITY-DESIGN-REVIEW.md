@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 4: Security Design Review
 
@@ -10,96 +10,96 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: You MUST complete the following four stages in sequence and **output the result of each stage**. Skipping any stage will degrade analysis quality!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🧠 THINKING - Phase 4 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Purpose**: 深度理解后再行动，防止基于不完整理解的仓促行动。
+**Purpose**: Understand deeply before acting. Prevent hasty actions based on incomplete understanding.
 
-**⚠️ 你必须输出以下格式的 THINKING 结果：**
+**⚠️ You MUST output THINKING results in the following format:**
 
 ```
 🧠 THINKING - P4 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📌 CORE PROBLEM
-评估项目在16个安全域的设计成熟度，识别安全控制缺口
+Evaluate project's design maturity across 16 security domains, identify security control gaps
 
-📊 UPSTREAM DATA (从 P1-P3 YAML 读取)
-| 指标 | 值 | 来源 |
-|------|-----|------|
-| P1模块总数 | {实际值} | P1_project_context.yaml → module_inventory.summary.total_modules |
-| P2数据流总数 | {实际值} | P2_dfd_elements.yaml → data_flow_traces.summary.total_flows |
-| P2数据存储数 | {实际值} | P2_dfd_elements.yaml → data_store_inventory.summary.total_data_stores |
-| P3边界数量 | {实际值} | P3_boundary_context.yaml → boundary_context.boundaries 长度 |
-| Tech stack | {实际值} | P1_project_context.yaml → project_context.tech_stack |
+📊 UPSTREAM DATA (Read from P1-P3 YAML)
+| Metric | Value | Source |
+|--------|-------|--------|
+| P1 Total Modules | {actual_value} | P1_project_context.yaml → module_inventory.summary.total_modules |
+| P2 Total Data Flows | {actual_value} | P2_dfd_elements.yaml → data_flow_traces.summary.total_flows |
+| P2 Data Store Count | {actual_value} | P2_dfd_elements.yaml → data_store_inventory.summary.total_data_stores |
+| P3 Boundary Count | {actual_value} | P3_boundary_context.yaml → boundary_context.boundaries length |
+| Tech stack | {actual_value} | P1_project_context.yaml → project_context.tech_stack |
 
 ❓ UNKNOWNS
-- 需要通过代码审查确认的安全控制
-- 需要KB查询确认的最佳实践
+- Security controls to be confirmed through code review
+- Best practices to be confirmed through KB queries
 
 ⚠️ RISKS
-- 域评估不完整 (16个域未全部覆盖)
-- Gap与Module/Flow的追溯链缺失
-- 扩展域触发检测遗漏
+- Incomplete domain assessment (not all 16 domains covered)
+- Missing traceability chain between Gap and Module/Flow
+- Extended domain trigger detection missed
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⛔ STOP CHECK
-- P1 YAML 已读取? [YES/NO]
-- P2 YAML 已读取? [YES/NO]
-- P3 YAML 已读取? [YES/NO]
-- 上游数据完整? [YES/NO]
-- 可以继续PLANNING? [YES/NO]
+- P1 YAML read? [YES/NO]
+- P2 YAML read? [YES/NO]
+- P3 YAML read? [YES/NO]
+- Upstream data complete? [YES/NO]
+- Ready to continue PLANNING? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取上游数据再继续
+⛔ **STOP CONDITION**: If any STOP CHECK = NO → Read upstream data first before continuing
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 📋 PLANNING - Sub-task Decomposition
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Step 1: 读取上游数据** (BLOCKING - 必须执行)
+**Step 1: Read Upstream Data** (BLOCKING - MUST execute)
 ```bash
-# 读取P1-P3 YAML数据 (选择其一)
+# Read P1-P3 YAML data (choose one method)
 python scripts/phase_data.py --aggregate --phases 1,2,3 --format summary --root .
 
-# 或直接读取
+# Or read directly
 cat .phase_working/{SESSION_ID}/data/P1_project_context.yaml
 cat .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml
 cat .phase_working/{SESSION_ID}/data/P3_boundary_context.yaml
 ```
-⛔ 如果任何文件不存在或无效 → STOP并返回完成上游Phase
+⛔ If any file does not exist or is invalid → STOP and return to complete upstream Phase
 
-**Step 2: 输出子任务表格** (MANDATORY)
+**Step 2: Output Sub-task Table** (MANDATORY)
 
-**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+**⚠️ You MUST output PLANNING results in the following format:**
 
 ```
 📋 PLANNING - P4 Sub-tasks
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| # | 子任务 | 预期输出 |
-|---|--------|----------|
-| T1 | 读取P1-P3数据，提取模块/流/边界清单 | 数据结构 |
-| T2 | 评估10个核心安全域 (AUTHN→DATA) | 域评估矩阵 |
-| T3 | 检测扩展域触发条件 (ext-11→ext-16) | 触发检测 |
-| T4 | 评估已触发的扩展域 | 扩展域评估 |
-| T5 | 生成Gap清单 (GAP-xxx) | Gap清单 |
-| T6 | 写入P4_security_gaps.yaml | PRIMARY输出 |
-| T7 | 写入P4-SECURITY-REVIEW.md | SECONDARY输出 |
+| # | Sub-task | Expected Output |
+|---|----------|-----------------|
+| T1 | Read P1-P3 data, extract module/flow/boundary inventory | Data structures |
+| T2 | Assess 10 core security domains (AUTHN→DATA) | Domain assessment matrix |
+| T3 | Detect extended domain trigger conditions (ext-11→ext-16) | Trigger detection results |
+| T4 | Assess triggered extended domains | Extended domain assessment |
+| T5 | Generate Gap inventory (GAP-xxx) | Gap inventory |
+| T6 | Write P4_security_gaps.yaml | PRIMARY output |
+| T7 | Write P4-SECURITY-REVIEW.md | SECONDARY output |
 
 ⛔ PLANNING CHECK
-- 子任务已分解? [YES/NO]
-- 准备创建 TaskCreate? [YES/NO]
+- Sub-tasks decomposed? [YES/NO]
+- Ready to TaskCreate? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
 
-⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+⚠️ BEFORE starting any implementation, you MUST execute `TaskCreate` to create ALL sub-tasks!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### ⚡ EXECUTION LOOP
@@ -107,42 +107,42 @@ cat .phase_working/{SESSION_ID}/data/P3_boundary_context.yaml
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
-2. 实施子任务
-3. 验证: 输出是否符合预期？
-4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
-5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+2. Execute sub-task
+3. Verify: Does output meet expectations?
+4. If verification passes: `TaskUpdate(status: "completed")` → proceed to next
+5. If verification fails: Diagnose → Fix → Retry (max 3x) → If still failing: CHECKPOINT to request user decision
 
-**输出顺序** (CRITICAL):
-1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P4_security_gaps.yaml`
-2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P4-SECURITY-REVIEW.md`
+**Output Sequence** (CRITICAL):
+1. **Write YAML FIRST**: `.phase_working/{SESSION_ID}/data/P4_security_gaps.yaml`
+2. **Write MD SECOND**: `.phase_working/{SESSION_ID}/reports/P4-SECURITY-REVIEW.md`
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🔍 REFLECTION - Completion Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
+**⚠️ After completing EXECUTION, you MUST output REFLECTION results in the following format:**
 
 ```
 🔍 REFLECTION - P4 Completion Check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| 检查项 | 状态 |
-|--------|------|
-| 所有子任务已完成? (TaskList check) | [✅/❌] |
-| P4_security_gaps.yaml 存在且有效? | [✅/❌] |
-| design_matrix 包含全部16个域? | [✅/❌] |
-| 每个Gap有唯一ID (GAP-xxx)? | [✅/❌] |
-| coverage_verification 显示100%覆盖? | [✅/❌] |
-| input_ref 字段指向 P3_boundary_context.yaml? | [✅/❌] |
-| Hook验证通过 (exit 0)? | [✅/❌] |
+| Check Item | Status |
+|------------|--------|
+| All sub-tasks completed? (TaskList check) | [✅/❌] |
+| P4_security_gaps.yaml exists and valid? | [✅/❌] |
+| design_matrix contains all 16 domains? | [✅/❌] |
+| Every Gap has unique ID (GAP-xxx)? | [✅/❌] |
+| coverage_verification shows 100% coverage? | [✅/❌] |
+| input_ref field points to P3_boundary_context.yaml? | [✅/❌] |
+| Hook validation passed (exit 0)? | [✅/❌] |
 
 ⛔ COMPLETION GATE
-- 所有检查通过? [YES/NO]
-- 可以进入P5? [YES/NO]
+- All checks passed? [YES/NO]
+- Ready to proceed to P5? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ 任何检查失败 → 修复并重新验证，直到全部通过
+⛔ If ANY check fails → Fix and re-verify until ALL pass
 
 ---
 

@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.1 (20260203a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 ---
 name: threat-modeling
@@ -13,7 +13,7 @@ description: |
   Each phase requires validation (exit 0) before proceeding to next.
   Data flows via YAML files, reports are Markdown (separate concerns).
 
-  Use when: threat model, security assessment, risk assessment, penetration test, compliance, 威胁建模, 安全评估, 渗透测试, 合规检查.
+  Use when: threat model, security assessment, risk assessment, penetration test, security analysis, security audit, security check, 威胁建模, 安全评估, 渗透测试, 安全分析, 安全审计, 安全检查.
 
   Flags:
     --debug    Enable debug mode, publish internal YAML data files and evaluation reports
@@ -43,27 +43,27 @@ AI-native automated software risk analysis skill. LLM-driven, Code-First approac
 
 ## ⚠️ Version Management Rules (STRICT)
 
-> **CRITICAL**: 未经用户明确授权，禁止变更主版本号 X.Y.Z！
+> **CRITICAL**: Modifying the major version X.Y.Z without explicit user approval is FORBIDDEN!
 
 ### Version Format
 
 ```
 vX.Y.Z (YYYYMMDDx)
  │ │ │     │    │
- │ │ │     │    └── 日期子版本 (a, b, c...) - 可自动更新
- │ │ │     └─────── 日期 (YYYYMMDD) - 可自动更新
- │ │ └───────────── Patch - 需用户确认
- │ └─────────────── Minor - 需用户确认
- └───────────────── Major - 需用户明确批准
+ │ │ │     │    └── Date suffix (a, b, c...) - Auto-update allowed
+ │ │ │     └─────── Date (YYYYMMDD) - Auto-update allowed
+ │ │ └───────────── Patch - Requires user confirmation
+ │ └─────────────── Minor - Requires user confirmation
+ └───────────────── Major - Requires explicit user approval
 ```
 
 ### Change Rules
 
 | Version Part | Auto-Change Allowed | Example |
 |--------------|---------------------|---------|
-| 日期子版本 (x) | ✅ Yes | `(20260202a)` → `(20260131b)` |
-| 日期 (YYYYMMDD) | ✅ Yes | `(20260202a)` → `(20260202a)` |
-| X.Y.Z | ❌ **NO** - 需用户明确授权 | `3.0.1` → `3.0.2` or `3.1.0` |
+| Date suffix (x) | ✅ Yes | `(20260202a)` → `(20260131b)` |
+| Date (YYYYMMDD) | ✅ Yes | `(20260202a)` → `(20260202a)` |
+| X.Y.Z | ❌ **NO** - Requires explicit user approval | `3.0.1` → `3.0.2` or `3.1.0` |
 
 ### Current Version
 
@@ -93,7 +93,7 @@ vX.Y.Z (YYYYMMDDx)
 
 ## ⚠️ CRITICAL: Data vs Report Separation
 
-> **PRINCIPLE**: Markdown 是报告（人读），YAML 是数据（机器读）。两者必须分离！
+> **PRINCIPLE**: Markdown is for reports (human-readable), YAML is for data (machine-readable). They MUST be separated!
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -228,8 +228,8 @@ FOR each phase N in [1..8]:
     ├── P6-RISK-VALIDATION.md
     ├── EVALUATION-REPORT.md                   ← DEBUG ONLY
     └── .phase_working/                        ← DEBUG ONLY
-        ├── _sessions_index.yaml               ← 多 session 索引 (可选)
-        └── {SESSION_ID}/                      ← Session 隔离目录
+        ├── _sessions_index.yaml               ← Multi-session index (optional)
+        └── {SESSION_ID}/                      ← Session isolated directory
             ├── _session_meta.yaml             ← Session state
             ├── data/                          ← STRUCTURED DATA
             │   ├── P1_project_context.yaml
@@ -499,15 +499,15 @@ Per Phase:
 
 ## §10 Core Execution Constraints (Invariants)
 
-> **PRINCIPLE**: 威胁建模的质量取决于执行的严谨性。以下约束不可违反。
+> **PRINCIPLE**: The quality of threat modeling depends on execution rigor. The following constraints are INVIOLABLE.
 
 ### Three Absolute Prohibitions
 
-| 约束 | 描述 | 违反后果 |
-|------|------|----------|
-| ❌ NO MOCK DATA | 所有分析必须基于真实代码证据 | 分析结果无效 |
-| ❌ NO SIMPLIFIED IMPLEMENTATIONS | 每个阶段必须完整执行 | 覆盖率不达标 |
-| ❌ NO BYPASSING PROBLEMS | 遇到问题必须诊断根因 | 数据链断裂 |
+| Constraint | Description | Violation Consequence |
+|------------|-------------|----------------------|
+| ❌ NO MOCK DATA | All analysis must be based on real code evidence | Analysis results invalid |
+| ❌ NO SIMPLIFIED IMPLEMENTATIONS | Each phase must be fully executed | Coverage requirements not met |
+| ❌ NO BYPASSING PROBLEMS | Must diagnose root cause when blocked | Data chain broken |
 
 ### Phase Execution Invariant
 
@@ -525,15 +525,15 @@ Per Phase:
 
 ## §11 Phase Isolation Constraints
 
-> **INVARIANT**: 每个 Phase 是独立的执行单元，FSM 状态转换必须严格顺序。
+> **INVARIANT**: Each Phase is an independent execution unit. FSM state transitions MUST follow strict sequential order.
 
 ### Forbidden State Transitions
 
-| 非法转换 | 原因 |
-|----------|------|
-| Pn → Pn+2 (跳过) | 违反 FSM 顺序不变性 (S1) |
-| Pn → Pn+1 (未验证) | 违反数据契约完整性 (S2) |
-| 多 Phase 并行执行 | 数据依赖无法满足 |
+| Illegal Transition | Reason |
+|-------------------|--------|
+| Pn → Pn+2 (skip) | Violates FSM order invariant (S1) |
+| Pn → Pn+1 (unvalidated) | Violates data contract completeness (S2) |
+| Parallel Phase execution | Data dependencies cannot be satisfied |
 
 ### FSM State Machine Reference
 

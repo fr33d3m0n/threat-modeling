@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.1 (20260203a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # WORKFLOW.md - Orchestration Contracts
 
@@ -323,8 +323,8 @@ P5.threat_inventory.summary.total ==
 3. Load that phase's YAML data file from `data/` subdirectory
 4. Resume from next phase
 
-> **SESSION_ID 格式**: `{PROJECT_NAME}_{YYYYMMDD_HHMMSS}`
-> 示例: `OPEN-WEBUI_20260130_143022`
+> **SESSION_ID Format**: `{PROJECT_NAME}_{YYYYMMDD_HHMMSS}`
+> Example: `OPEN-WEBUI_20260130_143022`
 
 ---
 

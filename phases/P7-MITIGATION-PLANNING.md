@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 7: Mitigation Planning
 
@@ -10,97 +10,97 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
-> **⚠️ CHECKPOINT PHASE**: P7是用户检查点，缓解措施完成后请求用户确认。
+> **CRITICAL**: You MUST complete the following four stages in sequence and **output the result of each stage**. Skipping any stage will degrade analysis quality!
+> **⚠️ CHECKPOINT PHASE**: P7 is a user checkpoint - request user confirmation after completing mitigation measures.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🧠 THINKING - Phase 7 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Purpose**: 基于P6验证的风险设计具体、可实施的缓解措施。
+**Purpose**: Design specific, actionable mitigation measures based on P6 validated risks.
 
-**⚠️ 你必须输出以下格式的 THINKING 结果：**
+**⚠️ You MUST output THINKING results in the following format:**
 
 ```
 🧠 THINKING - P7 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📌 CORE PROBLEM
-为每个VR-xxx设计具体的缓解措施MIT-xxx，包含可执行的代码示例
+Design specific mitigation measures MIT-xxx for each VR-xxx, including executable code examples
 
-📊 UPSTREAM DATA (从 P6 YAML 读取)
-| 指标 | 值 | 来源 |
-|------|-----|------|
-| P6已验证风险数 | {实际值} | P6_validated_risks.yaml → risk_summary.total_verified |
-| P6理论风险数 | {实际值} | P6_validated_risks.yaml → risk_summary.total_theoretical |
-| P6 Critical风险数 | {实际值} | P6_validated_risks.yaml → risk_summary.risk_by_severity.critical |
-| P6 High风险数 | {实际值} | P6_validated_risks.yaml → risk_summary.risk_by_severity.high |
-| Tech stack | {实际值} | P1_project_context.yaml → project_context.tech_stack |
+📊 UPSTREAM DATA (Read from P6 YAML)
+| Metric | Value | Source |
+|--------|-------|--------|
+| P6 Verified Risk Count | {actual_value} | P6_validated_risks.yaml → risk_summary.total_verified |
+| P6 Theoretical Risk Count | {actual_value} | P6_validated_risks.yaml → risk_summary.total_theoretical |
+| P6 Critical Risk Count | {actual_value} | P6_validated_risks.yaml → risk_summary.risk_by_severity.critical |
+| P6 High Risk Count | {actual_value} | P6_validated_risks.yaml → risk_summary.risk_by_severity.high |
+| Tech stack | {actual_value} | P1_project_context.yaml → project_context.tech_stack |
 
 ❓ UNKNOWNS
-- 具体代码修复位置
-- 最佳实践实施细节
-- ASVS合规要求
+- Specific code fix locations
+- Best practice implementation details
+- ASVS compliance requirements
 
 ⚠️ RISKS
-- VR-xxx缺少对应的MIT-xxx
-- 缓解措施过于泛化 (无具体代码)
-- 缺少验证步骤
-- KB缓解覆盖率过低
+- VR-xxx missing corresponding MIT-xxx
+- Mitigation measures too generic (no specific code)
+- Missing verification steps
+- KB mitigation coverage too low
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⛔ STOP CHECK
-- P6 YAML 已读取? [YES/NO]
-- P6风险数已记录? [YES/NO]
-- 上游数据完整? [YES/NO]
-- 可以继续PLANNING? [YES/NO]
+- P6 YAML read? [YES/NO]
+- P6 risk count recorded? [YES/NO]
+- Upstream data complete? [YES/NO]
+- Ready to continue PLANNING? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取P6数据再继续
+⛔ **STOP CONDITION**: If any STOP CHECK = NO → Read P6 data first before continuing
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 📋 PLANNING - Sub-task Decomposition
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Step 1: 读取上游数据** (BLOCKING - 必须执行)
+**Step 1: Read Upstream Data** (BLOCKING - MUST execute)
 ```bash
-# 读取P6验证风险
+# Read P6 validated risks
 python scripts/phase_data.py --query --phase 6 --summary --root .
 python scripts/phase_data.py --query --phase 6 --type risks --root .
 
-# 或直接读取
+# Or read directly
 cat .phase_working/{SESSION_ID}/data/P6_validated_risks.yaml
 ```
-⛔ 如果P6 YAML不存在或无效 → STOP并返回完成P6
+⛔ If P6 YAML does not exist or is invalid → STOP and return to complete P6
 
-**Step 2: 输出子任务表格** (MANDATORY)
+**Step 2: Output Sub-task Table** (MANDATORY)
 
-**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+**⚠️ You MUST output PLANNING results in the following format:**
 
 ```
 📋 PLANNING - P7 Sub-tasks
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| # | 子任务 | 预期输出 |
-|---|--------|----------|
-| T1 | 读取P6数据，提取VR-xxx清单 | VR清单 |
-| T2 | 为P0 (Critical)风险设计立即缓解措施 | MIT-xxx (Critical) |
-| T3 | 为P1 (High)风险设计紧急缓解措施 | MIT-xxx (High) |
-| T4 | 为P2/P3风险设计计划缓解措施 | MIT-xxx (Medium/Low) |
-| T5 | KB查询 - CWE缓解和ASVS映射 | KB引用 |
-| T6 | 创建实施路线图 | roadmap |
-| T7 | 写入最终输出 | P7_mitigation_plan.yaml + MD |
+| # | Sub-task | Expected Output |
+|---|----------|-----------------|
+| T1 | Read P6 data, extract VR-xxx inventory | VR inventory |
+| T2 | Design immediate mitigations for P0 (Critical) risks | MIT-xxx (Critical) |
+| T3 | Design urgent mitigations for P1 (High) risks | MIT-xxx (High) |
+| T4 | Design planned mitigations for P2/P3 risks | MIT-xxx (Medium/Low) |
+| T5 | KB query - CWE mitigations and ASVS mapping | KB references |
+| T6 | Create implementation roadmap | roadmap |
+| T7 | Write final output | P7_mitigation_plan.yaml + MD |
 
 ⛔ PLANNING CHECK
-- 子任务已分解? [YES/NO]
-- 准备创建 TaskCreate? [YES/NO]
+- Sub-tasks decomposed? [YES/NO]
+- Ready to TaskCreate? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
 
-⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+⚠️ BEFORE starting any implementation, you MUST execute `TaskCreate` to create ALL sub-tasks!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### ⚡ EXECUTION LOOP
@@ -108,23 +108,23 @@ cat .phase_working/{SESSION_ID}/data/P6_validated_risks.yaml
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
-2. 实施子任务
-3. 验证: 输出是否符合预期？
-4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
-5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+2. Execute sub-task
+3. Verify: Does output meet expectations?
+4. If verification passes: `TaskUpdate(status: "completed")` → proceed to next
+5. If verification fails: Diagnose → Fix → Retry (max 3x) → If still failing: CHECKPOINT to request user decision
 
-**输出顺序** (CRITICAL):
-1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P7_mitigation_plan.yaml`
-2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P7-MITIGATION-PLAN.md`
+**Output Sequence** (CRITICAL):
+1. **Write YAML first**: `.phase_working/{SESSION_ID}/data/P7_mitigation_plan.yaml`
+2. **Write MD after**: `.phase_working/{SESSION_ID}/reports/P7-MITIGATION-PLAN.md`
 
-**关键KB查询**:
+**Key KB Queries**:
 ```bash
-$SKILL_PATH/kb --cwe CWE-89 --mitigations      # CWE特定缓解
-$SKILL_PATH/kb --control authentication         # 安全控制详情
-$SKILL_PATH/kb --asvs-level L2                  # ASVS要求
+$SKILL_PATH/kb --cwe CWE-89 --mitigations      # CWE-specific mitigations
+$SKILL_PATH/kb --control authentication         # Security control details
+$SKILL_PATH/kb --asvs-level L2                  # ASVS requirements
 ```
 
-**缓解覆盖验证**:
+**Mitigation Coverage Verification**:
 ```
 ∀ VR-xxx ∈ P6.validated_risks → ∃ MIT-xxx ∈ P7.mitigation_plan
 ```
@@ -133,31 +133,31 @@ $SKILL_PATH/kb --asvs-level L2                  # ASVS要求
 ### 🔍 REFLECTION - Completion Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
+**⚠️ After completing EXECUTION, you MUST output REFLECTION results in the following format:**
 
 ```
 🔍 REFLECTION - P7 Completion Check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| 检查项 | 状态 |
-|--------|------|
-| P6 YAML数据已读取并理解? | [✅/❌] |
-| P7_mitigation_plan.yaml 存在且有效? | [✅/❌] |
-| 每个VR-xxx有对应的MIT-xxx? | [✅/❌] |
-| kb_mitigation_sources 存在? | [✅/❌] |
-| P0/P1风险的MIT-xxx有KB引用? | [✅/❌] |
-| implementation_steps 包含具体代码? | [✅/❌] |
-| roadmap (immediate/short/medium/long) 已定义? | [✅/❌] |
-| ASVS/WSTG引用已提供? | [✅/❌] |
-| Hook验证通过 (exit 0)? | [✅/❌] |
+| Check Item | Status |
+|------------|--------|
+| P6 YAML data read and understood? | [✅/❌] |
+| P7_mitigation_plan.yaml exists and valid? | [✅/❌] |
+| Every VR-xxx has corresponding MIT-xxx? | [✅/❌] |
+| kb_mitigation_sources exists? | [✅/❌] |
+| P0/P1 risk MIT-xxx have KB references? | [✅/❌] |
+| implementation_steps contain specific code? | [✅/❌] |
+| roadmap (immediate/short/medium/long) defined? | [✅/❌] |
+| ASVS/WSTG references provided? | [✅/❌] |
+| Hook validation passed (exit 0)? | [✅/❌] |
 
 ⛔ COMPLETION GATE
-- 所有检查通过? [YES/NO]
-- 可以进入P8? [YES/NO]
+- All checks passed? [YES/NO]
+- Ready to proceed to P8? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ 任何检查失败 → 修复并重新验证，直到全部通过
+⛔ Any check fails → Fix and re-verify until all pass
 
 ---
 

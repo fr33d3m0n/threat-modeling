@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 5: STRIDE Threat Analysis
 
@@ -10,101 +10,101 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: You MUST complete the following four stages in sequence and **output the result of each stage**. Skipping any stage will degrade analysis quality!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🧠 THINKING - Phase 5 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Purpose**: 系统化应用STRIDE方法到所有DFD元素，不遗漏任何元素。
+**Purpose**: Systematically apply STRIDE method to all DFD elements, ensuring no element is missed.
 
-**⚠️ 你必须输出以下格式的 THINKING 结果：**
+**⚠️ You MUST output THINKING results in the following format:**
 
 ```
 🧠 THINKING - P5 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📌 CORE PROBLEM
-为每个DFD元素应用STRIDE分析，生成完整威胁清单
+Apply STRIDE analysis to every DFD element, generate complete threat inventory
 
-📊 UPSTREAM DATA (从 P2/P3/P4 YAML 读取)
-| 指标 | 值 | 来源 |
-|------|-----|------|
-| P2进程数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.processes 长度 |
-| P2数据存储数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.data_stores 长度 |
-| P2数据流数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.data_flows 长度 |
-| P2外部交互者数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.external_interactors 长度 |
-| P3边界数 | {实际值} | P3_boundary_context.yaml → boundary_context.boundaries 长度 |
-| P4 Gap数 | {实际值} | P4_security_gaps.yaml → security_gaps.summary.total_gaps |
+📊 UPSTREAM DATA (Read from P2/P3/P4 YAML)
+| Metric | Value | Source |
+|--------|-------|--------|
+| P2 Process Count | {actual_value} | P2_dfd_elements.yaml → dfd_elements.processes length |
+| P2 Data Store Count | {actual_value} | P2_dfd_elements.yaml → dfd_elements.data_stores length |
+| P2 Data Flow Count | {actual_value} | P2_dfd_elements.yaml → dfd_elements.data_flows length |
+| P2 External Interactor Count | {actual_value} | P2_dfd_elements.yaml → dfd_elements.external_interactors length |
+| P3 Boundary Count | {actual_value} | P3_boundary_context.yaml → boundary_context.boundaries length |
+| P4 Gap Count | {actual_value} | P4_security_gaps.yaml → security_gaps.summary.total_gaps |
 
 ❓ UNKNOWNS
-- 每个元素的具体威胁场景
-- CWE/CAPEC精确映射
-- 跨边界威胁的严重性放大
+- Specific threat scenarios for each element
+- Precise CWE/CAPEC mapping
+- Severity amplification for cross-boundary threats
 
 ⚠️ RISKS
-- 元素覆盖率 < 100%
-- STRIDE完整性 < 80% (某些元素缺少应有的STRIDE类别)
-- KB富化覆盖率过低
-- P0/P1威胁缺少CWE映射
+- Element coverage < 100%
+- STRIDE completeness < 80% (some elements missing required STRIDE categories)
+- KB enrichment coverage too low
+- P0/P1 threats missing CWE mapping
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⛔ STOP CHECK
-- P2 YAML 已读取? [YES/NO]
-- P3 YAML 已读取? [YES/NO]
-- P4 YAML 已读取? [YES/NO]
-- 上游数据完整 (DFD元素数/边界数/Gap数均有值)? [YES/NO]
-- 可以继续PLANNING? [YES/NO]
+- P2 YAML read? [YES/NO]
+- P3 YAML read? [YES/NO]
+- P4 YAML read? [YES/NO]
+- Upstream data complete (DFD element count/boundary count/Gap count all have values)? [YES/NO]
+- Ready to continue PLANNING? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取上游数据再继续
+⛔ **STOP CONDITION**: If any STOP CHECK = NO → Read upstream data first before continuing
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 📋 PLANNING - Sub-task Decomposition
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Step 1: 读取上游数据** (BLOCKING - 必须执行)
+**Step 1: Read Upstream Data** (BLOCKING - MUST execute)
 ```bash
-# 读取P2/P3/P4 YAML数据
+# Read P2/P3/P4 YAML data
 python scripts/phase_data.py --query --phase 2 --type dfd --root .
 python scripts/phase_data.py --query --phase 3 --summary --root .
 python scripts/phase_data.py --query --phase 4 --type gaps --root .
 
-# 或直接读取
+# Or read directly
 cat .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml
 cat .phase_working/{SESSION_ID}/data/P3_boundary_context.yaml
 cat .phase_working/{SESSION_ID}/data/P4_security_gaps.yaml
 ```
-⛔ 如果任何上游YAML不存在或无效 → STOP并返回完成上游Phase
+⛔ If any upstream YAML does not exist or is invalid → STOP and return to complete upstream Phase
 
-**Step 2: 输出子任务表格** (MANDATORY)
+**Step 2: Output Sub-task Table** (MANDATORY)
 
-**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+**⚠️ You MUST output PLANNING results in the following format:**
 
 ```
 📋 PLANNING - P5 Sub-tasks
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| # | 子任务 | 预期输出 |
-|---|--------|----------|
-| T1 | 读取P2/P3/P4数据，提取DFD元素和Gap清单 | 数据结构 |
-| T2 | 对所有Process应用STRIDE (S,T,R,I,D,E) | 进程威胁 |
-| T3 | 对所有DataStore应用STRIDE (T,R,I,D) | 存储威胁 |
-| T4 | 对所有DataFlow应用STRIDE (T,I,D) | 流威胁 |
-| T5 | 对所有ExternalInteractor应用STRIDE (S,R) | 交互威胁 |
-| T6 | KB富化 - CWE/CAPEC/ATT&CK映射 | 威胁富化 |
-| T7 | 写入最终输出 | P5_threat_inventory.yaml + MD |
+| # | Sub-task | Expected Output |
+|---|----------|-----------------|
+| T1 | Read P2/P3/P4 data, extract DFD elements and Gap inventory | Data structures |
+| T2 | Apply STRIDE to all Processes (S,T,R,I,D,E) | Process threats |
+| T3 | Apply STRIDE to all DataStores (T,R,I,D) | Store threats |
+| T4 | Apply STRIDE to all DataFlows (T,I,D) | Flow threats |
+| T5 | Apply STRIDE to all ExternalInteractors (S,R) | Interactor threats |
+| T6 | KB enrichment - CWE/CAPEC/ATT&CK mapping | Threat enrichment |
+| T7 | Write final output | P5_threat_inventory.yaml + MD |
 
 ⛔ PLANNING CHECK
-- 子任务已分解? [YES/NO]
-- 准备创建 TaskCreate? [YES/NO]
+- Sub-tasks decomposed? [YES/NO]
+- Ready to TaskCreate? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
 
-⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+⚠️ BEFORE starting any implementation, you MUST execute `TaskCreate` to create ALL sub-tasks!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### ⚡ EXECUTION LOOP
@@ -112,54 +112,54 @@ cat .phase_working/{SESSION_ID}/data/P4_security_gaps.yaml
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
-2. 实施子任务
-3. 验证: 输出是否符合预期？
-4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
-5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+2. Execute sub-task
+3. Verify: Does output meet expectations?
+4. If verification passes: `TaskUpdate(status: "completed")` → proceed to next
+5. If verification fails: Diagnose → Fix → Retry (max 3x) → If still failing: CHECKPOINT to request user decision
 
-**输出顺序** (CRITICAL):
-1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P5_threat_inventory.yaml`
-2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P5-STRIDE-THREATS.md`
+**Output Sequence** (CRITICAL):
+1. **Write YAML first**: `.phase_working/{SESSION_ID}/data/P5_threat_inventory.yaml`
+2. **Write MD after**: `.phase_working/{SESSION_ID}/reports/P5-STRIDE-THREATS.md`
 
-**关键KB查询**:
+**Key KB Queries**:
 ```bash
-$SKILL_PATH/kb --stride spoofing           # STRIDE类别详情
-$SKILL_PATH/kb --full-chain CWE-89         # 完整链: STRIDE→CWE→CAPEC→ATT&CK
-$SKILL_PATH/kb --cwe CWE-287               # 特定CWE详情
+$SKILL_PATH/kb --stride spoofing           # STRIDE category details
+$SKILL_PATH/kb --full-chain CWE-89         # Full chain: STRIDE→CWE→CAPEC→ATT&CK
+$SKILL_PATH/kb --cwe CWE-287               # Specific CWE details
 ```
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🔍 REFLECTION - Completion Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
+**⚠️ After completing EXECUTION, you MUST output REFLECTION results in the following format:**
 
 ```
 🔍 REFLECTION - P5 Completion Check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| 检查项 | 状态 |
-|--------|------|
-| P2/P3/P4 YAML数据已读取并理解? | [✅/❌] |
-| P5_threat_inventory.yaml 存在且有效? | [✅/❌] |
-| element_coverage_verification 存在? | [✅/❌] |
+| Check Item | Status |
+|------------|--------|
+| P2/P3/P4 YAML data read and understood? | [✅/❌] |
+| P5_threat_inventory.yaml exists and valid? | [✅/❌] |
+| element_coverage_verification exists? | [✅/❌] |
 | processes.coverage_percentage == 100%? | [✅/❌] |
 | data_stores.coverage_percentage == 100%? | [✅/❌] |
 | data_flows.coverage_percentage == 100%? | [✅/❌] |
 | external_interactors.coverage_percentage == 100%? | [✅/❌] |
 | stride_completeness >= 0.80? | [✅/❌] |
-| kb_enrichment_log 存在? | [✅/❌] |
-| P0/P1威胁全部有CWE映射? | [✅/❌] |
-| summary.total 与threats[]长度一致? | [✅/❌] |
-| Hook验证通过 (exit 0)? | [✅/❌] |
+| kb_enrichment_log exists? | [✅/❌] |
+| All P0/P1 threats have CWE mapping? | [✅/❌] |
+| summary.total matches threats[] length? | [✅/❌] |
+| Hook validation passed (exit 0)? | [✅/❌] |
 
 ⛔ COMPLETION GATE
-- 所有检查通过? [YES/NO]
-- 可以进入P6? [YES/NO]
+- All checks passed? [YES/NO]
+- Ready to proceed to P6? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ 任何检查失败 → 修复并重新验证，直到全部通过
+⛔ Any check fails → Fix and re-verify until all pass
 
 ---
 

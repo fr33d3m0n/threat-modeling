@@ -92,8 +92,17 @@
 │                                                                  │
 │  Accepting States: {DONE}                                        │
 │                                                                  │
+│  Data Dependencies (Non-blocking):                               │
+│    P5 → P2 (STRIDE analysis on DFD elements)                    │
+│    P3/P4 data enhances but does not block P5                    │
+│                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+> **Note**: While the FSM enforces sequential phase completion, data dependencies
+> allow flexibility. P5 (STRIDE Analysis) directly consumes P2 (DFD Elements)
+> for threat enumeration. P3 (Trust Boundaries) and P4 (Security Design) provide
+> enhancement data but are not blocking prerequisites for P5.
 
 ### State Transition Diagram
 

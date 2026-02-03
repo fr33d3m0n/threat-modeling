@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 8: Report Generation
 
@@ -10,63 +10,63 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: You MUST complete the following four stages in sequence and **output the result of each stage**. Skipping any stage will degrade analysis quality!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🧠 THINKING - Phase 8 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Purpose**: 聚合所有P1-P7数据，生成完整报告，不截断不总结。
+**Purpose**: Aggregate all P1-P7 data, generate complete reports without truncation or summarization.
 
-**⚠️ 你必须输出以下格式的 THINKING 结果：**
+**⚠️ You MUST output THINKING results in the following format:**
 
 ```
 🧠 THINKING - P8 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📌 CORE PROBLEM
-合成8份报告，必须完整包含P6 POC和P7缓解措施代码
+Synthesize 8 reports, must include complete P6 POC and P7 mitigation code
 
-📊 UPSTREAM DATA (从 P1-P7 YAML 读取)
-| 指标 | 值 | 来源 |
-|------|-----|------|
-| P1模块/入口点数 | {实际值} | P1_project_context.yaml |
-| P2 DFD元素数 | {实际值} | P2_dfd_elements.yaml |
-| P3边界数 | {实际值} | P3_boundary_context.yaml |
-| P4 Gap数 | {实际值} | P4_security_gaps.yaml |
-| P5威胁数 | {实际值} | P5_threat_inventory.yaml |
-| P6 VR数 | {实际值} | P6_validated_risks.yaml |
-| P6 POC数 | {实际值} | P6_validated_risks.yaml → poc_details 长度 |
-| P6 AC数 | {实际值} | P6_validated_risks.yaml → attack_chains 长度 |
-| P7 MIT数 | {实际值} | P7_mitigation_plan.yaml → mitigations 长度 |
+📊 UPSTREAM DATA (Read from P1-P7 YAML)
+| Metric | Value | Source |
+|--------|-------|--------|
+| P1 Module/Entry Point Count | {actual_value} | P1_project_context.yaml |
+| P2 DFD Element Count | {actual_value} | P2_dfd_elements.yaml |
+| P3 Boundary Count | {actual_value} | P3_boundary_context.yaml |
+| P4 Gap Count | {actual_value} | P4_security_gaps.yaml |
+| P5 Threat Count | {actual_value} | P5_threat_inventory.yaml |
+| P6 VR Count | {actual_value} | P6_validated_risks.yaml |
+| P6 POC Count | {actual_value} | P6_validated_risks.yaml → poc_details length |
+| P6 AC Count | {actual_value} | P6_validated_risks.yaml → attack_chains length |
+| P7 MIT Count | {actual_value} | P7_mitigation_plan.yaml → mitigations length |
 
 ❓ UNKNOWNS
-- 合规框架映射细节
+- Compliance framework mapping details
 
 ⚠️ RISKS
-- 8份报告未全部生成
-- P6 POC被截断或总结
-- P7缓解代码被省略
-- 攻击链图缺失
+- Not all 8 reports generated
+- P6 POC truncated or summarized
+- P7 mitigation code omitted
+- Attack chain diagrams missing
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⛔ STOP CHECK
-- P1-P7 全部YAML已读取? [YES/NO]
-- 所有数据计数已记录? [YES/NO]
-- 上游数据完整? [YES/NO]
-- 可以继续PLANNING? [YES/NO]
+- All P1-P7 YAML read? [YES/NO]
+- All data counts recorded? [YES/NO]
+- Upstream data complete? [YES/NO]
+- Ready to continue PLANNING? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取所有Phase数据再继续
+⛔ **STOP CONDITION**: If any STOP CHECK = NO → Read all Phase data first before continuing
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 📋 PLANNING - Sub-task Decomposition
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Step 1: 读取ALL P1-P7数据** (BLOCKING - 必须执行)
+**Step 1: Read ALL P1-P7 Data** (BLOCKING - MUST execute)
 ```bash
-# 读取所有Phase YAML
+# Read all Phase YAML
 cat .phase_working/{SESSION_ID}/data/P1_project_context.yaml
 cat .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml
 cat .phase_working/{SESSION_ID}/data/P3_boundary_context.yaml
@@ -75,35 +75,35 @@ cat .phase_working/{SESSION_ID}/data/P5_threat_inventory.yaml
 cat .phase_working/{SESSION_ID}/data/P6_validated_risks.yaml
 cat .phase_working/{SESSION_ID}/data/P7_mitigation_plan.yaml
 ```
-⛔ 如果任何上游YAML不存在或无效 → STOP并返回完成上游Phase
+⛔ If any upstream YAML does not exist or is invalid → STOP and return to complete upstream Phase
 
-**Step 2: 输出子任务表格** (MANDATORY)
+**Step 2: Output Sub-task Table** (MANDATORY)
 
-**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+**⚠️ You MUST output PLANNING results in the following format:**
 
 ```
 📋 PLANNING - P8 Sub-tasks
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| # | 子任务 | 预期输出 |
-|---|--------|----------|
-| T1 | 读取全部P1-P7 YAML数据 | 数据聚合 |
-| T2 | 生成主报告 {PROJECT}-RISK-ASSESSMENT-REPORT.md | 主报告 (9节) |
-| T3 | 生成RISK-INVENTORY.md | P6完整内容 |
-| T4 | 生成MITIGATION-MEASURES.md | P7完整代码 |
-| T5 | 生成PENETRATION-TEST-PLAN.md | POC→TC映射 |
-| T6 | 生成其他4份报告 | ARCHITECTURE, DFD, COMPLIANCE, ATTACK-PATH |
-| T7 | 复制Phase报告，写入manifest | P8_report_manifest.yaml |
+| # | Sub-task | Expected Output |
+|---|----------|-----------------|
+| T1 | Read all P1-P7 YAML data | Data aggregation |
+| T2 | Generate main report {PROJECT}-RISK-ASSESSMENT-REPORT.md | Main report (9 sections) |
+| T3 | Generate RISK-INVENTORY.md | P6 complete content |
+| T4 | Generate MITIGATION-MEASURES.md | P7 complete code |
+| T5 | Generate PENETRATION-TEST-PLAN.md | POC→TC mapping |
+| T6 | Generate other 4 reports | ARCHITECTURE, DFD, COMPLIANCE, ATTACK-PATH |
+| T7 | Copy Phase reports, write manifest | P8_report_manifest.yaml |
 
 ⛔ PLANNING CHECK
-- 子任务已分解? [YES/NO]
-- 准备创建 TaskCreate? [YES/NO]
+- Sub-tasks decomposed? [YES/NO]
+- Ready to TaskCreate? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
 
-⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+⚠️ BEFORE starting any implementation, you MUST execute `TaskCreate` to create ALL sub-tasks!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### ⚡ EXECUTION LOOP
@@ -111,57 +111,57 @@ cat .phase_working/{SESSION_ID}/data/P7_mitigation_plan.yaml
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
-2. 实施子任务
-3. 验证: 输出是否符合预期？
-4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
-5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+2. Execute sub-task
+3. Verify: Does output meet expectations?
+4. If verification passes: `TaskUpdate(status: "completed")` → proceed to next
+5. If verification fails: Diagnose → Fix → Retry (max 3x) → If still failing: CHECKPOINT to request user decision
 
-**输出顺序** (CRITICAL):
-1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P8_report_manifest.yaml`
-2. **再写8份报告**: `Risk_Assessment_Report/{PROJECT}-*.md`
-3. **复制Phase报告**: `.phase_working/{SESSION_ID}/reports/P*-*.md → Risk_Assessment_Report/`
+**Output Sequence** (CRITICAL):
+1. **Write YAML first**: `.phase_working/{SESSION_ID}/data/P8_report_manifest.yaml`
+2. **Then write 8 reports**: `Risk_Assessment_Report/{PROJECT}-*.md`
+3. **Copy Phase reports**: `.phase_working/{SESSION_ID}/reports/P*-*.md → Risk_Assessment_Report/`
 
-**禁止行为**:
+**Prohibited Actions**:
 - ❌ "See P6 for details"
 - ❌ "Top 3 risks shown, others omitted"
-- ❌ 总结POC代码
-- ❌ 截断攻击链
+- ❌ Summarizing POC code
+- ❌ Truncating attack chains
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🔍 REFLECTION - Completion Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
+**⚠️ After completing EXECUTION, you MUST output REFLECTION results in the following format:**
 
 ```
 🔍 REFLECTION - P8 Completion Check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| 检查项 | 状态 |
-|--------|------|
-| ALL P1-P7 YAML数据已读取? | [✅/❌] |
-| P8_report_manifest.yaml 存在且有效? | [✅/❌] |
-| {PROJECT}-RISK-ASSESSMENT-REPORT.md (主报告9节)? | [✅/❌] |
-| {PROJECT}-RISK-INVENTORY.md 生成? | [✅/❌] |
-| {PROJECT}-MITIGATION-MEASURES.md 生成? | [✅/❌] |
-| {PROJECT}-PENETRATION-TEST-PLAN.md 生成? | [✅/❌] |
-| {PROJECT}-ARCHITECTURE-ANALYSIS.md 生成? | [✅/❌] |
-| {PROJECT}-DFD-DIAGRAM.md 生成? | [✅/❌] |
-| {PROJECT}-COMPLIANCE-REPORT.md 生成? | [✅/❌] |
-| {PROJECT}-ATTACK-PATH-VALIDATION.md 生成? | [✅/❌] |
-| 主报告§5包含完整P6 POC代码? | [✅/❌] |
-| 主报告§6包含完整攻击链ASCII图? | [✅/❌] |
-| 主报告§8包含完整P7缓解代码? | [✅/❌] |
-| Phase报告已复制到报告目录? | [✅/❌] |
-| Hook验证通过 (exit 0)? | [✅/❌] |
+| Check Item | Status |
+|------------|--------|
+| ALL P1-P7 YAML data read? | [✅/❌] |
+| P8_report_manifest.yaml exists and valid? | [✅/❌] |
+| {PROJECT}-RISK-ASSESSMENT-REPORT.md (main report 9 sections)? | [✅/❌] |
+| {PROJECT}-RISK-INVENTORY.md generated? | [✅/❌] |
+| {PROJECT}-MITIGATION-MEASURES.md generated? | [✅/❌] |
+| {PROJECT}-PENETRATION-TEST-PLAN.md generated? | [✅/❌] |
+| {PROJECT}-ARCHITECTURE-ANALYSIS.md generated? | [✅/❌] |
+| {PROJECT}-DFD-DIAGRAM.md generated? | [✅/❌] |
+| {PROJECT}-COMPLIANCE-REPORT.md generated? | [✅/❌] |
+| {PROJECT}-ATTACK-PATH-VALIDATION.md generated? | [✅/❌] |
+| Main report §5 contains complete P6 POC code? | [✅/❌] |
+| Main report §6 contains complete attack chain ASCII diagrams? | [✅/❌] |
+| Main report §8 contains complete P7 mitigation code? | [✅/❌] |
+| Phase reports copied to report directory? | [✅/❌] |
+| Hook validation passed (exit 0)? | [✅/❌] |
 
 ⛔ COMPLETION GATE
-- 所有检查通过? [YES/NO]
-- 威胁建模分析完成? [YES/NO]
+- All checks passed? [YES/NO]
+- Threat modeling analysis complete? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ 任何检查失败 → 修复并重新验证，直到全部通过
+⛔ Any check fails → Fix and re-verify until all pass
 
 ---
 

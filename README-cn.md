@@ -1,15 +1,16 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
-# Threat Modeling Skill v3.0.0
+# Threat Modeling Skill v3.0.2
 
-AI原生的自动化软件风险分析 Skill。LLM驱动，Code-First 方法，支持完整的安全风险评估、威胁建模、安全测试、渗透测试和合规性检查。
+AI原生的自动化软件风险分析 Skill。LLM驱动，Code-First 方法，支持完整的安全风险评估、威胁建模、安全分析、安全审计和渗透测试。
 
-## v3.0.0 新特性
+## v3.0.2 新特性
 
-- **上下文效率**: 重构以提高上下文完整性和执行效率
-- **系统性分析**: 增强的攻击路径分析和更好的覆盖率
-- **会话历史**: 多会话版本跟踪支持增量分析
-- **CI/CD集成**: 结构化 YAML 阶段输出支持外部工具集成
+- **英文本地化**: 所有阶段指令翻译为英文，提升 LLM 兼容性
+- **扩展触发词**: 新增安全分析、安全审计、安全检查
+- **架构优化**: FSM 形式化，Token 减少 26.4%
+
+完整版本历史请参见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 安装
 

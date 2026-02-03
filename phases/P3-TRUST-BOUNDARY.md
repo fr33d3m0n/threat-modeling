@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 3: Trust Boundary Evaluation
 
@@ -10,94 +10,94 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: You MUST complete the following four stages in sequence and **output the result of each stage**. Skipping any stage will degrade analysis quality!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🧠 THINKING - Phase 3 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Purpose**: 基于P2 DFD识别信任边界，评估跨边界安全态势。
+**Purpose**: Identify trust boundaries based on P2 DFD, evaluate cross-boundary security posture.
 
-**⚠️ 你必须输出以下格式的 THINKING 结果：**
+**⚠️ You MUST output THINKING results in the following format:**
 
 ```
 🧠 THINKING - P3 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📌 CORE PROBLEM
-识别所有信任边界，评估跨边界流的安全控制
+Identify all trust boundaries, evaluate security controls for cross-boundary flows
 
-📊 UPSTREAM DATA (从 P2 YAML 读取)
-| 指标 | 值 | 来源 |
-|------|-----|------|
-| P2外部交互者数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.external_interactors 长度 |
-| P2进程数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.processes 长度 |
-| P2数据存储数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.data_stores 长度 |
-| P2数据流数 | {实际值} | P2_dfd_elements.yaml → dfd_elements.data_flows 长度 |
-| L1覆盖得分 | {实际值} | P2_dfd_elements.yaml → l1_coverage.overall.overall_score |
+📊 UPSTREAM DATA (Read from P2 YAML)
+| Metric | Value | Source |
+|--------|-------|--------|
+| P2 External Interactor Count | {actual_value} | P2_dfd_elements.yaml → dfd_elements.external_interactors length |
+| P2 Process Count | {actual_value} | P2_dfd_elements.yaml → dfd_elements.processes length |
+| P2 Data Store Count | {actual_value} | P2_dfd_elements.yaml → dfd_elements.data_stores length |
+| P2 Data Flow Count | {actual_value} | P2_dfd_elements.yaml → dfd_elements.data_flows length |
+| L1 Coverage Score | {actual_value} | P2_dfd_elements.yaml → l1_coverage.overall.overall_score |
 
 ❓ UNKNOWNS
-- 信任边界类型分布 (Network/Process/User/Data/Service/Model/Agent)
-- 跨边界流的安全控制
-- 敏感数据节点位置
+- Trust boundary type distribution (Network/Process/User/Data/Service/Model/Agent)
+- Security controls for cross-boundary flows
+- Sensitive data node locations
 
 ⚠️ RISKS
-- DFD元素未全部映射到边界区域
-- 跨边界流缺少安全控制记录
-- 边界图遗漏关键crossing points
+- DFD elements not fully mapped to boundary zones
+- Cross-boundary flows missing security control records
+- Boundary diagram missing critical crossing points
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⛔ STOP CHECK
-- P2 YAML 已读取? [YES/NO]
-- 上游数据完整 (DFD元素数均有值)? [YES/NO]
-- 可以继续PLANNING? [YES/NO]
+- P2 YAML read? [YES/NO]
+- Upstream data complete (all DFD element counts have values)? [YES/NO]
+- Ready to continue PLANNING? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取P2数据再继续
+⛔ **STOP CONDITION**: If any STOP CHECK = NO → Read P2 data first before continuing
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 📋 PLANNING - Sub-task Decomposition
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Step 1: 读取上游数据** (BLOCKING - 必须执行)
+**Step 1: Read Upstream Data** (BLOCKING - MUST execute)
 ```bash
-# 读取P2 YAML数据
+# Read P2 YAML data
 python scripts/phase_data.py --query --phase 2 --summary --root .
 python scripts/phase_data.py --query --phase 2 --type dfd --root .
 
-# 或直接读取
+# Or read directly
 cat .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml
 ```
-⛔ 如果P2 YAML不存在或无效 → STOP并返回完成P2
+⛔ If P2 YAML does not exist or is invalid → STOP and return to complete P2
 
-**Step 2: 输出子任务表格** (MANDATORY)
+**Step 2: Output Sub-task Table** (MANDATORY)
 
-**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+**⚠️ You MUST output PLANNING results in the following format:**
 
 ```
 📋 PLANNING - P3 Sub-tasks
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| # | 子任务 | 预期输出 |
-|---|--------|----------|
-| T1 | 读取P2 DFD数据，提取元素清单 | 数据结构 |
-| T2 | 识别信任边界 (TB-xxx)，确定类型 | 边界清单 |
-| T3 | 分析跨边界数据流 | 跨边界流映射 |
-| T4 | 评估接口安全 (认证/授权/加密) | 安全控制评估 |
-| T5 | 映射敏感数据节点 | 敏感数据标记 |
-| T6 | 生成边界图 (ASCII + Mermaid) | 可视化图表 |
-| T7 | 写入最终输出 | P3_boundary_context.yaml + MD |
+| # | Sub-task | Expected Output |
+|---|----------|-----------------|
+| T1 | Read P2 DFD data, extract element inventory | Data structure |
+| T2 | Identify trust boundaries (TB-xxx), determine types | Boundary inventory |
+| T3 | Analyze cross-boundary data flows | Cross-boundary flow mapping |
+| T4 | Evaluate interface security (authn/authz/encryption) | Security control assessment |
+| T5 | Map sensitive data nodes | Sensitive data markers |
+| T6 | Generate boundary diagram (ASCII + Mermaid) | Visual diagrams |
+| T7 | Write final output | P3_boundary_context.yaml + MD |
 
 ⛔ PLANNING CHECK
-- 子任务已分解? [YES/NO]
-- 准备创建 TaskCreate? [YES/NO]
+- Sub-tasks decomposed? [YES/NO]
+- Ready to execute TaskCreate? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
 
-⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+⚠️ Before starting any implementation, you MUST execute `TaskCreate` to create all sub-tasks!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### ⚡ EXECUTION LOOP
@@ -105,43 +105,43 @@ cat .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
-2. 实施子任务
-3. 验证: 输出是否符合预期？
-4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
-5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+2. Implement sub-task
+3. Verify: Does output match expectations?
+4. If verification passes: `TaskUpdate(status: "completed")` → Next sub-task
+5. If verification fails: Diagnose → Fix → Retry (max 3x) → If still failing: CHECKPOINT to request user decision
 
-**输出顺序** (CRITICAL):
-1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P3_boundary_context.yaml`
-2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P3-TRUST-BOUNDARY.md`
+**Output Order** (CRITICAL):
+1. **Write YAML first**: `.phase_working/{SESSION_ID}/data/P3_boundary_context.yaml`
+2. **Write MD second**: `.phase_working/{SESSION_ID}/reports/P3-TRUST-BOUNDARY.md`
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🔍 REFLECTION - Completion Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
+**⚠️ After completing EXECUTION, you MUST output REFLECTION results in the following format:**
 
 ```
 🔍 REFLECTION - P3 Completion Check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| 检查项 | 状态 |
-|--------|------|
-| P2 YAML数据已读取并理解? | [✅/❌] |
-| P3_boundary_context.yaml 存在且有效? | [✅/❌] |
-| 所有TB-xxx边界已识别并分类? | [✅/❌] |
-| 所有DFD元素已映射到边界区域? | [✅/❌] |
-| 所有跨边界流有安全控制记录? | [✅/❌] |
-| 边界图 (ASCII) 已包含? | [✅/❌] |
-| boundary_findings 存在 (即使为空)? | [✅/❌] |
-| Hook验证通过 (exit 0)? | [✅/❌] |
+| Check Item | Status |
+|------------|--------|
+| P2 YAML data read and understood? | [✅/❌] |
+| P3_boundary_context.yaml exists and valid? | [✅/❌] |
+| All TB-xxx boundaries identified and classified? | [✅/❌] |
+| All DFD elements mapped to boundary zones? | [✅/❌] |
+| All cross-boundary flows have security control records? | [✅/❌] |
+| Boundary diagram (ASCII) included? | [✅/❌] |
+| boundary_findings exists (even if empty)? | [✅/❌] |
+| Hook validation passed (exit 0)? | [✅/❌] |
 
 ⛔ COMPLETION GATE
-- 所有检查通过? [YES/NO]
-- 可以进入P4? [YES/NO]
+- All checks passed? [YES/NO]
+- Ready to enter P4? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ 任何检查失败 → 修复并重新验证，直到全部通过
+⛔ If any check fails → Fix and re-verify until all pass
 
 ---
 

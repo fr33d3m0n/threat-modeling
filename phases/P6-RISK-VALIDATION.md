@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 6: Risk Validation
 
@@ -10,104 +10,104 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
-> **⚠️ CHECKPOINT PHASE**: P6是用户检查点，复杂分析完成后请求用户确认。
+> **CRITICAL**: You MUST complete the following four stages in sequence and **output the result of each stage**. Skipping any stage will degrade analysis quality!
+> **⚠️ CHECKPOINT PHASE**: P6 is a user checkpoint - request user confirmation after completing complex analysis.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🧠 THINKING - Phase 6 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Purpose**: 聚合所有P1-P5数据，设计攻击路径和POC验证威胁。
+**Purpose**: Aggregate all P1-P5 data, design attack paths and POC to validate threats.
 
-**⚠️ 你必须输出以下格式的 THINKING 结果：**
+**⚠️ You MUST output THINKING results in the following format:**
 
 ```
 🧠 THINKING - P6 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📌 CORE PROBLEM
-验证威胁可利用性，设计攻击路径和POC，NOT缓解措施
+Validate threat exploitability, design attack paths and POC, NOT mitigations
 
-📊 UPSTREAM DATA (从 P1-P5 YAML 读取)
-| 指标 | 值 | 来源 |
-|------|-----|------|
-| P1模块数 | {实际值} | P1_project_context.yaml |
-| P1入口点数 | {实际值} | P1_project_context.yaml |
-| P2 DFD元素数 | {实际值} | P2_dfd_elements.yaml |
-| P3边界数 | {实际值} | P3_boundary_context.yaml |
-| P4 Gap数 | {实际值} | P4_security_gaps.yaml |
-| P5威胁总数 | {实际值} | P5_threat_inventory.yaml → summary.total ⬅ COUNT CONSERVATION基准 |
+📊 UPSTREAM DATA (Read from P1-P5 YAML)
+| Metric | Value | Source |
+|--------|-------|--------|
+| P1 Module Count | {actual_value} | P1_project_context.yaml |
+| P1 Entry Point Count | {actual_value} | P1_project_context.yaml |
+| P2 DFD Element Count | {actual_value} | P2_dfd_elements.yaml |
+| P3 Boundary Count | {actual_value} | P3_boundary_context.yaml |
+| P4 Gap Count | {actual_value} | P4_security_gaps.yaml |
+| P5 Threat Total | {actual_value} | P5_threat_inventory.yaml → summary.total ⬅ COUNT CONSERVATION baseline |
 
 ❓ UNKNOWNS
-- 威胁实际可利用性
-- 攻击路径可行性
-- POC执行前提条件
+- Actual exploitability of threats
+- Attack path feasibility
+- POC execution prerequisites
 
 ⚠️ RISKS
-- Count Conservation失败: P5.total ≠ verified + theoretical + pending + excluded
-- Critical/High威胁缺少POC
-- 攻击链缺少ASCII图
+- Count Conservation failure: P5.total ≠ verified + theoretical + pending + excluded
+- Critical/High threats missing POC
+- Attack chains missing ASCII diagrams
 - findings_coverage < 100%
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⛔ STOP CHECK
-- P1-P5 全部YAML已读取? [YES/NO]
-- P5威胁总数已记录 (Count Conservation基准)? [YES/NO]
-- 上游数据完整? [YES/NO]
-- 可以继续PLANNING? [YES/NO]
+- All P1-P5 YAML read? [YES/NO]
+- P5 threat total recorded (Count Conservation baseline)? [YES/NO]
+- Upstream data complete? [YES/NO]
+- Ready to continue PLANNING? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取上游数据再继续
+⛔ **STOP CONDITION**: If any STOP CHECK = NO → Read upstream data first before continuing
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 📋 PLANNING - Sub-task Decomposition
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Step 1: 读取ALL上游数据** (BLOCKING - 必须执行)
+**Step 1: Read ALL Upstream Data** (BLOCKING - MUST execute)
 ```bash
-# 聚合所有P1-P5数据
+# Aggregate all P1-P5 data
 python scripts/phase_data.py --aggregate --phases 1,2,3,4,5 --format summary --root .
 
-# 验证P5威胁数 (Count Conservation基准)
+# Verify P5 threat count (Count Conservation baseline)
 python scripts/phase_data.py --verify-p5-coverage --root .
 
-# 或直接读取全部
+# Or read all directly
 cat .phase_working/{SESSION_ID}/data/P1_project_context.yaml
 cat .phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml
 cat .phase_working/{SESSION_ID}/data/P3_boundary_context.yaml
 cat .phase_working/{SESSION_ID}/data/P4_security_gaps.yaml
 cat .phase_working/{SESSION_ID}/data/P5_threat_inventory.yaml
 ```
-⛔ 如果任何上游YAML不存在或无效 → STOP并返回完成上游Phase
+⛔ If any upstream YAML does not exist or is invalid → STOP and return to complete upstream Phase
 
-**Step 2: 输出子任务表格** (MANDATORY)
+**Step 2: Output Sub-task Table** (MANDATORY)
 
-**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+**⚠️ You MUST output PLANNING results in the following format:**
 
 ```
 📋 PLANNING - P6 Sub-tasks
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| # | 子任务 | 预期输出 |
-|---|--------|----------|
-| T1 | 聚合P1-P5所有发现 (F-P1-xxx, GAP-xxx, T-xxx) | 聚合清单 |
-| T2 | 聚类相关发现，创建VR-xxx | 风险清单 |
-| T3 | 验证威胁可利用性 | verified/theoretical/pending/excluded |
-| T4 | 设计Critical/High威胁的POC | POC-xxx详情 |
-| T5 | 设计攻击路径 (AP-xxx) 和攻击链 (AC-xxx) | 攻击链 + ASCII |
-| T6 | 验证Count Conservation公式 | conservation_verified = true |
-| T7 | 写入最终输出 | P6_validated_risks.yaml + MD |
+| # | Sub-task | Expected Output |
+|---|----------|-----------------|
+| T1 | Aggregate all P1-P5 findings (F-P1-xxx, GAP-xxx, T-xxx) | Aggregated inventory |
+| T2 | Cluster related findings, create VR-xxx | Risk inventory |
+| T3 | Validate threat exploitability | verified/theoretical/pending/excluded |
+| T4 | Design POC for Critical/High threats | POC-xxx details |
+| T5 | Design attack paths (AP-xxx) and attack chains (AC-xxx) | Attack chains + ASCII |
+| T6 | Verify Count Conservation formula | conservation_verified = true |
+| T7 | Write final output | P6_validated_risks.yaml + MD |
 
 ⛔ PLANNING CHECK
-- 子任务已分解? [YES/NO]
-- 准备创建 TaskCreate? [YES/NO]
+- Sub-tasks decomposed? [YES/NO]
+- Ready to TaskCreate? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
 
-⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+⚠️ BEFORE starting any implementation, you MUST execute `TaskCreate` to create ALL sub-tasks!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### ⚡ EXECUTION LOOP
@@ -115,16 +115,16 @@ cat .phase_working/{SESSION_ID}/data/P5_threat_inventory.yaml
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
-2. 实施子任务
-3. 验证: 输出是否符合预期？
-4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
-5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+2. Execute sub-task
+3. Verify: Does output meet expectations?
+4. If verification passes: `TaskUpdate(status: "completed")` → proceed to next
+5. If verification fails: Diagnose → Fix → Retry (max 3x) → If still failing: CHECKPOINT to request user decision
 
-**输出顺序** (CRITICAL):
-1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P6_validated_risks.yaml`
-2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P6-RISK-VALIDATION.md`
+**Output Sequence** (CRITICAL):
+1. **Write YAML first**: `.phase_working/{SESSION_ID}/data/P6_validated_risks.yaml`
+2. **Write MD after**: `.phase_working/{SESSION_ID}/reports/P6-RISK-VALIDATION.md`
 
-**Count Conservation验证** (MANDATORY):
+**Count Conservation Verification** (MANDATORY):
 ```
 P5.threat_inventory.total = verified + theoretical + pending + excluded
 ```
@@ -133,32 +133,32 @@ P5.threat_inventory.total = verified + theoretical + pending + excluded
 ### 🔍 REFLECTION - Completion Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
+**⚠️ After completing EXECUTION, you MUST output REFLECTION results in the following format:**
 
 ```
 🔍 REFLECTION - P6 Completion Check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| 检查项 | 状态 |
-|--------|------|
-| ALL P1-P5 YAML数据已读取并理解? | [✅/❌] |
-| P6_validated_risks.yaml 存在且有效? | [✅/❌] |
+| Check Item | Status |
+|------------|--------|
+| ALL P1-P5 YAML data read and understood? | [✅/❌] |
+| P6_validated_risks.yaml exists and valid? | [✅/❌] |
 | count_conservation.conservation_verified == true? | [✅/❌] |
-| findings_coverage_verification 存在? | [✅/❌] |
+| findings_coverage_verification exists? | [✅/❌] |
 | p4_gaps.coverage_percentage == 100%? | [✅/❌] |
 | p5_threats.coverage_percentage == 100%? | [✅/❌] |
-| 所有excluded_findings有documented reasons? | [✅/❌] |
-| Critical/High VR-xxx有POC-xxx详情? | [✅/❌] |
-| attack_chains 存在且有ASCII图? | [✅/❌] |
-| Hook验证通过 (exit 0)? | [✅/❌] |
+| All excluded_findings have documented reasons? | [✅/❌] |
+| Critical/High VR-xxx have POC-xxx details? | [✅/❌] |
+| attack_chains exists with ASCII diagrams? | [✅/❌] |
+| Hook validation passed (exit 0)? | [✅/❌] |
 
 ⛔ COMPLETION GATE
-- 所有检查通过? [YES/NO]
-- 可以进入P7? [YES/NO]
+- All checks passed? [YES/NO]
+- Ready to proceed to P7? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ 任何检查失败 → 修复并重新验证，直到全部通过
+⛔ Any check fails → Fix and re-verify until all pass
 
 ---
 

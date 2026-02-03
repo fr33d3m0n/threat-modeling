@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 1: Project Understanding
 
@@ -10,91 +10,91 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: You MUST complete the following four stages in sequence and **output the result of each stage**. Skipping any stage will degrade analysis quality!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🧠 THINKING - Phase 1 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Purpose**: Phase 1是首个Phase，没有上游数据依赖，专注于项目发现。
+**Purpose**: Phase 1 is the first phase with no upstream data dependencies. Focus on project discovery.
 
-**⚠️ 你必须输出以下格式的 THINKING 结果：**
+**⚠️ You MUST output THINKING results in the following format:**
 
 ```
 🧠 THINKING - P1 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📌 CORE PROBLEM
-全面发现项目架构、模块、入口点，建立威胁建模基础
+Comprehensively discover project architecture, modules, and entry points to establish the threat modeling foundation
 
 📊 KNOWN CONTEXT
-| 指标 | 值 | 来源 |
-|------|-----|------|
-| 项目路径 | {实际路径} | 用户输入 |
-| 项目类型 | [待发现] | 需扫描 |
-| 技术栈 | [待发现] | package.json/requirements.txt |
+| Metric | Value | Source |
+|--------|-------|--------|
+| Project Path | {actual_path} | User Input |
+| Project Type | [to be discovered] | Requires scan |
+| Tech Stack | [to be discovered] | package.json/requirements.txt |
 
 ❓ UNKNOWNS
-- 模块组织结构
-- 入口点分布 (14种类型需扫描)
-- 动态路由指示器
-- 文档质量等级
+- Module organization structure
+- Entry point distribution (14 types require scanning)
+- Dynamic route indicators
+- Documentation quality grade
 
 ⚠️ RISKS
-- 入口点类型扫描不完整 (14种类型必须全部扫描)
-- 动态路由指示器遗漏 (Layer 3 coverage)
-- coverage_confidence过低 (<0.70)
-- 模块security_level未分配
+- Incomplete entry point type scanning (all 14 types MUST be scanned)
+- Missing dynamic route indicators (Layer 3 coverage)
+- coverage_confidence too low (<0.70)
+- Module security_level not assigned
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⛔ STOP CHECK
-- 项目路径可访问? [YES/NO]
-- 可以继续PLANNING? [YES/NO]
+- Project path accessible? [YES/NO]
+- Ready to continue PLANNING? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先解决问题再继续
+⛔ **STOP CONDITION**: If any STOP CHECK = NO → Resolve the issue before continuing
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 📋 PLANNING - Sub-task Decomposition
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Step 1: 验证项目路径** (BLOCKING - 必须执行)
+**Step 1: Validate Project Path** (BLOCKING - MUST execute)
 ```bash
-# 验证项目存在 (在项目根目录执行)
+# Verify project exists (execute in project root directory)
 ls .
 
-# 检查是否有.phase_working目录
+# Check if .phase_working directory exists
 ls ./Risk_Assessment_Report/.phase_working/ 2>/dev/null || echo "Will create"
 ```
 
-**Step 2: 输出子任务表格** (MANDATORY)
+**Step 2: Output Sub-task Table** (MANDATORY)
 
-**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+**⚠️ You MUST output PLANNING results in the following format:**
 
 ```
 📋 PLANNING - P1 Sub-tasks
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| # | 子任务 | 预期输出 |
-|---|--------|----------|
-| T1 | 执行P1.0三层静态发现 | P1_static_discovery.yaml |
-| T2 | 根据quality_grade决定P1.1文档分析 | yaml:doc_analysis (条件) |
-| T3 | P1.2代码分析 | 3个YAML块 |
-| T4 | P1.3动态路由检测 | Layer 3指示器 |
-| T5 | P1.4三源对齐验证 | P1_source_alignment.yaml |
-| T6 | P1.5验证与置信度计算 | coverage_confidence |
-| T7 | 写入最终输出 | P1_project_context.yaml + MD |
+| # | Sub-task | Expected Output |
+|---|----------|-----------------|
+| T1 | Execute P1.0 three-layer static discovery | P1_static_discovery.yaml |
+| T2 | Decide P1.1 doc analysis based on quality_grade | yaml:doc_analysis (conditional) |
+| T3 | P1.2 code analysis | 3 YAML blocks |
+| T4 | P1.3 dynamic route detection | Layer 3 indicators |
+| T5 | P1.4 three-source alignment validation | P1_source_alignment.yaml |
+| T6 | P1.5 validation and confidence calculation | coverage_confidence |
+| T7 | Write final output | P1_project_context.yaml + MD |
 
 ⛔ PLANNING CHECK
-- 子任务已分解? [YES/NO]
-- 准备创建 TaskCreate? [YES/NO]
+- Sub-tasks decomposed? [YES/NO]
+- Ready to execute TaskCreate? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
 
-⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+⚠️ Before starting any implementation, you MUST execute `TaskCreate` to create all sub-tasks!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### ⚡ EXECUTION LOOP
@@ -102,23 +102,23 @@ ls ./Risk_Assessment_Report/.phase_working/ 2>/dev/null || echo "Will create"
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
-2. 实施子任务
-3. 验证: 输出是否符合预期？
-4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
-5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+2. Implement sub-task
+3. Verify: Does output match expectations?
+4. If verification passes: `TaskUpdate(status: "completed")` → Next sub-task
+5. If verification fails: Diagnose → Fix → Retry (max 3x) → If still failing: CHECKPOINT to request user decision
 
-**输出顺序** (CRITICAL):
-1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P1_project_context.yaml`
-2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P1-PROJECT-UNDERSTANDING.md`
+**Output Order** (CRITICAL):
+1. **Write YAML first**: `.phase_working/{SESSION_ID}/data/P1_project_context.yaml`
+2. **Write MD second**: `.phase_working/{SESSION_ID}/reports/P1-PROJECT-UNDERSTANDING.md`
 
-**关键命令**:
+**Key Commands**:
 ```bash
-# P1.0 三层发现 (路径为位置参数，不是 --project-root)
+# P1.0 Three-layer discovery (path is positional argument, not --project-root)
 python $SKILL_PATH/scripts/module_discovery.py . --p1-discovery --output-yaml \
   > .phase_working/{SESSION_ID}/data/P1_static_discovery.yaml
-# 注意: "." 表示当前项目目录，也可用绝对路径如 /path/to/project
+# Note: "." means current project directory, can also use absolute path like /path/to/project
 
-# P1.5 验证
+# P1.5 Validation
 python $SKILL_PATH/scripts/phase_data.py --validate --phase 1 --root .
 ```
 
@@ -126,29 +126,29 @@ python $SKILL_PATH/scripts/phase_data.py --validate --phase 1 --root .
 ### 🔍 REFLECTION - Completion Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
+**⚠️ After completing EXECUTION, you MUST output REFLECTION results in the following format:**
 
 ```
 🔍 REFLECTION - P1 Completion Check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| 检查项 | 状态 |
-|--------|------|
-| P1.0三层发现已执行? (P1_static_discovery.yaml存在) | [✅/❌] |
-| P1_project_context.yaml 存在且有效? | [✅/❌] |
-| discovery_checklist 全部14种入口类型scanned:true? | [✅/❌] |
-| 每个模块有security_level分配? | [✅/❌] |
-| 每个入口点有唯一ID (EP-xxx格式)? | [✅/❌] |
+| Check Item | Status |
+|------------|--------|
+| P1.0 three-layer discovery executed? (P1_static_discovery.yaml exists) | [✅/❌] |
+| P1_project_context.yaml exists and valid? | [✅/❌] |
+| discovery_checklist all 14 entry types scanned:true? | [✅/❌] |
+| Every module has security_level assigned? | [✅/❌] |
+| Every entry point has unique ID (EP-xxx format)? | [✅/❌] |
 | coverage_confidence.overall_confidence ≥ 0.70? | [✅/❌] |
-| Hook验证通过 (exit 0)? | [✅/❌] |
+| Hook validation passed (exit 0)? | [✅/❌] |
 
 ⛔ COMPLETION GATE
-- 所有检查通过? [YES/NO]
-- 可以进入P2? [YES/NO]
+- All checks passed? [YES/NO]
+- Ready to enter P2? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ 任何检查失败 → 修复并重新验证，直到全部通过
+⛔ If any check fails → Fix and re-verify until all pass
 
 ---
 
@@ -303,7 +303,7 @@ P1.5 (Script+LLM)    Validation & Coverage Confidence
 
 ```bash
 # NEW: Full three-layer P1 discovery with YAML output
-# 用法: module_discovery.py <路径> [选项]  (路径为位置参数)
+# Usage: module_discovery.py <path> [options]  (path is positional argument)
 python $SKILL_PATH/scripts/module_discovery.py . --p1-discovery --output-yaml \
   > .phase_working/{SESSION_ID}/data/P1_static_discovery.yaml
 ```
@@ -342,7 +342,7 @@ The three-layer discovery produces:
 
 **Correct Pattern**:
 ```bash
-# Step 1: Run full P1 discovery (路径为第一个位置参数)
+# Step 1: Run full P1 discovery (path is the first positional argument)
 python $SKILL_PATH/scripts/module_discovery.py . --p1-discovery --output-yaml \
   > .phase_working/{SESSION_ID}/data/P1_static_discovery.yaml
 

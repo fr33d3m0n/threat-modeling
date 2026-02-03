@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.1 (20260203a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Changelog
 
@@ -6,6 +6,16 @@ All notable changes to the Threat Modeling Skill will be documented in this file
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [3.0.2] - 2026-02-04
+
+### Localization & Usability
+- **English Localization**: All phase instructions (P1-P8) translated to English for better LLM compatibility
+- **Extended Trigger Words**: Added security analysis, security audit, security check (EN/CN)
+- **Removed**: compliance/合规检查 (out of core scope)
+
+### Bug Fixes
+- Fixed residual Chinese in P4 (L116-117, L145) and P5 (L126-128)
 
 ## [3.0.1] - 2026-02-03
 

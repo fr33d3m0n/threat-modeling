@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260202a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.2 (20260204a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Phase 2: Call Flow & DFD Analysis
 
@@ -10,95 +10,95 @@
 
 ## ⚠️ MANDATORY: 4-Phase Gating Protocol (BLOCKING)
 
-> **CRITICAL**: 必须按顺序完成以下四个阶段，并**输出每个阶段的结果**。跳过任何阶段将导致分析质量下降！
+> **CRITICAL**: You MUST complete the following four stages in sequence and **output the result of each stage**. Skipping any stage will degrade analysis quality!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 🧠 THINKING - Phase 2 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Purpose**: 基于P1数据构建DFD，不能从记忆生成。
+**Purpose**: Build DFD based on P1 data. MUST NOT generate from memory.
 
-**⚠️ 你必须输出以下格式的 THINKING 结果：**
+**⚠️ You MUST output THINKING results in the following format:**
 
 ```
 🧠 THINKING - P2 Entry Gate
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📌 CORE PROBLEM
-构建完整的数据流图(DFD)和调用流图(CFD)，为STRIDE分析奠定基础
+Build complete Data Flow Diagram (DFD) and Call Flow Diagram (CFD) to establish the foundation for STRIDE analysis
 
-📊 UPSTREAM DATA (从 P1 YAML 读取)
-| 指标 | 值 | 来源 |
-|------|-----|------|
-| P1模块总数 | {实际值} | P1_project_context.yaml → module_inventory.summary.total_modules |
-| P1入口点总数 | {实际值} | P1_project_context.yaml → entry_point_inventory.summary.total |
-| P1覆盖置信度 | {实际值} | P1_project_context.yaml → coverage_confidence.overall_confidence |
-| 项目类型 | {实际值} | P1_project_context.yaml → project_context.project_type |
+📊 UPSTREAM DATA (Read from P1 YAML)
+| Metric | Value | Source |
+|--------|-------|--------|
+| P1 Total Modules | {actual_value} | P1_project_context.yaml → module_inventory.summary.total_modules |
+| P1 Total Entry Points | {actual_value} | P1_project_context.yaml → entry_point_inventory.summary.total |
+| P1 Coverage Confidence | {actual_value} | P1_project_context.yaml → coverage_confidence.overall_confidence |
+| Project Type | {actual_value} | P1_project_context.yaml → project_context.project_type |
 
 ❓ UNKNOWNS
-- 每个入口点的完整数据流路径
-- 跨模块调用链
-- 数据存储访问模式
-- 安全检查点位置
+- Complete data flow path for each entry point
+- Cross-module call chains
+- Data store access patterns
+- Security checkpoint locations
 
 ⚠️ RISKS
-- L1覆盖 < 100% (任何维度)
-- 接口缺少data_flow映射
-- 数据存储缺少access_patterns
-- 动态调用指示器未记录
+- L1 coverage < 100% (any dimension)
+- Interface missing data_flow mapping
+- Data store missing access_patterns
+- Dynamic call indicators not documented
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⛔ STOP CHECK
-- P1 YAML 已读取? [YES/NO]
-- 上游数据完整 (模块数/入口点数/置信度均有值)? [YES/NO]
-- 可以继续PLANNING? [YES/NO]
+- P1 YAML read? [YES/NO]
+- Upstream data complete (module count/entry point count/confidence all have values)? [YES/NO]
+- Ready to continue PLANNING? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ **STOP条件**: 如果任何 STOP CHECK = NO → 先读取P1数据再继续
+⛔ **STOP CONDITION**: If any STOP CHECK = NO → Read P1 data first before continuing
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### 📋 PLANNING - Sub-task Decomposition
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Step 1: 读取上游数据** (BLOCKING - 必须执行)
+**Step 1: Read Upstream Data** (BLOCKING - MUST execute)
 ```bash
-# 读取P1 YAML数据
+# Read P1 YAML data
 python scripts/phase_data.py --query --phase 1 --summary --root .
 python scripts/phase_data.py --query --phase 1 --type entry_points --root .
 
-# 或直接读取
+# Or read directly
 cat .phase_working/{SESSION_ID}/data/P1_project_context.yaml
 ```
-⛔ 如果P1 YAML不存在或无效 → STOP并返回完成P1
+⛔ If P1 YAML does not exist or is invalid → STOP and return to complete P1
 
-**Step 2: 输出子任务表格** (MANDATORY)
+**Step 2: Output Sub-task Table** (MANDATORY)
 
-**⚠️ 你必须输出以下格式的 PLANNING 结果：**
+**⚠️ You MUST output PLANNING results in the following format:**
 
 ```
 📋 PLANNING - P2 Sub-tasks
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| # | 子任务 | 预期输出 |
-|---|--------|----------|
-| T1 | 读取P1数据，提取模块/入口点清单 | 数据结构 |
-| T2 | P2.0 Init - 提取遍历任务 | 任务清单 |
-| T3 | P2.1-P2.4 Critical Path Track | 接口/数据流/调用流/数据存储 |
-| T4 | P2.T Full Traversal Track | 并行子代理结果 |
-| T5 | P2.T.3 覆盖验证 | 100%覆盖确认 |
-| T6 | P2.5 合成 - 生成dfd_elements | DFD元素清单 |
-| T7 | 写入最终输出 | P2_dfd_elements.yaml + MD |
+| # | Sub-task | Expected Output |
+|---|----------|-----------------|
+| T1 | Read P1 data, extract module/entry point inventory | Data structure |
+| T2 | P2.0 Init - Extract traversal tasks | Task list |
+| T3 | P2.1-P2.4 Critical Path Track | Interface/data flow/call flow/data store |
+| T4 | P2.T Full Traversal Track | Parallel sub-agent results |
+| T5 | P2.T.3 Coverage validation | 100% coverage confirmation |
+| T6 | P2.5 Synthesis - Generate dfd_elements | DFD element inventory |
+| T7 | Write final output | P2_dfd_elements.yaml + MD |
 
 ⛔ PLANNING CHECK
-- 子任务已分解? [YES/NO]
-- 准备创建 TaskCreate? [YES/NO]
+- Sub-tasks decomposed? [YES/NO]
+- Ready to execute TaskCreate? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 **Step 3: TaskCreate for ALL sub-tasks** (MANDATORY)
 
-⚠️ 在开始任何实施前，必须执行 `TaskCreate` 创建所有子任务！
+⚠️ Before starting any implementation, you MUST execute `TaskCreate` to create all sub-tasks!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ### ⚡ EXECUTION LOOP
@@ -106,21 +106,21 @@ cat .phase_working/{SESSION_ID}/data/P1_project_context.yaml
 
 For each sub-task:
 1. `TaskUpdate(status: "in_progress")`
-2. 实施子任务
-3. 验证: 输出是否符合预期？
-4. If 验证通过: `TaskUpdate(status: "completed")` → 下一个
-5. If 验证失败: 诊断 → 修复 → 重试 (max 3x) → 如仍失败: CHECKPOINT请求用户决策
+2. Implement sub-task
+3. Verify: Does output match expectations?
+4. If verification passes: `TaskUpdate(status: "completed")` → Next sub-task
+5. If verification fails: Diagnose → Fix → Retry (max 3x) → If still failing: CHECKPOINT to request user decision
 
-**输出顺序** (CRITICAL):
-1. **先写YAML**: `.phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml`
-2. **后写MD**: `.phase_working/{SESSION_ID}/reports/P2-DFD-ANALYSIS.md`
+**Output Order** (CRITICAL):
+1. **Write YAML first**: `.phase_working/{SESSION_ID}/data/P2_dfd_elements.yaml`
+2. **Write MD second**: `.phase_working/{SESSION_ID}/reports/P2-DFD-ANALYSIS.md`
 
-**关键命令**:
+**Key Commands**:
 ```bash
-# P2.0 任务提取
+# P2.0 Task extraction
 python scripts/phase_data.py --p2-extract-tasks --root .
 
-# P2.T.3 覆盖验证
+# P2.T.3 Coverage validation
 python scripts/phase_data.py --p2-validate-coverage --root .
 ```
 
@@ -128,31 +128,31 @@ python scripts/phase_data.py --p2-validate-coverage --root .
 ### 🔍 REFLECTION - Completion Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**⚠️ 完成 EXECUTION 后，你必须输出以下格式的 REFLECTION 结果：**
+**⚠️ After completing EXECUTION, you MUST output REFLECTION results in the following format:**
 
 ```
 🔍 REFLECTION - P2 Completion Check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-| 检查项 | 状态 |
-|--------|------|
-| P1 YAML数据已读取并理解? | [✅/❌] |
-| P2_dfd_elements.yaml 存在且有效? | [✅/❌] |
-| interface_inventory 包含所有L1-L3接口? | [✅/❌] |
-| data_flow_traces 覆盖所有入口点? | [✅/❌] |
+| Check Item | Status |
+|------------|--------|
+| P1 YAML data read and understood? | [✅/❌] |
+| P2_dfd_elements.yaml exists and valid? | [✅/❌] |
+| interface_inventory contains all L1-L3 interfaces? | [✅/❌] |
+| data_flow_traces covers all entry points? | [✅/❌] |
 | interfaces.coverage_percentage == 100? | [✅/❌] |
 | data_flows.coverage_percentage == 100? | [✅/❌] |
 | call_chains.coverage_percentage >= 95? | [✅/❌] |
 | data_stores.coverage_percentage == 100? | [✅/❌] |
-| Hook验证通过 (exit 0)? | [✅/❌] |
+| Hook validation passed (exit 0)? | [✅/❌] |
 
 ⛔ COMPLETION GATE
-- 所有检查通过? [YES/NO]
-- 可以进入P3? [YES/NO]
+- All checks passed? [YES/NO]
+- Ready to enter P3? [YES/NO]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-⛔ 任何检查失败 → 修复并重新验证，直到全部通过
+⛔ If any check fails → Fix and re-verify until all pass
 
 ---
 
