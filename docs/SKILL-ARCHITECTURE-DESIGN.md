@@ -1,14 +1,214 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.1 (20260203a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # STRIDE Threat Modeling System Architecture Analysis
 
-> **Version**: 2.1.0
-> **Date**: 2026-01-03
-> **Purpose**: Comprehensive system architecture analysis with diagrams and module relationships
+> **Version**: 3.0.1
+> **Date**: 2026-02-03
+> **Purpose**: Comprehensive system architecture analysis with diagrams, module relationships, and formal workflow specification
 
-> **Note (v2.1.0)**: Directory structure refactored:
-> - `docs/` → `references/`
-> - `knowledge/`, `schemas/`, `templates/` → `assets/` subdirectories
+> **Note (v3.0.1)**: Architecture refactored for clarity and determinism:
+> - SKILL.md: "WHAT & WHY" (静态契约) - ~4K tokens target
+> - WORKFLOW.md: "HOW & WHEN" (动态协议) - ~4K tokens target
+> - FSM formalization for 8-phase workflow
+> - 4-Gate Protocol per phase (ENTRY → THINKING → PLANNING → EXECUTING → REFLECTING → EXIT)
+
+---
+
+## 0. File Responsibility Matrix (v3.0.1)
+
+### SKILL.md - "WHAT & WHY" (Static Contract)
+
+**Responsibilities**:
+- Version management and compatibility
+- Core concept definitions (STRIDE, Dual Knowledge System)
+- Global constraints and invariants
+- Data model specifications (YAML Schema type definitions)
+- Output conventions and format standards
+- Quick Start guide
+- First principles declaration
+
+**Should NOT contain**:
+- Specific execution steps
+- Phase-to-phase data flow details
+- Validation gate logic
+- Error recovery procedures
+
+**Token Budget**: ~4,000 (reduced from ~7,000)
+
+### WORKFLOW.md - "HOW & WHEN" (Dynamic Protocol)
+
+**Responsibilities**:
+- Session lifecycle management
+- Phase execution protocol (FSM definition)
+- Phase-to-phase data contracts (I/O Schema)
+- Validation gate rules and Hook integration
+- STRIDE matrix mapping
+- Error recovery and rollback strategies
+- Final report output specifications
+
+**Should NOT contain**:
+- Version information (reference SKILL.md)
+- Repeated global concept definitions
+- Data model type definitions (reference only)
+
+**Token Budget**: ~4,000 (reduced from ~5,000)
+
+### Cross-Reference Convention
+
+```yaml
+# In WORKFLOW.md (referencing SKILL.md):
+"See SKILL.md §1.2 for directory structure"
+"Data model defined in SKILL.md §3"
+
+# In SKILL.md (referencing WORKFLOW.md):
+"Execution protocol details in WORKFLOW.md §2"
+"Validation gates specified in WORKFLOW.md §4"
+```
+
+---
+
+## 0.1 Workflow State Machine (FSM) Specification
+
+### 8-Phase Workflow as Finite State Machine
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    STRIDE Threat Modeling FSM                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  States: {INIT, P1, P2, P3, P4, P5, P6, P7, P8, DONE, ERROR}    │
+│                                                                  │
+│  Alphabet (Transitions):                                         │
+│    σ = {start, p1_complete, p2_complete, ..., p8_complete,      │
+│         validation_fail, recovery_success, abort}                │
+│                                                                  │
+│  Transition Function δ:                                          │
+│    δ(INIT, start) → P1                                          │
+│    δ(Pn, pn_complete) → P(n+1)  where n ∈ {1..7}                │
+│    δ(P8, p8_complete) → DONE                                    │
+│    δ(Pn, validation_fail) → ERROR                               │
+│    δ(ERROR, recovery_success) → Pn  (rollback to last valid)    │
+│    δ(ERROR, abort) → DONE (with partial results)                │
+│                                                                  │
+│  Accepting States: {DONE}                                        │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### State Transition Diagram
+
+```
+         start
+    ┌──────┴──────┐
+    │    INIT     │
+    └──────┬──────┘
+           │ start
+           ▼
+    ┌──────────────┐    p1_complete    ┌─────────────────┐
+    │      P1      │ ─────────────────►│       P2        │
+    │  Project     │                   │   DFD Analysis  │
+    │ Understanding│                   │                 │
+    └──────┬───────┘                   └────────┬────────┘
+           │                                    │ p2_complete
+           │ validation_fail                    ▼
+           │                            ┌─────────────────┐
+           │         ┌──────────────────│       P3        │
+           │         │                  │  Trust Boundary │
+           ▼         ▼                  └────────┬────────┘
+    ┌──────────────┐                            │
+    │    ERROR     │◄───────────────────────────┤ validation_fail
+    └──────┬───────┘                            │
+           │                                    ▼
+           │ recovery_success           ... P4 → P5 → P6 → P7 → P8 ...
+           │                                    │
+           └──────────► (rollback)              │ p8_complete
+                                               ▼
+                                        ┌─────────────────┐
+                                        │      DONE       │
+                                        │  (Final Report) │
+                                        └─────────────────┘
+```
+
+### Phase Internal 4-Gate Sub-FSM
+
+Each Phase Pn internally follows this sub-state machine:
+
+```
+┌───────────────────────────────────────────────────────┐
+│                 Phase Pn SubFSM                       │
+├───────────────────────────────────────────────────────┤
+│                                                       │
+│  SubStates: {ENTRY, THINKING, PLANNING, EXECUTING,   │
+│              REFLECTING, EXIT}                        │
+│                                                       │
+│  ┌───────┐  entry_check   ┌──────────┐              │
+│  │ ENTRY │ ─────────────► │ THINKING │              │
+│  └───────┘   [YES]        └────┬─────┘              │
+│      │                         │ think_complete      │
+│      │ [NO]                    ▼                     │
+│      │                   ┌──────────┐               │
+│      │                   │ PLANNING │               │
+│      │                   └────┬─────┘               │
+│      │                        │ plan_approved        │
+│      │                        ▼                      │
+│      │                   ┌───────────┐              │
+│      │                   │ EXECUTING │◄─────┐       │
+│      │                   └─────┬─────┘      │       │
+│      │                         │            │ loop  │
+│      │                         │ iter_done  │       │
+│      │                         ▼            │       │
+│      │                   ┌────────────┐     │       │
+│      │                   │ REFLECTING │─────┘       │
+│      │                   └─────┬──────┘             │
+│      │                         │ all_complete       │
+│      │                         ▼                    │
+│      │                   ┌──────┐                   │
+│      └─────────────────► │ EXIT │ (emit pn_complete)│
+│         (abort)          └──────┘                   │
+│                                                     │
+└───────────────────────────────────────────────────────┘
+```
+
+---
+
+## 0.2 Formal Verification Properties
+
+### Safety Properties (□ = always)
+
+```
+Property S1: Phase Order Invariant
+  □ (current_phase = Pn ∧ next_phase = Pm) → m = n+1 ∨ m = ERROR
+
+Property S2: Data Contract Completeness
+  □ (phase_complete(Pn)) → exists(output_yaml(Pn))
+
+Property S3: Count Conservation (P5→P6)
+  □ count(P5.threats) = count(P6.verified) + count(P6.theoretical)
+                       + count(P6.pending) + count(P6.excluded)
+
+Property S4: No Deadlock
+  □ (current_state ≠ DONE ∧ current_state ≠ ERROR) → ◇ (next_transition)
+```
+
+### Liveness Properties (◇ = eventually)
+
+```
+Property L1: Eventual Completion
+  ◇ (current_state = DONE ∨ current_state = ERROR)
+
+Property L2: Error Recoverability
+  □ (current_state = ERROR) → ◇ (recovery_attempted)
+```
+
+### Temporal Logic Notation
+
+| Symbol | Meaning |
+|--------|---------|
+| □ | Always (in all future states) |
+| ◇ | Eventually (in some future state) |
+| → | Implies |
+| ∧ | And |
+| ∨ | Or |
 
 ---
 
@@ -836,14 +1036,28 @@
 
 ### 8.2 Key Design Principles
 
-1. **8-Phase Sequential Workflow**: Strict P1→P2→P3→P4→P5→P6→P7→P8 execution
+1. **8-Phase Sequential Workflow**: Strict P1→P2→P3→P4→P5→P6→P7→P8 execution (FSM-enforced)
 2. **Core Data Model**: Finding → Threat → ValidatedRisk → Mitigation with mandatory traceability
 3. **Count Conservation**: All P5 threats must be accounted for in P6 (consolidated or excluded with reason)
 4. **Script as Black Box**: Python scripts handle deterministic operations, LLM handles semantic analysis
 5. **5-Layer Knowledge**: Threat Intelligence → Controls → Verification → Compliance → Live Data
 6. **Template-Based Reports**: Single English template + LLM translation for localization
+7. **File Responsibility Separation**: SKILL.md (WHAT/WHY) vs WORKFLOW.md (HOW/WHEN)
+8. **4-Gate Protocol**: Every phase follows ENTRY→THINKING→PLANNING→EXECUTING→REFLECTING→EXIT
+9. **Formal Verification**: Safety properties (S1-S4) and Liveness properties (L1-L2) enforceable
 
 ---
 
-**Document Version**: 2.1.1
-**Last Updated**: 2026-01-04
+## 9. Core Objectives Alignment (v3.0.0)
+
+| Objective | Pre-Optimization | Post-Optimization |
+|-----------|------------------|-------------------|
+| Code-First Threat Modeling | ✅ Maintained | ✅ Maintained (FSM doesn't change analysis method) |
+| 8-Phase Sequential Workflow | ⚠️ Implicit | ✅ **Strengthened** (FSM guarantees execution order) |
+| Deterministic Verification | ⚠️ Partial | ✅ **Enhanced** (formal properties verifiable) |
+| Progressive Context Loading | ⚠️ ~7K+5K tokens | ✅ **Improved** (~4K+4K tokens, 33% reduction) |
+
+---
+
+**Document Version**: 3.0.0
+**Last Updated**: 2026-02-03

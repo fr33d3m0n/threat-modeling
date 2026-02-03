@@ -1,4 +1,4 @@
-<!-- Threat Modeling Skill | Version 3.0.0 (20260201a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
+<!-- Threat Modeling Skill | Version 3.0.1 (20260203a) | https://github.com/fr33d3m0n/threat-modeling | License: BSD-3-Clause -->
 
 # Changelog
 
@@ -6,6 +6,22 @@ All notable changes to the Threat Modeling Skill will be documented in this file
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [3.0.1] - 2026-02-03
+
+### Architecture Optimization
+- **File Responsibility Separation**: SKILL.md (WHAT & WHY) vs WORKFLOW.md (HOW & WHEN)
+- **FSM Formalization**: 8-phase state machine with formal verification properties (Safety S1-S4, Liveness L1-L2)
+- **4-Gate Sub-FSM**: Per-phase execution protocol (ENTRY → THINKING → PLANNING → EXECUTING → REFLECTING → EXIT)
+- **Token Optimization**: 26.4% reduction (12,000 → 8,832 tokens) through de-duplication and cross-references
+- **Cross-Reference Convention**: "See SKILL.md §X" pattern to maintain single source of truth
+
+### Technical Changes
+- Added `docs/SKILL-ARCHITECTURE-DESIGN.md` with FSM specification (§0, §0.1, §0.2)
+- Simplified SKILL.md §10, §11 to constraint declarations
+- Added WORKFLOW.md §1 Workflow State Machine definition
+- Simplified WORKFLOW.md §3 data contracts (summary table instead of full schemas)
+- Added `MEMORY.md` for project memory across sessions
 
 ## [3.0.0] - 2026-01-31
 
