@@ -41,35 +41,6 @@ AI-native automated software risk analysis skill. LLM-driven, Code-First approac
 ════════════════════════════════════════════════════════════════════════════════
 ```
 
-## ⚠️ Version Management Rules (STRICT)
-
-> **CRITICAL**: Modifying the major version X.Y.Z without explicit user approval is FORBIDDEN!
-
-### Version Format
-
-```
-vX.Y.Z (YYYYMMDDx)
- │ │ │     │    │
- │ │ │     │    └── Date suffix (a, b, c...) - Auto-update allowed
- │ │ │     └─────── Date (YYYYMMDD) - Auto-update allowed
- │ │ └───────────── Patch - Requires user confirmation
- │ └─────────────── Minor - Requires user confirmation
- └───────────────── Major - Requires explicit user approval
-```
-
-### Change Rules
-
-| Version Part | Auto-Change Allowed | Example |
-|--------------|---------------------|---------|
-| Date suffix (x) | ✅ Yes | `(20260202a)` → `(20260131b)` |
-| Date (YYYYMMDD) | ✅ Yes | `(20260202a)` → `(20260202a)` |
-| X.Y.Z | ❌ **NO** - Requires explicit user approval | `3.0.1` → `3.0.2` or `3.1.0` |
-
-### Current Version
-
-- **Base Version**: `3.0.2` (frozen until user approval)
-- **Date Version**: `20260204a` (auto-updates allowed)
-
 ## Command Line Flags
 
 | Flag | Description | Default |
